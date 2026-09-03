@@ -58,8 +58,12 @@ const UNIT: Record<string, string> = {
   stays: "إقامات",
   table: "طاولة",
   tables: "طاولات",
+  task: "مهمة",
+  tasks: "مهام",
   ticket: "تذكرة",
   tickets: "تذاكر",
+  property: "منشأة",
+  properties: "منشآت",
 }
 
 function translateCore(source: string, lang: Lang): string {
@@ -150,6 +154,16 @@ export function translateText(source: string, lang: Lang = getLang()): string {
 /** Translate an English string for the current language. */
 export function t(source: string): string {
   return translateText(source)
+}
+
+/**
+ * Render a counted noun as a single "<n> <noun>" token (e.g. `qty(2, "night")`
+ * → "2 nights"). Keeping the number and word in one text node lets the live
+ * translator localise it via the UNIT map — splitting the plural letter into
+ * its own node used to leave a stray "s" in the Arabic UI.
+ */
+export function qty(n: number, singular: string, plural = singular + "s"): string {
+  return `${n} ${n === 1 ? singular : plural}`
 }
 
 /** Subscribe a component to language changes and return a bound translator. */

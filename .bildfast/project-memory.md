@@ -224,3 +224,44 @@ WhatsApp Message (all carry optional `reservation` back-link).
 3. Keep the internal `hotelpms` namespace; only visible text becomes HotelPMS. Preserve navy `#082B5C`, wordmark gold `#B8892E`, and interface gold `#C9A24B`.
 4. `business.md` / `tests.md` are **user-owned** — propose filling them from the real app for approval; never edit silently.
 5. After visible changes, the orchestrator builds (`bench build --app hotelpms` / `npm run build`) — SPA at `/hotelpms`, preview `hotelpms.yemenfrappe.com/hotelpms/book`.
+
+---
+
+## 18. UX/UI improvement round (2026-09-04)
+
+A live, screenshot-based UX/UI pass over the deployed demo (desktop 1440 / tablet / mobile 390, Arabic-default
++ English, light + dark, real demo roles via one-tap login). Method: audit → fix in `frontend/src` reusing the
+existing navy/gold tokens (no new identity/colours/fonts, no glass/old logo) → `npm run build` → re-verify
+live. Screens reviewed: Login, POS (deep), Kitchen, Public Booking (desktop+mobile), Today, Dashboard,
+Billing, HkApp (mobile), Revenue, Banquet, Settings. **No API/RBAC/backend/data changes.**
+
+**Fixed (verified live):**
+- **POS dark-mode contrast** — the open-bill "running strip" cards (Table F2/T6/T3) used `text-*-950`, a ramp
+  step the `.dark` block never remaps, so titles/KOT/price rendered dark-on-dark. Switched to `-900` (remapped
+  bright in dark, matching the floor-grid pattern). The Menu heading + menu-card item name used fixed
+  `text-navy-900` on a `bg-white` card that flips dark → moved to auto-remapping `text-zinc-900`. (`screens/POS.tsx`)
+- **Stray English plural "s" in the Arabic UI** — pluralisation was a separate `{n===1?"":"s"}` text node, so
+  the live translator localised the noun (" night"→"ليلة") but left a standalone "s" ("2 ليلة s"). Added a
+  `qty(n, singular, plural)` helper (`lib/i18n.ts`) emitting a single "<n> <noun>" token the UNIT map localises
+  (→ "2 ليالٍ · 2 بالغون"; clean "2 nights · 2 adults" in EN). Applied to Today, CRS, GuestJourney,
+  PublicCheckin, Banquet, HkApp; added `task(s)`/`property(ies)` to UNIT.
+- **Untranslated strings on the Arabic-default UI** (more visible since the Arabic-first switch at `8546470`):
+  added `ar.ts` entries "My Tasks"→"مهامي", "Completed"→"مكتمل", the two Today empty states, and the HK
+  tasks-header tail.
+
+**Verification:** `tsc -b` clean; `npm run build` clean; live re-checks confirmed legible POS dark cards,
+"2 ليالٍ · 2 بالغون" (no stray s), Arabic empty states, "مهامي"/"مكتمل"; 0 console errors, no horizontal
+overflow, no broken images across the reviewed screens; EN mode unregressed (LTR, "2 nights · 2 adults").
+(SuperClaude `sc:*` commands aren't registered as invocable skills in this session, so their analyze→improve→
+reflect method was applied inline; the ui-tester→runner→ui-fixer loop was substituted by a direct Playwright
+audit, which can't be driven mid-session.)
+
+**Left for the product owner (content/policy, not UI polish — not changed here):**
+- The persistent demo banner says "data is restored every night", but the scheduled reset is a verified no-op
+  on this site (`hotelpms_demo_mode` unset) → writes persist. Enable the reset or soften the copy.
+- Public pages render bilingual "AR | EN" seed strings raw (title/amenities/description) — a content-model
+  choice; consider one language per direction.
+- Demo guest names are largely Indian (Vikram/Sneha/Priya…), off-brand for a Saudi demo — a seed-data polish.
+- Remaining English-heavy i18n gaps (Kitchen KDS labels LATE/MAIN/DESSERT/cooking, the Billing folios
+  subtitle whose `ar.ts` key hardcodes "GST" vs the Saudi "VAT", night-audit summary sentences) — the same
+  `qty()`/`ar.ts` technique applies; deferred to keep this change reviewable.

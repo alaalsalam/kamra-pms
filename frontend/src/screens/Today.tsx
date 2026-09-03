@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { qty } from "../lib/i18n"
 import {
   BedDouble,
   LogIn,
@@ -106,7 +107,7 @@ function ReservationList(props: {
             </div>
             <div className="mt-0.5 text-xs text-zinc-500">
               {row.room ? `Room ${row.room.split("-").pop()}` : "Unassigned"} ·{" "}
-              {row.nights} night{row.nights === 1 ? "" : "s"} · {row.adults} ad
+              {qty(row.nights, "night")} · {row.adults} ad
               {row.children ? ` + ${row.children} ch` : ""}
               {row.eta && ` · ETA ${row.eta}`}
               {row.booked_by_name && (
@@ -242,8 +243,7 @@ function InHouseTable({
                   )}
                 </td>
                 <td className="py-2.5 text-zinc-500">
-                  {row.nights} night{row.nights === 1 ? "" : "s"} · {row.adults}{" "}
-                  adult{row.adults === 1 ? "" : "s"}
+                  {qty(row.nights, "night")} · {qty(row.adults, "adult")}
                 </td>
                 <td className="py-2.5 pr-1 text-right">
                   <div className="tabular-nums text-zinc-600">

@@ -879,7 +879,7 @@ export default function POS() {
           <div className="min-h-0 overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm lg:col-span-5">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
-                <h2 className="font-bold text-navy-900">{t("Menu")}</h2>
+                <h2 className="font-bold text-zinc-900">{t("Menu")}</h2>
                 <p className="text-xs text-zinc-400">{allItems.length} {t("available items")}</p>
               </div>
             </div>
@@ -1233,10 +1233,10 @@ function RunningStrip({
     <div className="flex gap-2 overflow-x-auto pb-1">
       {open.map((o) => {
         const tone = !o.kot_fired
-          ? "border-amber-400 bg-amber-50 text-amber-950"
+          ? "border-amber-400 bg-amber-50 text-amber-900"
           : o.pending > 0
-            ? "border-sky-400 bg-sky-50 text-sky-950"
-            : "border-emerald-400 bg-emerald-50 text-emerald-950"
+            ? "border-sky-400 bg-sky-50 text-sky-900"
+            : "border-emerald-400 bg-emerald-50 text-emerald-900"
         const tag = !o.kot_fired ? "Not fired" : o.pending > 0 ? "In kitchen" : "Ready / unpaid"
         return (
           <button key={o.name} onClick={() => onOpen(o.name)}
@@ -1282,7 +1282,7 @@ function MenuCard({ it, onAdd }: { it: MenuItem; onAdd: () => void }) {
         <div className="flex items-start gap-1.5">
           <Leaf className={"mt-0.5 size-3.5 shrink-0 " + (it.is_veg ? "text-emerald-600" : "text-rose-500")} />
           <span className="min-w-0 flex-1">
-            <span dir="auto" className="block text-sm font-semibold leading-snug text-navy-900">{primary}</span>
+            <span dir="auto" className="block text-sm font-semibold leading-snug text-zinc-900">{primary}</span>
             {secondary && <span dir="auto" className="mt-0.5 block truncate text-[10px] text-zinc-400">{secondary}</span>}
           </span>
         </div>

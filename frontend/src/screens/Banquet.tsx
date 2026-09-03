@@ -7,6 +7,7 @@
     its own sheet at /banquet/:name. */
 
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { qty } from "../lib/i18n"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import {
   AlertTriangle,
@@ -468,7 +469,7 @@ function PipelineBoard({ data }: { data: BanquetPipeline | null }) {
                       )}
                       <span className="text-zinc-400">
                         {" "}
-                        · {m.count} function{m.count === 1 ? "" : "s"} ·{" "}
+                        · {qty(m.count, "function")} ·{" "}
                         {m.pax} pax
                       </span>
                     </span>

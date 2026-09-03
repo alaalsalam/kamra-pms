@@ -8,7 +8,7 @@ import { SignaturePad } from "../components/SignaturePad"
 import { IdDocumentField } from "../components/IdDocumentField"
 import { GuestLaundryCard } from "./laundry/GuestLaundryCard"
 import { adoptUiLocale } from "../lib/money"
-import { useT } from "../lib/i18n"
+import { useT, qty } from "../lib/i18n"
 
 
 /** Downscale a picked/captured photo so the upload stays small (max edge
@@ -218,9 +218,7 @@ export default function PublicCheckin() {
           </p>
           <p className="mt-1 flex items-center gap-2 text-zinc-500">
             <CalendarDays className="size-4" aria-hidden />
-            {stay.check_in_date} → {stay.check_out_date} · {stay.nights} night
-            {stay.nights === 1 ? "" : "s"} · {stay.adults} adult
-            {stay.adults === 1 ? "" : "s"}
+            {stay.check_in_date} → {stay.check_out_date} · {qty(stay.nights, "night")} · {qty(stay.adults, "adult")}
             {stay.children ? ` + ${stay.children} child` : ""}
           </p>
           <p className="mt-1 flex items-center gap-2 text-zinc-500">

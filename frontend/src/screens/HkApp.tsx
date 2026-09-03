@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { qty } from "../lib/i18n"
 import { BedDouble, LogOut, Plane, RefreshCw, Star, Clock, PackageSearch } from "lucide-react"
 import {
   call,
@@ -264,7 +265,7 @@ export default function HkApp() {
         {view === "mine" && (
           <>
             <p className="mb-3 px-1 text-sm text-zinc-500">
-              {mine.length} task{mine.length === 1 ? "" : "s"} for you - arrivals first
+              {qty(mine.length, "task")} for you - arrivals first
             </p>
             <ul className="space-y-3">
               {mine.map((t) => <TaskCard key={t.name} t={t} />)}

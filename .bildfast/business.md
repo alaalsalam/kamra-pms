@@ -228,3 +228,8 @@ that records both human and AI actions with a headline "minutes saved" metric.
   Saudi segments, 9-role RBAC + demo users, 9 modules, use cases, journeys, business rules, KPIs, demo scope,
   differentiation, risks/limits and readiness. Reflects the current identity (HotelPMS wordmark, navy/gold,
   Arabic-first default) as of commit `8546470`.
+- **2026-09-04** — UX/UI improvement round (live, screenshot-verified): fixed POS dark-mode contrast on the
+  open-bill cards + menu text; removed the stray English plural "s" in the Arabic UI via a `qty()` i18n helper
+  (Today/CRS/GuestJourney/PublicCheckin/Banquet/HkApp); filled visible Arabic catalogue gaps ("My Tasks",
+  "Completed", empty states). No API/RBAC/backend/data change. Owner-decision items logged in project-memory
+  §18 (demo-reset banner accuracy, bilingual seed strings, Saudi demo guest names).

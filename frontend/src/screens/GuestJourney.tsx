@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { qty } from "../lib/i18n"
 import {
   ArrowLeft,
   Bot,
@@ -210,7 +211,7 @@ function MergePanel(props: {
                   <span className="font-medium">{h.full_name}</span>
                   <span className="ml-auto text-xs text-zinc-400">
                     {h.phone ? `${h.phone} · ` : ""}
-                    {h.stays} stay{h.stays === 1 ? "" : "s"}
+                    {qty(h.stays, "stay")}
                   </span>
                 </button>
               </li>
@@ -415,7 +416,7 @@ export default function GuestJourney() {
                   <span className="text-zinc-500">
                     {r.room_type?.split("-").pop()}
                     {r.room ? ` · Room ${r.room.split("-").pop()}` : ""} ·{" "}
-                    {r.nights} night{r.nights === 1 ? "" : "s"}
+                    {qty(r.nights, "night")}
                   </span>
                   {r.company && <Badge tone="zinc">{r.company}</Badge>}
                   <span className="ml-auto flex items-center gap-3">

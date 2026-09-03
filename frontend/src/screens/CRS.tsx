@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { qty } from "../lib/i18n"
 import { Search, BedDouble, MapPin, Loader2 } from "lucide-react"
 import { call } from "../lib/api"
 import { serverError } from "../lib/resource"
@@ -164,10 +165,9 @@ export default function CRS() {
       {data && (
         <div className="space-y-3">
           <p className="text-sm text-zinc-500">
-            {data.properties.length} propert
-            {data.properties.length === 1 ? "y" : "ies"} with space ·{" "}
-            {data.nights} night{data.nights === 1 ? "" : "s"},{" "}
-            {data.adults} adult{data.adults === 1 ? "" : "s"}
+            {qty(data.properties.length, "property", "properties")} with space ·{" "}
+            {qty(data.nights, "night")},{" "}
+            {qty(data.adults, "adult")}
             {data.children ? `, ${data.children} children` : ""}
           </p>
           {data.properties.length === 0 && (
