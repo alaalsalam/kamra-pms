@@ -1259,6 +1259,7 @@ function RunningStrip({
 
 function MenuCard({ it, onAdd }: { it: MenuItem; onAdd: () => void }) {
   const { t } = useT()
+  const [imgError, setImgError] = useState(false)
   const parts = it.item_name.split("|").map((part) => part.trim()).filter(Boolean)
   const arabic = document.documentElement.dir === "rtl"
   const primary = arabic ? parts[0] : (parts[1] || parts[0])
@@ -1267,8 +1268,8 @@ function MenuCard({ it, onAdd }: { it: MenuItem; onAdd: () => void }) {
     <button onClick={onAdd}
       className="group overflow-hidden rounded-xl border border-zinc-200 bg-white text-start transition duration-200 hover:-translate-y-0.5 hover:border-gold-400 hover:shadow-md focus-visible:outline-2 focus-visible:outline-gold-500">
       <div className="relative h-28 overflow-hidden bg-navy-50">
-        {it.image ? (
-          <img src={it.image} alt={primary} loading="lazy" className="size-full object-cover transition duration-300 group-hover:scale-105" />
+        {it.image && !imgError ? (
+          <img src={it.image} alt={primary} loading="lazy" onError={() => setImgError(true)} className="size-full object-cover transition duration-300 group-hover:scale-105" />
         ) : (
           <div className="flex size-full items-center justify-center bg-gradient-to-br from-navy-50 to-gold-50 text-navy-300">
             <UtensilsCrossed className="size-8" />

@@ -269,11 +269,11 @@ export default function AppShell() {
 
       <div className="min-w-0 flex-1">
         {!kiosk && (
-        <header className="sticky top-0 z-40 flex items-center gap-2 border-b border-zinc-200 bg-white px-4 py-2.5">
+        <header className="sticky top-0 z-40 flex flex-wrap items-center gap-2 border-b border-zinc-200 bg-white px-4 py-2.5">
           <AppSwitcher apps={apps} current={currentApp ?? apps[0]} />
           {properties.length > 1 ? (
             <select
-              className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium focus:outline-2 focus:outline-brand-600"
+              className="max-w-[13rem] truncate rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium focus:outline-2 focus:outline-brand-600 lg:max-w-none"
               value={property}
               onChange={(e) => switchProperty(e.target.value)}
               aria-label="Property"

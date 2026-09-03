@@ -248,6 +248,11 @@ Billing, HkApp (mobile), Revenue, Banquet, Settings. **No API/RBAC/backend/data 
 - **Untranslated strings on the Arabic-default UI** (more visible since the Arabic-first switch at `8546470`):
   added `ar.ts` entries "My Tasks"→"مهامي", "Completed"→"مكتمل", the two Today empty states, and the HK
   tasks-header tail.
+- **Tablet header overflow** — the AppShell top header (`flex … gap-2`, no wrap) plus an unconstrained
+  property `<select>` (long bilingual label) pushed content past the viewport at ~768–1024px (horizontal
+  scroll on every authed screen). Added `flex-wrap` + a responsive `max-w`/`truncate` on the select
+  (`lg:max-w-none` keeps it full on desktop). Also added an `onError` fallback to the POS menu card
+  (defensive — swaps to the utensils icon if a menu photo URL fails). (`AppShell.tsx`, `screens/POS.tsx`)
 
 **Verification:** `tsc -b` clean; `npm run build` clean; live re-checks confirmed legible POS dark cards,
 "2 ليالٍ · 2 بالغون" (no stray s), Arabic empty states, "مهامي"/"مكتمل"; 0 console errors, no horizontal
@@ -262,6 +267,11 @@ audit, which can't be driven mid-session.)
 - Public pages render bilingual "AR | EN" seed strings raw (title/amenities/description) — a content-model
   choice; consider one language per direction.
 - Demo guest names are largely Indian (Vikram/Sneha/Priya…), off-brand for a Saudi demo — a seed-data polish.
+- Full staff dashboards still overflow horizontally at phone widths (~390px), driven by wide data tables and
+  multi-column content that don't collapse below `lg` (e.g. the Today in-house table). The sidebar already
+  collapses on mobile and the header now wraps; a proper phone pass (wrap wide tables in `overflow-x-auto`,
+  responsive card grids) is a larger follow-up. Staff screens target tablet/desktop; phone users have the
+  dedicated mobile-clean experiences (public booking, `/hk`, POS kiosk). Tablet (~834px) is fixed.
 - Remaining English-heavy i18n gaps (Kitchen KDS labels LATE/MAIN/DESSERT/cooking, the Billing folios
   subtitle whose `ar.ts` key hardcodes "GST" vs the Saudi "VAT", night-audit summary sentences) — the same
   `qty()`/`ar.ts` technique applies; deferred to keep this change reviewable.
