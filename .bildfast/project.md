@@ -8,7 +8,7 @@ HotelPMS is a bilingual Arabic/English hotel-management system for Saudi and reg
 
 - Customer-facing product name: **HotelPMS**.
 - Arabic display treatment: **هوتل PMS**; keep `PMS` in Latin letters and brand gold.
-- Brand palette: deep navy `#082B5C` with warm gold `#B8892E`.
+- Brand palette: deep navy `#082B5C`, wordmark gold `#B8892E`, and interface champagne gold `#C9A24B` (`gold-500`).
 - Public booking and operational screens must be responsive, polished and marketing-ready.
 
 ## Stack and locations

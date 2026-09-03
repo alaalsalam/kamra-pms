@@ -36,7 +36,7 @@ current version **2.6.0** (patch-first release cadence).
 - Visible product name **HotelPMS**; Arabic treatment **هوتل PMS** (keep `PMS` Latin + brand color).
 - **Internal namespace `hotelpms` (package, routes, API methods) is a compatibility contract — keep it, never rebrand it in code.** Only visible UI text is "HotelPMS".
 - Currency **SAR**, Saudi **VAT 15%** for the demo; tax/locale come from the per-property localization pack, never hardcoded in core.
-- **Approved identity palette:** deep navy `--color-brand-600: #082B5C` + warm gold `--color-gold-500: #B8892E`. `brand.ts` sets `BRAND_NAME="Hotel"`, `BRAND_FULL_NAME="HotelPMS"`, logo `/assets/hotelpms/hotelpms-mark.svg`.
+- **Approved identity palette:** deep navy `--color-brand-600: #082B5C`, wordmark gold `#B8892E`, and lighter interface champagne `--color-gold-500: #C9A24B`. The two gold tones are intentional. `brand.ts` sets `BRAND_NAME="Hotel"`, `BRAND_FULL_NAME="HotelPMS"`, logo `/assets/hotelpms/hotelpms-mark.svg`.
 - Prefer Frappe DocTypes + whitelisted methods; keep role gates + permission checks. Python uses **tabs**. Extend the existing app — never scaffold a replacement.
 
 ---
@@ -212,6 +212,6 @@ WhatsApp Message (all carry optional `reservation` back-link).
 
 1. Preserve the completed technical rebrand in reviewed commits and never restore the pre-rebrand package tree.
 2. **Substantive work → `@bildfast-epic`** (agile: draft epic + stories from `project.md`/`contracts/*`, user approves, then `@bildfast-story` builds each story's FE+BE together). Small obvious tweaks inline.
-3. Keep the internal `hotelpms` namespace; only visible text becomes HotelPMS. Preserve the approved navy `#082B5C` + gold `#B8892E` identity.
+3. Keep the internal `hotelpms` namespace; only visible text becomes HotelPMS. Preserve navy `#082B5C`, wordmark gold `#B8892E`, and interface gold `#C9A24B`.
 4. `business.md` / `tests.md` are **user-owned** — propose filling them from the real app for approval; never edit silently.
 5. After visible changes, the orchestrator builds (`bench build --app hotelpms` / `npm run build`) — SPA at `/hotelpms`, preview `hotelpms.yemenfrappe.com/hotelpms/book`.
