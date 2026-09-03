@@ -46,6 +46,11 @@
 
 html {
   font-feature-settings: "tnum" 1; /* tabular numbers for counts and money */
+  font-synthesis: none;
+}
+
+body {
+  font-family: "Manrope Variable", "Segoe UI", Arial, sans-serif;
 }
 
 /* Arabic is a first-class product direction, not just translated labels.
@@ -53,7 +58,7 @@ html {
    few physical Tailwind utilities used for sidebars, popovers and input
    icons. Numbers and technical identifiers deliberately stay LTR. */
 html[dir="rtl"] body {
-  font-family: "Noto Sans Arabic", "Noto Kufi Arabic", Tahoma, Arial, sans-serif;
+  font-family: "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif;
   letter-spacing: normal;
 }
 

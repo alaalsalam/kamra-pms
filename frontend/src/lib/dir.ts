@@ -10,7 +10,9 @@ const KEY = "hotelpms-lang"
 export const getLang = (): Lang => {
   const stored = localStorage.getItem(KEY)
   if (stored === "ar" || stored === "en") return stored
-  return navigator.language.toLowerCase().startsWith("ar") ? "ar" : "en"
+  // HotelPMS is presented to the Saudi market first. New devices start in
+  // Arabic; the language switch remains persistent for guests who choose EN.
+  return "ar"
 }
 
 export function applyLang(l: Lang) {

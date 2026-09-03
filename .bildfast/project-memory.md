@@ -33,10 +33,15 @@ current version **2.6.0** (patch-first release cadence).
 
 ## 3. Branding & non-negotiable conventions
 
-- Visible product name **HotelPMS**; Arabic treatment **هوتل PMS** (keep `PMS` Latin + brand color).
+- Visible product wordmark is always exact Latin **HotelPMS** (never translated,
+  reordered or duplicated); `PMS` remains gold while surrounding interface copy is translated.
 - **Internal namespace `hotelpms` (package, routes, API methods) is a compatibility contract — keep it, never rebrand it in code.** Only visible UI text is "HotelPMS".
 - Currency **SAR**, Saudi **VAT 15%** for the demo; tax/locale come from the per-property localization pack, never hardcoded in core.
 - **Approved identity palette:** deep navy `--color-brand-600: #082B5C`, wordmark gold `#B8892E`, and lighter interface champagne `--color-gold-500: #C9A24B`. The two gold tones are intentional. `brand.ts` sets `BRAND_NAME="Hotel"`, `BRAND_FULL_NAME="HotelPMS"`, logo `/assets/hotelpms/hotelpms-mark.svg`.
+- **Approved mark (2026-09-04):** a navy rounded hospitality-gateway tile with
+  gold portal and arrival line, an ivory `H`, and a central guest door. Arabic UI
+  uses bundled `IBM Plex Sans Arabic`; English/Latin uses bundled `Manrope`.
+  Arabic is the first-visit default and the language switch persists user choice.
 - Prefer Frappe DocTypes + whitelisted methods; keep role gates + permission checks. Python uses **tabs**. Extend the existing app — never scaffold a replacement.
 
 ---

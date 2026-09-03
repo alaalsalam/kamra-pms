@@ -504,9 +504,9 @@ def _html_shell(title: str, body: str) -> str:
   select {{ width:100%; padding:.55rem .7rem; border:1px solid #ccc; border-radius:8px; }}
   .row {{ display:flex; gap:.6rem; margin-top: 1.25rem; }}
   button {{ flex:1; padding:.7rem 1rem; border:0; border-radius:999px;
-            background:#1E7B4F; color:#fff; font-weight:600; cursor:pointer; }}
+            background:#C9A24B; color:#061F45; font-weight:700; cursor:pointer; }}
   button.ghost {{ background:#fff; color:#333; border:1px solid #ccc; }}
-  a {{ color:#1E7B4F; }}
+  a {{ color:#082B5C; }}
 </style>
 </head>
 <body><main><h1>{frappe.utils.escape_html(title)}</h1>{body}</main></body>

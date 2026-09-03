@@ -1,7 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 270" role="img" aria-labelledby="title">
-  <title id="title">HotelPMS — Hospitality Management System</title>
-  <defs><linearGradient id="gold" x1="0" x2="1"><stop stop-color="#9D7020"/><stop offset=".5" stop-color="#D1A54B"/><stop offset="1" stop-color="#B8892E"/></linearGradient></defs>
-  <g transform="translate(28 16)"><path fill="#082B5C" d="M8 204V105l30-25v124H8Zm38 0V72l34-29v161H46Zm42 0V25l26-22 26 22v179h-22v-64h-8v64H84Zm76 0V72l34 29v103h-34Zm-30 0V80l22 19v105h-22Z"/><path fill="url(#gold)" d="M94 204v-69c0-14 9-25 20-25s20 11 20 25v69h-10v-69c0-8-4-15-10-15s-10 7-10 15v69H94Z"/><path fill="url(#gold)" d="M0 213c30-13 59-19 115-19s85 6 115 19c-36-7-74-10-115-10S36 206 0 213Z"/></g>
-  <text x="260" y="136" fill="#082B5C" font-family="Arial, Helvetica, sans-serif" font-size="95" font-weight="600" letter-spacing="-3">Hotel</text><text x="510" y="136" fill="#B8892E" font-family="Arial, Helvetica, sans-serif" font-size="95" font-weight="600" letter-spacing="-3">PMS</text>
-  <text x="266" y="183" fill="#082B5C" font-family="Arial, Helvetica, sans-serif" font-size="27" letter-spacing="5">HOSPITALITY MANAGEMENT SYSTEM</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 200" role="img" aria-labelledby="t">
+  <title id="t">HotelPMS — Hospitality Management System</title>
+  <defs>
+    <linearGradient id="g" x1="28" y1="22" x2="101" y2="107" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e6c77f"/>
+      <stop offset=".52" stop-color="#c9a24b"/>
+      <stop offset="1" stop-color="#9d7020"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(16 18) scale(1.28)">
+    <rect x="5" y="5" width="118" height="118" rx="30" fill="#061f45"/>
+    <rect x="7" y="7" width="114" height="114" rx="28" fill="none" stroke="url(#g)" stroke-width="2" opacity=".72"/>
+    <path d="M29 96V58c0-15 14-27 35-36 21 9 35 21 35 36v38" fill="none" stroke="url(#g)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M46 93V59M82 93V59M46 73H82" fill="none" stroke="#fffaf0" stroke-width="7" stroke-linecap="round"/>
+    <path d="M58 96V85c0-5 3-8 6-8s6 3 6 8v11" fill="none" stroke="url(#g)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M25 101c24-8 54-8 78 0" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <text x="205" y="105" fill="#082B5C" font-family="Manrope, 'Avenir Next', Arial, sans-serif" font-size="76" font-weight="650" letter-spacing="-3"><tspan>Hotel</tspan><tspan fill="#B8892E">PMS</tspan></text>
+  <text x="209" y="145" fill="#5b6572" font-family="Manrope, Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="5">HOSPITALITY MANAGEMENT SYSTEM</text>
 </svg>

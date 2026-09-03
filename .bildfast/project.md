@@ -7,8 +7,14 @@ HotelPMS is a bilingual Arabic/English hotel-management system for Saudi and reg
 ## Product identity
 
 - Customer-facing product name: **HotelPMS**.
-- Arabic display treatment: **هوتل PMS**; keep `PMS` in Latin letters and brand gold.
+- The product wordmark is always the exact Latin **HotelPMS**; never translate,
+  split, duplicate or reorder it. `PMS` stays brand gold. Interface copy may be Arabic.
 - Brand palette: deep navy `#082B5C`, wordmark gold `#B8892E`, and interface champagne gold `#C9A24B` (`gold-500`).
+- Brand mark: navy hospitality-gateway tile with a gold portal, ivory `H`, central
+  guest door and curved arrival line. Do not restore the former tower or bare-H marks.
+- Typography: `IBM Plex Sans Arabic` for Arabic UI; `Manrope` for English, Latin
+  identifiers and the wordmark. Both are bundled locally in the frontend.
+- Arabic is the default on new devices; an explicit English choice is remembered.
 - Public booking and operational screens must be responsive, polished and marketing-ready.
 
 ## Stack and locations

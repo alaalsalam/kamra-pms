@@ -1,14 +1,18 @@
 # HotelPMS brand assets
 
-The mark: a door opening into a **K** — hotelpms means *room*.
+The mark is a **hospitality gateway**: a welcoming hotel portal containing a
+precise **H**, with a small central guest door and a curved arrival line. The
+navy tile keeps the identity legible on both light and dark product surfaces.
 
 ## Palette
 
 | Token | Hex | Use |
 |---|---|---|
-| HotelPMS Green | `#1E7B4F` | mark, accents, PMS tag |
-| Mint | `#56C589` | the door dot |
-| Ink | `#1C3F38` | wordmark |
+| HotelPMS Navy | `#061F45` | mark tile, premium product chrome |
+| Deep Navy | `#082B5C` | wordmark and interface identity |
+| Champagne Gold | `#C9A24B` | portal, hospitality accent |
+| Wordmark Gold | `#B8892E` | `PMS` in the wordmark |
+| Warm Ivory | `#FFFAF0` | the H inside the gateway |
 
 ## Files
 
@@ -21,8 +25,8 @@ The mark: a door opening into a **K** — hotelpms means *room*.
 
 ## Notes
 
-- Wordmark font: geometric sans (Poppins SemiBold preferred; lockup SVGs
-  fall back to Avenir Next/Montserrat). Before print/press use, convert
+- Wordmark font: **Manrope SemiBold** (bundled in the web app; lockup SVGs
+  fall back to Avenir Next/Arial). Before print/press use, convert
   the text to outlines in the SVGs.
 - Regenerate PNGs: see `render-logos.mjs` pattern (sharp) — render from
   the SVGs at 300dpi density.

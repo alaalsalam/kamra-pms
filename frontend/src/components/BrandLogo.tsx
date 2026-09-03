@@ -4,8 +4,8 @@ import { cn } from "../lib/utils"
 
 type Tone = "auto" | "light" | "dark"
 
-/** The gold "H" mark, rendered inline so it scales crisply and never fetches
- *  a file. Same geometry as the static /assets/hotelpms/hotelpms-mark.svg. */
+/** HotelPMS hospitality gateway: a hotel portal containing a precise H.
+ * Rendered inline so it remains sharp, fast and identical to the static mark. */
 export function BrandMark({
   size = 32,
   className,
@@ -18,33 +18,31 @@ export function BrandMark({
   const gid = useId()
   return (
     <svg
-      viewBox="0 0 120 112"
+      viewBox="0 0 128 128"
       role="img"
       aria-label={title}
       style={{ width: size, height: size }}
       className={className}
     >
       <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#e0bf79" />
-          <stop offset=".5" stopColor="#c9a24b" />
-          <stop offset="1" stopColor="#a9822f" />
+        <linearGradient id={gid} x1="28" y1="22" x2="101" y2="107" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#e6c77f" />
+          <stop offset=".52" stopColor="#c9a24b" />
+          <stop offset="1" stopColor="#9d7020" />
         </linearGradient>
       </defs>
-      <g fill={`url(#${gid})`}>
-        <path d="M60 6 L64.5 17.5 L76 22 L64.5 26.5 L60 38 L55.5 26.5 L44 22 L55.5 17.5 Z" />
-        <rect x="20" y="40" width="15" height="54" rx="5" />
-        <rect x="85" y="40" width="15" height="54" rx="5" />
-        <rect x="30" y="61" width="60" height="12" rx="6" />
-        <path d="M18 101 C42 93 78 93 102 101 C78 97 42 97 18 101 Z" />
-      </g>
+      <rect x="5" y="5" width="118" height="118" rx="30" fill="#061f45" />
+      <rect x="7" y="7" width="114" height="114" rx="28" fill="none" stroke={`url(#${gid})`} strokeWidth="2" opacity=".72" />
+      <path d="M29 96V58c0-15 14-27 35-36 21 9 35 21 35 36v38" fill="none" stroke={`url(#${gid})`} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M46 93V59M82 93V59M46 73H82" fill="none" stroke="#fffaf0" strokeWidth="7" strokeLinecap="round" />
+      <path d="M58 96V85c0-5 3-8 6-8s6 3 6 8v11" fill="none" stroke={`url(#${gid})`} strokeWidth="5" strokeLinecap="round" />
+      <path d="M25 101c24-8 54-8 78 0" fill="none" stroke={`url(#${gid})`} strokeWidth="4" strokeLinecap="round" />
     </svg>
   )
 }
 
-/** Full lockup: gold mark + "Hotel PMS" wordmark (+ optional tagline).
- *  "Hotel" is a translatable node (→ "هوتل" in Arabic per the brand rule);
- *  "PMS" always stays Latin gold. `tone` picks the wordmark colour:
+/** Full lockup: gateway + exact HotelPMS wordmark (+ optional tagline).
+ *  HotelPMS always stays Latin and PMS stays gold. `tone` picks the colour:
  *   - "auto"  navy on light / white on dark (default, for normal surfaces)
  *   - "dark"  white — for fixed navy chrome that stays navy in both themes
  *   - "light" navy  — for permanently light surfaces */
@@ -80,12 +78,12 @@ export function BrandLogo({
       {showWordmark && (
         <span className="flex flex-col leading-none">
           <span
-            className={cn("font-semibold tracking-tight", wordTone)}
+            className={cn("font-semibold tracking-[-0.04em]", wordTone)}
             dir="ltr"
             translate="no"
             data-no-translate
           >
-            <span style={{ fontSize: size * 0.62 }}>
+            <span style={{ fontFamily: "'Manrope Variable', sans-serif", fontSize: size * 0.61 }}>
               <span>Hotel</span>
               <span className="text-gold" data-no-translate>
                 PMS
@@ -95,7 +93,7 @@ export function BrandLogo({
           {tagline && (
             <span
               className={cn(
-                "mt-1 text-[9px] font-medium uppercase tracking-[0.22em]",
+                "mt-1 text-[8px] font-semibold uppercase tracking-[0.18em]",
                 tagTone,
               )}
             >
