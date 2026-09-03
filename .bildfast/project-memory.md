@@ -3,7 +3,8 @@
 > A complete, durable conception of the whole project, assembled from a full read of the codebase
 > (backend Python, ~78 DocTypes, the React SPA, config/RBAC, tests, seed data, docs, build tooling).
 > This is a **reference/context document** — not user-owned spec (that's `business.md` / `tests.md`).
-> Last assembled: 2026-09-03.
+> Last assembled: 2026-09-03; reviewed & corrected 2026-09-04 (identity refresh at `8546470`, demo users,
+> Arabic-first default, fonts, and the authored `business.md`).
 
 ---
 
@@ -137,9 +138,9 @@ WhatsApp Message (all carry optional `reservation` back-link).
 
 **Metadata-driven screens:** `ResourceScreen.tsx` + `screens/configs.ts` (~24 `ScreenConfig`s) render list+search+filters+pagination+CSV + a Sheet form from `FieldSpec[]` — used for rooms, room-types, rate-plans, seasons, vouchers, meal-plans, guardrails, companies, travel-agents, venues, events, groups, room-blocks, outlets, channels, housekeeping, reservations, menu-items, etc., with bespoke panels (ReservationDetail, BillingRulesEditor, EventLinks, GroupControl, RoomTypeMedia).
 
-**Cross-cutting libs:** `auth.tsx` (session; network errors don't sign you out), `i18n.ts` + `translations/ar.ts` (**English-first**; a MutationObserver live-translates the whole DOM to Arabic — only the AR catalog exists), `dir.ts` (RTL), `routing.ts`, `brand.ts` (rebrand), `money.ts` (SAR/VAT from property locale, defaults Saudi), `theme.ts` (light/dark/system), `realtime.ts` (socket.io → polling fallback), `phone.ts`, `kiosk.ts`, `thermal.ts` (80mm KOT/bill print), `accents.ts`, `markdown.tsx` (XSS-safe). Reusable components: BookingDialog, CheckInDialog, CalendarView, CommandPalette, AssistantPanel, HelpPanel, SignaturePad, IdDocumentField (private upload), ImageField, ConnectionBanner, LanguageToggle, EditableNationality, LinkedRecords, EventLinks, GroupControl, BillingRulesEditor, RoomTypeMedia, CancelPanel. `components/ui/` is a small local shadcn-style primitive set (avatar, badge, button, card, sheet, sparkline, stat-card) — **not a full shadcn install**.
+**Cross-cutting libs:** `auth.tsx` (session; network errors don't sign you out), `i18n.ts` + `translations/ar.ts` (source strings are **English**; a MutationObserver live-translates the whole DOM to Arabic from the AR catalog — only the AR catalog exists — so **any new user-visible string must get an `ar.ts` entry** or it ships untranslated), `dir.ts` (RTL; the **runtime default is now Arabic-first** — `getLang()` returns `"ar"` on new devices and persists an explicit EN choice, changed at `8546470`), `routing.ts`, `brand.ts` (rebrand), `money.ts` (SAR/VAT from property locale, defaults Saudi), `theme.ts` (light/dark/system), `realtime.ts` (socket.io → polling fallback), `phone.ts`, `kiosk.ts`, `thermal.ts` (80mm KOT/bill print), `accents.ts`, `markdown.tsx` (XSS-safe). Reusable components: BookingDialog, CheckInDialog, CalendarView, CommandPalette, AssistantPanel, HelpPanel, SignaturePad, IdDocumentField (private upload), ImageField, ConnectionBanner, LanguageToggle, EditableNationality, LinkedRecords, EventLinks, GroupControl, BillingRulesEditor, RoomTypeMedia, CancelPanel. `components/ui/` is a small local shadcn-style primitive set (avatar, badge, button, card, sheet, sparkline, stat-card) — **not a full shadcn install**.
 
-**Styling** (`index.css`): Tailwind v4 `@theme` tokens; navy+gold brand ramps; `.dark` remaps all vars; `@media print` forces paper-white + hides chrome (clean GRC/invoice/BEO print); first-class RTL (Arabic font stack, mirrored physical utilities, LTR-forced number/email/tel inputs); tabular numbers; reduced-motion guards.
+**Styling** (`index.css`): Tailwind v4 `@theme` tokens — `brand-*` (navy accent that INVERTS in dark), fixed `navy-*` chrome, champagne `gold-*`, warm `zinc-*` neutrals; brand helpers `.btn-gold` (gold CTA, navy label ≈AA), `.card-lux`, `.text-gold`, `.rule-gold`, `.hero-scrim`, `.cv-auto`; `.dark` remaps all vars; `@media print` forces paper-white + hides chrome (clean GRC/invoice/BEO print). **Bundled fonts:** `Manrope` (Latin/wordmark), `IBM Plex Sans Arabic` (RTL body). First-class RTL: **only a fixed whitelist of physical utilities is mirrored** (`.left-2/2.5/3/4`, `.right-2/3/4`, `.ml-/mr-auto`, `.border-l/r`, `input.pl-8/9/10`) — new spacing should prefer logical utilities (`ps-*`/`pe-*`/`start-*`/`end-*`) to avoid silent RTL breakage; LTR-forced number/email/tel/date inputs; tabular numbers; reduced-motion guards.
 
 ---
 
@@ -174,7 +175,10 @@ WhatsApp Message (all carry optional `reservation` back-link).
 - `seed_arabic_demo.py` — polishes into bilingual **"فندق نُزُل الرياض | Nuzul Riyadh Hotel"** (SAR, gallery, FAQ, brand). Default frontend property.
 - `provision.py` — paying-tenant path (one real property + owner + purchased modules; **no** demo data).
 - `reset_demo.py` — daily wipe/reseed of the public sandbox. **Guarded** by `is_playground()`: needs `hotelpms_demo_mode == "1"` **AND** site in `PLAYGROUND_SITES` (incl. `hotelpms.yemenfrappe.com`) or `.localhost`. **On `hotelpms.yemenfrappe.com`, `hotelpms_demo_mode` is NOT set in `site_config.json` → the scheduled reset is currently a silent no-op.** A real tenant can never trip it.
-- Demo logins: admin@/gm@/frontdesk@/revenue@/finance@/hk@ `hotelpms.local`.
+- Demo logins (`seed_users.py`, all `@hotelpms.local`, one per role): `admin@` (System Manager), `gm@`
+  (Hotel Admin), `frontdesk@` (Front Desk), `revenue@` (Revenue Manager), `finance@` (Finance),
+  **`housekeeping@`** (Housekeeping — NOT `hk@`), **`pos@`** (Restaurant POS), **`kitchen@`** (Kitchen). The
+  login screen exposes one-tap quick-login for all of them. Passwords follow `HotelPMS<Role>1!`.
 
 ---
 
@@ -208,7 +212,7 @@ WhatsApp Message (all carry optional `reservation` back-link).
 
 ## 16. Current working state (after the technical rebrand)
 
-- BildFast mode = **agile** (no waterfall phase gating). `.bildfast/`: `project.md` + `contracts/*` are real spec; `business.md`, `architecture.md`, `tests.md`, `performance.md` are still **unfilled starter templates** (a gap vs the mature app). `plans/` and `epics/` empty.
+- BildFast mode = **agile** (no waterfall phase gating). `.bildfast/`: `project.md` + `contracts/*` are real spec; **`business.md` is now a full authored analysis** (2026-09-04, owner-authorized). `architecture.md`, `tests.md`, `performance.md` remain **starter templates** (a gap vs the mature app). `plans/` and `epics/` empty.
 - **Rebrand state:** canonical folder, Python package, Frappe app, database, site, routes, assets and demo identities are all `hotelpms` / `HotelPMS`. The legacy duplicate database and account were removed after a successful full backup. Production assets were rebuilt and the live role journeys were browser-tested.
 
 ---
