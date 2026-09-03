@@ -1,12 +1,41 @@
 @import "tailwindcss";
 
 @theme {
-  /* Kamra brand: deep hotel green, warm neutrals */
-  --color-brand-50: #ecf7f2;
-  --color-brand-100: #d2ece0;
-  --color-brand-600: #0f6b54;
-  --color-brand-700: #0b5442;
-  --color-brand-900: #073527;
+  /* HotelPMS identity: deep navy for trust, warm champagne gold for
+     hospitality. Two families:
+       brand-*  = accent that INVERTS in dark (readable navy↔sky).
+       navy-*   = fixed chrome; the SAME value in light and dark so headers,
+                  footers and summary panels stay navy in both modes.
+     Adding a step here makes bg-/text-/border- utilities for it automatically. */
+  --color-brand-50: #f2f6fb;
+  --color-brand-100: #e1eaf5;
+  --color-brand-600: #082b5c;
+  --color-brand-700: #06244d;
+  --color-brand-900: #031733;
+
+  /* Fixed navy chrome ramp — never remapped in .dark. */
+  --color-navy-50: #eef3fa;
+  --color-navy-100: #d7e3f2;
+  --color-navy-200: #b0c6e1;
+  --color-navy-300: #7f9fc6;
+  --color-navy-500: #12406f;
+  --color-navy-600: #0e3560;
+  --color-navy-700: #0b2b50;
+  --color-navy-800: #082b5c;
+  --color-navy-900: #061f45;
+  --color-navy-950: #04152f;
+
+  /* Champagne gold ramp. gold-500 is the CTA fill (navy text on it ≈ 5.8:1
+     AA). gold-700 is the safe gold for text on light; gold-300/400 for text
+     on navy. */
+  --color-gold-50: #fbf6ea;
+  --color-gold-100: #f6e9cb;
+  --color-gold-200: #edd7a4;
+  --color-gold-300: #e0bf79;
+  --color-gold-400: #d3ab58;
+  --color-gold-500: #c9a24b;
+  --color-gold-600: #a9822f;
+  --color-gold-700: #866527;
 
   /* Neutrals carry a faint warm bias so the greys read as chosen, not the
      stock cool zinc. Dark mode + print remap these below. */
@@ -19,16 +48,138 @@ html {
   font-feature-settings: "tnum" 1; /* tabular numbers for counts and money */
 }
 
+/* Arabic is a first-class product direction, not just translated labels.
+   Flex/grid follow the document direction naturally; these rules mirror the
+   few physical Tailwind utilities used for sidebars, popovers and input
+   icons. Numbers and technical identifiers deliberately stay LTR. */
+html[dir="rtl"] body {
+  font-family: "Noto Sans Arabic", "Noto Kufi Arabic", Tahoma, Arial, sans-serif;
+  letter-spacing: normal;
+}
+
+html[dir="rtl"] .border-r {
+  border-right-width: 0;
+  border-left-width: 1px;
+}
+
+html[dir="rtl"] .border-l {
+  border-left-width: 0;
+  border-right-width: 1px;
+}
+
+html[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+html[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+html[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+html[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+html[dir="rtl"] .left-0 {
+  right: 0;
+  left: auto;
+}
+
+html[dir="rtl"] .right-0 {
+  right: auto;
+  left: 0;
+}
+
+html[dir="rtl"] .left-2 {
+  right: 0.5rem;
+  left: auto;
+}
+
+html[dir="rtl"] .left-2\.5 {
+  right: 0.625rem;
+  left: auto;
+}
+
+html[dir="rtl"] .left-3 {
+  right: 0.75rem;
+  left: auto;
+}
+
+html[dir="rtl"] .left-4 {
+  right: 1rem;
+  left: auto;
+}
+
+html[dir="rtl"] .right-2 {
+  right: auto;
+  left: 0.5rem;
+}
+
+html[dir="rtl"] .right-3 {
+  right: auto;
+  left: 0.75rem;
+}
+
+html[dir="rtl"] .right-4 {
+  right: auto;
+  left: 1rem;
+}
+
+html[dir="rtl"] input.pl-8,
+html[dir="rtl"] textarea.pl-8 {
+  padding-right: 2rem;
+  padding-left: 0.75rem;
+}
+
+html[dir="rtl"] input.pl-9,
+html[dir="rtl"] textarea.pl-9 {
+  padding-right: 2.25rem;
+  padding-left: 0.75rem;
+}
+
+html[dir="rtl"] input.pl-10,
+html[dir="rtl"] textarea.pl-10 {
+  padding-right: 2.5rem;
+  padding-left: 0.75rem;
+}
+
+html[dir="rtl"] .tabular-nums,
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="date"],
+html[dir="rtl"] input[type="time"],
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="date"],
+html[dir="rtl"] input[type="time"],
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="url"] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="url"] {
+  text-align: left;
+}
+
 /* Dark mode: every utility reads its color from a CSS variable, so
    remapping the palette on .dark themes the whole app. Scrims/overlays
    use bg-black so they stay dark in both themes. */
 .dark {
   color-scheme: dark;
-  --color-white: #1c1c1f;
-  --color-zinc-50: #151517;
-  --color-zinc-100: #232326;
-  --color-zinc-200: #2f2f34;
-  --color-zinc-300: #43434a;
+  /* Surfaces carry a faint navy tint so the dark theme reads as the same
+     brand, not a generic charcoal. Text steps (400+) stay neutral. */
+  --color-white: #111722;
+  --color-zinc-50: #0b0f16;
+  --color-zinc-100: #172030;
+  --color-zinc-200: #222c3d;
+  --color-zinc-300: #33405a;
   --color-zinc-400: #8a8a93;
   --color-zinc-500: #a7a7b0;
   --color-zinc-600: #c6c6cd;
@@ -36,11 +187,16 @@ html {
   --color-zinc-800: #ebebee;
   --color-zinc-900: #f6f6f7;
   --color-zinc-950: #ffffff;
-  --color-brand-50: #10312a;
-  --color-brand-100: #154438;
-  --color-brand-600: #189776;
-  --color-brand-700: #41c39e;
-  --color-brand-900: #cdeee0;
+  --color-brand-50: #102b4f;
+  --color-brand-100: #173b68;
+  --color-brand-600: #7399ca;
+  --color-brand-700: #9cbbdf;
+  --color-brand-900: #d8e7fa;
+  /* Gold background steps go deep+warm on dark so cream chips/badges don't
+     glare. gold-300/400/500 (accents & text on navy) stay bright. */
+  --color-gold-50: #241c0e;
+  --color-gold-100: #33280f;
+  --color-gold-200: #4a3a16;
   --color-rose-50: #391521;
   --color-rose-200: #5c2537;
   --color-rose-500: #fb7185;
@@ -83,11 +239,14 @@ html {
     --color-zinc-800: #27272a;
     --color-zinc-900: #18181b;
     --color-zinc-950: #09090b;
-    --color-brand-50: #ecf7f2;
-    --color-brand-100: #d2ece0;
-    --color-brand-600: #0f6b54;
-    --color-brand-700: #0b5442;
-    --color-brand-900: #073527;
+    --color-brand-50: #f2f6fb;
+    --color-brand-100: #e1eaf5;
+    --color-brand-600: #082b5c;
+    --color-brand-700: #06244d;
+    --color-brand-900: #031733;
+    --color-gold-50: #fbf6ea;
+    --color-gold-100: #f6e9cb;
+    --color-gold-200: #edd7a4;
     --color-rose-50: #fff1f2;
     --color-rose-200: #fecdd3;
     --color-rose-500: #f43f5e;
@@ -119,9 +278,101 @@ body {
   @apply bg-zinc-50 text-zinc-900 antialiased;
 }
 
+/* ---- HotelPMS brand helpers -------------------------------------------- */
+
+/* The primary call to action: warm champagne gradient, navy label (AA), a
+   whisper of gloss. Used for "Book", "Confirm", "Search availability". */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-image: linear-gradient(
+    180deg,
+    var(--color-gold-400),
+    var(--color-gold-600)
+  );
+  color: var(--color-navy-950);
+  font-weight: 600;
+  box-shadow:
+    0 1px 2px rgba(6, 31, 69, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition:
+    filter 0.15s ease,
+    transform 0.1s ease;
+}
+.btn-gold:hover {
+  filter: brightness(1.05);
+}
+.btn-gold:active {
+  transform: translateY(1px);
+}
+.btn-gold:focus-visible {
+  outline: 2px solid var(--color-gold-500);
+  outline-offset: 2px;
+}
+.btn-gold:disabled {
+  filter: grayscale(0.4) opacity(0.6);
+  pointer-events: none;
+}
+
+/* Gold text that keeps contrast in both themes (dark on light, bright on
+   dark). Prices, emphasised figures. */
+.text-gold {
+  color: var(--color-gold-700);
+}
+.dark .text-gold {
+  color: var(--color-gold-300);
+}
+
+/* Thin gold rule to separate sections on navy or light panels. */
+.rule-gold {
+  height: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-gold-500),
+    transparent
+  );
+  opacity: 0.6;
+}
+
+/* Reads a hero image toward navy at the foot so headline text stays legible. */
+.hero-scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(4, 21, 47, 0.12) 0%,
+    rgba(4, 21, 47, 0.5) 52%,
+    rgba(4, 21, 47, 0.86) 100%
+  );
+}
+
+/* Elevated content card. Solid (no backdrop-filter) — border + soft shadow. */
+.card-lux {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-zinc-200);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(6, 31, 69, 0.05), 0 8px 24px -18px rgba(6, 31, 69, 0.28);
+}
+
+/* Off-screen deferral for long marketing pages (rooms lists, catalogues). */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 480px;
+}
+
 @keyframes sheet-in {
   from {
     transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sheet-in-rtl {
+  from {
+    transform: translateX(-100%);
   }
   to {
     transform: translateX(0);
@@ -139,6 +390,10 @@ body {
 
 .animate-sheet-in {
   animation: sheet-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html[dir="rtl"] .animate-sheet-in {
+  animation-name: sheet-in-rtl;
 }
 
 .animate-fade-in {

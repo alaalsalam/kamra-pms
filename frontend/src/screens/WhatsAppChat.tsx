@@ -54,7 +54,7 @@ export default function WhatsAppChat() {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const loadThreads = useCallback(() => {
-    call<Thread[]>("kamra.whatsapp.threads", { property })
+    call<Thread[]>("hotelpms.whatsapp.threads", { property })
       .then((t) => {
         setThreads(t)
         setLoaded(true)
@@ -66,7 +66,7 @@ export default function WhatsAppChat() {
   const loadThread = useCallback(() => {
     if (!active) return
     call<{ messages: Msg[]; session_open: boolean }>(
-      "kamra.whatsapp.thread",
+      "hotelpms.whatsapp.thread",
       { property, number: active },
     )
       .then((d) => {
@@ -95,7 +95,7 @@ export default function WhatsAppChat() {
     setBusy(true)
     setError(null)
     try {
-      await call("kamra.whatsapp.reply", {
+      await call("hotelpms.whatsapp.reply", {
         property,
         number: active,
         text: draft.trim(),

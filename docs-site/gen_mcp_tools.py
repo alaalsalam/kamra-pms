@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate docs-site/mcp-tools.md from kamra.mcp_tools.
+"""Generate docs-site/mcp-tools.md from hotelpms.mcp_tools.
 
 Run from docs-site/:  python3 gen_mcp_tools.py
 """
@@ -13,7 +13,7 @@ from collections import defaultdict
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
 
-from kamra.mcp_tools import TOOL_COUNT, TOOLS  # noqa: E402
+from hotelpms.mcp_tools import TOOL_COUNT, TOOLS  # noqa: E402
 
 OUT = os.path.join(HERE, "mcp-tools.md")
 
@@ -26,13 +26,13 @@ def main() -> None:
 	lines = [
 		"# MCP tool reference",
 		"",
-		f"Kamra exposes **{TOOL_COUNT} governed tools** on the hosted MCP",
-		"endpoint (`/mcp`) and the stdio sidecar (`mcp/kamra_mcp.py`). Every",
+		f"HotelPMS exposes **{TOOL_COUNT} governed tools** on the hosted MCP",
+		"endpoint (`/mcp`) and the stdio sidecar (`mcp/hotelpms_mcp.py`). Every",
 		"call runs as the connected user — role permissions apply, prices come",
 		"from the pricing engine, and each action is recorded in the activity",
 		"ledger.",
 		"",
-		"This page is generated from `kamra/mcp_tools.py`. Re-run",
+		"This page is generated from `hotelpms/mcp_tools.py`. Re-run",
 		"`python3 gen_mcp_tools.py` in `docs-site/` when the registry changes.",
 		"",
 	]
@@ -60,7 +60,7 @@ def main() -> None:
 			lines.append("")
 			lines.append(spec.description)
 			lines.append("")
-			lines.append(f"Endpoint: `kamra.{spec.dotted}`.")
+			lines.append(f"Endpoint: `hotelpms.{spec.dotted}`.")
 			if spec.mutating:
 				lines.append("Mutating — logged to the activity ledger.")
 			lines.append("")

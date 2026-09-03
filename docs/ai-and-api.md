@@ -1,6 +1,6 @@
 # AI & API setup
 
-Kamra is agent-native: everything staff can do, an agent can do — through
+HotelPMS is agent-native: everything staff can do, an agent can do — through
 the same governed tool layer. Prices come from the pricing engine,
 guardrails and policies apply, and every action lands in the **Agent
 Action Log** with who/what/why and the minutes it saved.
@@ -18,9 +18,9 @@ everyone at that property.
 - **Any OpenAI-compatible provider works** — OpenAI
   (`https://api.openai.com/v1`), OpenRouter, Groq, a local Ollama/vLLM.
   Set the base URL and model to taste.
-- **Your key, your data.** Kamra adds no markup and proxies nothing
+- **Your key, your data.** HotelPMS adds no markup and proxies nothing
   through third parties — requests go from your server to your provider.
-- **Governed:** the model can only call Kamra's tools (quote, book,
+- **Governed:** the model can only call HotelPMS's tools (quote, book,
   check-in/out, folios, splits, payments, cancellations with policy
   preview, rates within guardrails, night audit). It cannot invent a
   price or skip a fee — the tools refuse.
@@ -30,18 +30,18 @@ everyone at that property.
 
 ## 2. MCP — connect Claude
 
-The live guide is **[Connect your AI (MCP)](https://kamrapms.com/docs/ai-and-mcp)**.
-Staff click **Kamra Agent → Connect your AI → Connect Claude**. The hotel
+The live guide is **[Connect your AI (MCP)](https://hotelpms.yemenfrappe.com/docs/ai-and-mcp)**.
+Staff click **HotelPMS Agent → Connect your AI → Connect Claude**. The hotel
 serves `/mcp` over HTTPS with OAuth (PKCE). No API keys on a laptop.
 
-Stdio (`mcp/kamra_mcp.py`) remains for air-gapped / localhost benches.
+Stdio (`mcp/hotelpms_mcp.py`) remains for air-gapped / localhost benches.
 
 ## Direct REST
 
 Every whitelisted function is a REST endpoint:
 
 ```
-POST /api/method/kamra.api.<function>
+POST /api/method/hotelpms.api.<function>
 Authorization: token <api_key>:<api_secret>
 Content-Type: application/json
 ```

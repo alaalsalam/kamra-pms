@@ -10,7 +10,7 @@ import { cur } from "../lib/money"
 
 /** Bulk menu upload: paste or drop a spreadsheet export, see exactly how the
  * columns map and what would be created vs updated, then import. Mirrors the
- * booking importer's preview-then-run contract (kamra.menu_import.*). */
+ * booking importer's preview-then-run contract (hotelpms.menu_import.*). */
 
 interface Outlet {
   name: string
@@ -109,7 +109,7 @@ export default function MenuImport({
     })
     const a = document.createElement("a")
     a.href = URL.createObjectURL(blob)
-    a.download = "kamra-menu-template.csv"
+    a.download = "hotelpms-menu-template.csv"
     a.click()
     URL.revokeObjectURL(a.href)
   }
@@ -130,7 +130,7 @@ export default function MenuImport({
     setError(null)
     setReport(null)
     try {
-      const p = await call<Preview>("kamra.menu_import.preview_menu_import", {
+      const p = await call<Preview>("hotelpms.menu_import.preview_menu_import", {
         property,
         csv_text: csv,
         outlet: outlet || null,
@@ -147,7 +147,7 @@ export default function MenuImport({
     setBusy(true)
     setError(null)
     try {
-      const r = await call<RunReport>("kamra.menu_import.run_menu_import", {
+      const r = await call<RunReport>("hotelpms.menu_import.run_menu_import", {
         property,
         csv_text: csv,
         outlet: outlet || null,

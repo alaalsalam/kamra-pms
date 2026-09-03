@@ -1,27 +1,27 @@
 import { defineConfig } from "vitepress"
 
 export default defineConfig({
-  title: "Kamra Docs",
+  title: "HotelPMS Docs",
   description:
-    "Documentation for Kamra, the open-source AI-native hotel PMS - install, self-host, connect your AI over MCP, and run your property.",
+    "Documentation for HotelPMS, the open-source AI-native hotel PMS - install, self-host, connect your AI over MCP, and run your property.",
   base: "/docs/",
   cleanUrls: true,
-  head: [["link", { rel: "icon", type: "image/svg+xml", href: "/docs/kamra-mark.svg" }]],
+  head: [["link", { rel: "icon", type: "image/svg+xml", href: "/docs/hotelpms-mark.svg" }]],
   themeConfig: {
-    logo: { src: "/kamra-horizontal.svg", height: 28 },
+    logo: { src: "/hotelpms-horizontal.svg", height: 28 },
     siteTitle: false,
     nav: [
-      { text: "Website", link: "https://kamrapms.com" },
-      { text: "Live demo", link: "https://demo.kamrapms.com" },
-      { text: "GitHub", link: "https://github.com/Kamra-PMS/kamra-pms" },
+      { text: "Website", link: "https://hotelpms.yemenfrappe.com" },
+      { text: "Live demo", link: "https://demo.hotelpms.yemenfrappe.com" },
+      { text: "GitHub", link: "https://github.com/YemenFrappe/hotelpms" },
     ],
     search: { provider: "local" },
     socialLinks: [
-      { icon: "github", link: "https://github.com/Kamra-PMS/kamra-pms" },
+      { icon: "github", link: "https://github.com/YemenFrappe/hotelpms" },
     ],
     footer: {
       message: "Open source (AGPL-3.0) · every feature included, always.",
-      copyright: "Kamra PMS · hello@kamrapms.com",
+      copyright: "HotelPMS · hello@hotelpms.yemenfrappe.com",
     },
     sidebar: [
       {
@@ -48,7 +48,7 @@ export default defineConfig({
         ],
       },
       {
-        text: "Using Kamra",
+        text: "Using HotelPMS",
         items: [
           { text: "Features tour", link: "/features" },
           { text: "WhatsApp on your number", link: "/whatsapp" },

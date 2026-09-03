@@ -1,5 +1,5 @@
 /*  Currency and tax vocabulary, from the property's localization pack. Loaded
-    once per session; defaults keep India output identical until it resolves.
+    once per session; defaults match the Saudi YF Hotels showcase until it resolves.
     The last resolved locale is kept in localStorage so screens render with
     the right symbol immediately on reload, before the network answers. */
 
@@ -15,31 +15,31 @@ interface Locale {
 }
 
 let cache: Locale = {
-  currency_symbol: "₹",
-  locale: "en-IN",
-  currency: "INR",
-  tax_label: "GST",
-  tax_id_label: "GSTIN",
-  tax_rates: [0, 5, 12, 18, 28],
+  currency_symbol: "ر.س ",
+  locale: "ar-SA",
+  currency: "SAR",
+  tax_label: "VAT",
+  tax_id_label: "VAT Registration No.",
+  tax_rates: [0, 15],
 }
 
 try {
-  const saved = JSON.parse(localStorage.getItem("kamra_locale") || "")
+  const saved = JSON.parse(localStorage.getItem("hotelpms_locale") || "")
   if (saved && saved.currency_symbol) cache = { ...cache, ...saved }
 } catch {
-  /* first run - Indian defaults until the pack resolves */
+  /* first run - Saudi defaults until the pack resolves */
 }
 
 function remember() {
   try {
-    localStorage.setItem("kamra_locale", JSON.stringify(cache))
+    localStorage.setItem("hotelpms_locale", JSON.stringify(cache))
   } catch {
     /* private mode */
   }
 }
 
 export function loadLocale(): Promise<Locale> {
-  return call<Locale>("kamra.api.property_locale", {
+  return call<Locale>("hotelpms.api.property_locale", {
     property: getCurrentProperty(),
   })
     .then((l) => {
@@ -63,7 +63,7 @@ export function adoptUiLocale(ui?: { currency_symbol?: string; locale?: string }
 }
 
 export const locale = () => cache
-/** The property's currency symbol, e.g. "₹" or "Rp". */
+/** The property's currency symbol, e.g. "ر.س ", "₹" or "Rp". */
 export const cur = () => cache.currency_symbol
 /** The number-formatting locale, e.g. "en-IN" (lakhs) or "id-ID". */
 export const moneyLocale = () => cache.locale

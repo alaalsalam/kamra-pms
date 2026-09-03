@@ -1,7 +1,7 @@
 name: release-please
 
 # Stable-release automation. Every push to main updates (or opens) a
-# draft "Release PR" that bumps kamra/__init__.py and drafts the CHANGELOG
+# draft "Release PR" that bumps hotelpms/__init__.py and drafts the CHANGELOG
 # entry from Conventional Commit messages. Versioning is always-bump-patch
 # (see release-please-config.json): feat and fix both open the next PATCH
 # (e.g. 2.6.1). Force a MINOR/MAJOR with a Release-As: footer when needed.

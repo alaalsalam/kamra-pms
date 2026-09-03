@@ -1,4 +1,4 @@
-# Self-hosting Kamra
+# Self-hosting HotelPMS
 
 Own your PMS end to end. Two supported paths: **Docker (recommended)** or a
 classic bench install.
@@ -27,25 +27,25 @@ classic bench install.
 
 - SMTP credentials for email ([email setup](email-setup.md))
 - Razorpay/Stripe keys for payment links (configure in the payments app)
-- An LLM API key on your side if you connect an AI agent (BYOK — Kamra
+- An LLM API key on your side if you connect an AI agent (BYOK — HotelPMS
   never proxies or marks up model calls)
 
 ## Install (Docker, recommended)
 
-Use [frappe_docker](https://github.com/frappe/frappe_docker) and add Kamra
+Use [frappe_docker](https://github.com/frappe/frappe_docker) and add HotelPMS
 to your apps list:
 
 ```bash
 git clone https://github.com/frappe/frappe_docker && cd frappe_docker
-# build a custom image containing kamra + payments
+# build a custom image containing hotelpms + payments
 export APPS_JSON_BASE64=$(base64 -w0 <<'EOF'
 [
   {"url": "https://github.com/frappe/payments", "branch": "develop"},
-  {"url": "https://github.com/Kamra-PMS/kamra-pms", "branch": "main"}
+  {"url": "https://github.com/YemenFrappe/hotelpms", "branch": "main"}
 ]
 EOF
 )
-docker build -t yourorg/kamra:latest \
+docker build -t yourorg/hotelpms:latest \
   --build-arg FRAPPE_BRANCH=v16.25.0 \
   --build-arg APPS_JSON_BASE64=$APPS_JSON_BASE64 \
   -f images/layered/Containerfile .
@@ -56,7 +56,7 @@ Create the site and install:
 
 ```bash
 bench new-site pms.yourhotel.com --admin-password <strong-password>
-bench --site pms.yourhotel.com install-app payments kamra
+bench --site pms.yourhotel.com install-app payments hotelpms
 ```
 
 ## Install (bare metal)
@@ -65,23 +65,23 @@ bench --site pms.yourhotel.com install-app payments kamra
 pip install frappe-bench
 bench init --frappe-branch v16.25.0 frappe-bench && cd frappe-bench
 bench get-app payments
-bench get-app kamra https://github.com/Kamra-PMS/kamra-pms
+bench get-app hotelpms https://github.com/YemenFrappe/hotelpms
 bench new-site pms.yourhotel.com --admin-password <strong-password>
-bench --site pms.yourhotel.com install-app kamra
+bench --site pms.yourhotel.com install-app hotelpms
 sudo bench setup production $(whoami)   # nginx + supervisor + SSL
 ```
 
 ## After install — production checklist
 
-1. **Create your property** — log in at `/kamra` as `Administrator` (or
+1. **Create your property** — log in at `/hotelpms` as `Administrator` (or
    `admin@example.com`) with the `--admin-password` you chose — there is
    no default — then Admin → *New Property*, or connect an AI agent and
    say "onboard my hotel".
-2. **Roles & users** — create staff users; see `kamra/scripts/seed_users.py`
+2. **Roles & users** — create staff users; see `hotelpms/scripts/seed_users.py`
    for the role model (Hotel Admin / Front Desk / Revenue / Finance /
    Housekeeping).
-3. **Agent access** — run `kamra.scripts.seed_rbac_v2` to create the agent
-   user + API keys; connect via [MCP](../mcp/kamra_mcp.py). Regenerate keys
+3. **Agent access** — run `hotelpms.scripts.seed_rbac_v2` to create the agent
+   user + API keys; connect via [MCP](../mcp/hotelpms_mcp.py). Regenerate keys
    per deployment; never reuse dev keys.
 4. **Email** — [set up outgoing email](email-setup.md) for confirmations,
    invoices and briefings.
@@ -99,11 +99,11 @@ sudo bench setup production $(whoami)   # nginx + supervisor + SSL
 ## Updating
 
 ```bash
-cd frappe-bench/apps/kamra && git pull
+cd frappe-bench/apps/hotelpms && git pull
 bench --site pms.yourhotel.com migrate
 bench build && bench restart
 ```
 
-The eval harness (`kamra/scripts/eval_harness.py`) can be run via
+The eval harness (`hotelpms/scripts/eval_harness.py`) can be run via
 `bench console` after any update — 12 checks on money, tax and
 availability logic.

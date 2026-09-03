@@ -1,7 +1,7 @@
-# Kamra — local development
+# HotelPMS — local development
 
-Kamra is an open-source, AI-native hotel PMS built on Frappe v16.
-This workspace holds the local dev environment (Docker) and the `kamra` app.
+HotelPMS is an open-source, AI-native hotel PMS built on Frappe v16.
+This workspace holds the local dev environment (Docker) and the `hotelpms` app.
 
 ## Layout
 
@@ -9,13 +9,13 @@ This workspace holds the local dev environment (Docker) and the `kamra` app.
 agenticpms/
 └── frappe_docker/                  # dev environment (cloned from frappe/frappe_docker)
     └── development/frappe-bench/
-        └── apps/kamra/             # THE APP — schema, API, frontend
-            ├── kamra/kamra/doctype/    # Property, Room Type, Room, Rate Plan,
+        └── apps/hotelpms/             # THE APP — schema, API, frontend
+            ├── hotelpms/hotelpms/doctype/    # Property, Room Type, Room, Rate Plan,
             │                           # Guest, Reservation, Housekeeping Task,
             │                           # Agent Action Log
-            ├── kamra/api.py            # whitelisted front-desk API (future agent tools)
-            ├── kamra/savings.py        # savings-ledger helper
-            ├── kamra/scripts/          # bootstrap_schema.py, seed_demo.py
+            ├── hotelpms/api.py            # whitelisted front-desk API (future agent tools)
+            ├── hotelpms/savings.py        # savings-ledger helper
+            ├── hotelpms/scripts/          # bootstrap_schema.py, seed_demo.py
             └── frontend/               # React 19 + Tailwind 4 + shadcn-style UI
 ```
 
@@ -24,30 +24,30 @@ agenticpms/
 ```bash
 # 1. containers (MariaDB, Redis, bench)
 cd frappe_docker
-docker compose -f .devcontainer/docker-compose.yml -p kamra-dev up -d
+docker compose -f .devcontainer/docker-compose.yml -p hotelpms-dev up -d
 
 # 2. Frappe web server (port 8000)
-docker exec -d -w /workspace/development/frappe-bench kamra-dev-frappe-1 \
+docker exec -d -w /workspace/development/frappe-bench hotelpms-dev-frappe-1 \
   bash -c "bench serve --port 8000 >> /tmp/bench-serve.log 2>&1"
 
 # 3. front-desk UI (port 5173)
-cd development/frappe-bench/apps/kamra/frontend
+cd development/frappe-bench/apps/hotelpms/frontend
 npm run dev
 ```
 
 | Surface | URL | Login |
 |---|---|---|
 | Front-desk console (React) | http://localhost:5173 | login screen (demo accounts below, one-tap buttons) |
-| Frappe Desk (admin) | http://kamra.localhost:8000 | Administrator / admin |
+| Frappe Desk (admin) | http://hotelpms.localhost:8000 | Administrator / admin |
 
-### Demo accounts (seeded via `kamra.scripts.seed_users.execute`)
+### Demo accounts (seeded via `hotelpms.scripts.seed_users.execute`)
 
 | User | Password | Role | Sees (in the React UI) |
 |---|---|---|---|
-| admin@kamra.local | KamraAdmin1! | System Manager | everything |
-| frontdesk@kamra.local | KamraDesk1! | Front Desk | Front Desk, Inventory, Ops |
-| revenue@kamra.local | KamraRev1! | Revenue Manager (+Front Desk) | + Revenue (rates, seasons, vouchers, meal plans) |
-| finance@kamra.local | KamraFin1! | Finance | Finance (billing, corporate) |
+| admin@hotelpms.local | HotelPMSAdmin1! | System Manager | everything |
+| frontdesk@hotelpms.local | HotelPMSDesk1! | Front Desk | Front Desk, Inventory, Ops |
+| revenue@hotelpms.local | HotelPMSRev1! | Revenue Manager (+Front Desk) | + Revenue (rates, seasons, vouchers, meal plans) |
+| finance@hotelpms.local | HotelPMSFin1! | Finance | Finance (billing, corporate) |
 
 ### UI navigation (React app, :5173)
 
@@ -58,23 +58,23 @@ Sidebar modules → screens:
 - **Finance**: Billing (reservation totals; folios/GST next), Corporate accounts
 - **Ops**: Housekeeping tasks
 
-Menu groups are filtered by the logged-in user's Frappe roles (`kamra.api.whoami`);
+Menu groups are filtered by the logged-in user's Frappe roles (`hotelpms.api.whoami`);
 the same roles are enforced server-side via Custom DocPerms.
 
 ## Useful commands
 
 ```bash
 # shell into the bench
-docker exec -it -w /workspace/development/frappe-bench kamra-dev-frappe-1 bash
+docker exec -it -w /workspace/development/frappe-bench hotelpms-dev-frappe-1 bash
 
 # re-run schema bootstrap (idempotent)
-bench --site kamra.localhost execute kamra.scripts.bootstrap_schema.execute
+bench --site hotelpms.localhost execute hotelpms.scripts.bootstrap_schema.execute
 
 # seed the demo hotel (idempotent)
-bench --site kamra.localhost execute kamra.scripts.seed_demo.execute
+bench --site hotelpms.localhost execute hotelpms.scripts.seed_demo.execute
 
 # migrate after editing doctype JSON
-bench --site kamra.localhost migrate
+bench --site hotelpms.localhost migrate
 ```
 
 ## What works in v9 (the operational long tail)
@@ -98,7 +98,7 @@ bench --site kamra.localhost migrate
   address; arrivals show a **Pre-checked-in** badge + ETA, with a
   copy-link button per arrival. Idempotent; invalid tokens rejected;
   logs +8 min to the savings ledger. (ID photo/KYC vendor + e-sign later.)
-- **Eval harness**: `kamra/scripts/eval_harness.py` — 12 deterministic
+- **Eval harness**: `hotelpms/scripts/eval_harness.py` — 12 deterministic
   checks over pricing, guards, folio math, SLA; transaction-rollback, no
   data left behind. CI runs it on every push (`.github/workflows/ci.yml`)
   along with a frontend typecheck+build job.
@@ -108,10 +108,10 @@ bench --site kamra.localhost migrate
 - **Property switcher** in the header (shows when the user can access >1
   property); switching remounts all screens with that property's data;
   choice persists in localStorage
-- Second demo property seeded: **Kamra Beach House** (Gokarna) with its own
+- Second demo property seeded: **أجنحة نُزُل العليا | Nuzul Olaya Suites** (Gokarna) with its own
   room types, rooms, meal plan
 - **Per-user property scoping** via native Frappe User Permissions:
-  frontdesk@kamra.local is pinned to Kamra Demo Palace and can't see or
+  frontdesk@hotelpms.local is pinned to فندق نُزُل الرياض | Nuzul Riyadh Hotel and can't see or
   query the Beach House; admins see the whole portfolio
 - `my_properties` API returns only permitted properties
 
@@ -131,7 +131,7 @@ bench --site kamra.localhost migrate
   schema.org **Hotel JSON-LD** with per-room-type offers. Property has a
   **Logo URL** slot (monogram fallback) for hotel branding.
   Production note: for crawlers that don't run JS, add prerender/SSR later.
-- Public API (`kamra/public_api.py`, the only allow_guest surface):
+- Public API (`hotelpms/public_api.py`, the only allow_guest surface):
   `showcase`, `search_stay`, `book` (rate-limited 10/hr/IP; bookings write
   through the governed agent user; source=Website)
 
@@ -156,20 +156,20 @@ bench --site kamra.localhost migrate
 ## MCP — connect Claude to the PMS
 
 - **Hosted MCP** at `/mcp` — OAuth 2.1 + PKCE, 52 tools from
-  `kamra.mcp_tools`. Staff: Kamra Agent → Connect Claude.
-- **Stdio sidecar** at `apps/kamra/mcp/kamra_mcp.py` for localhost /
+  `hotelpms.mcp_tools`. Staff: HotelPMS Agent → Connect Claude.
+- **Stdio sidecar** at `apps/hotelpms/mcp/hotelpms_mcp.py` for localhost /
   air-gapped benches (personal API key from Developers).
 - Connect Claude Code:
-  `claude mcp add --transport http kamra https://<site>/mcp`
+  `claude mcp add --transport http hotelpms https://<site>/mcp`
 
 ### RBAC
 
 | Role | Meaning |
 |---|---|
 | System Manager | IT/platform admin — everything incl. schema |
-| Hotel Admin | Owner/GM — full rights on all Kamra doctypes |
+| Hotel Admin | Owner/GM — full rights on all HotelPMS doctypes |
 | Front Desk / Revenue Manager / Finance | Scoped module rights |
-| Kamra Agent | What AI agents get — ops rights, no desk access |
+| HotelPMS Agent | What AI agents get — ops rights, no desk access |
 
 Note (Frappe behavior): Custom DocPerm rows REPLACE built-in doctype perms,
 so every role incl. System Manager needs explicit rows — handled by
@@ -191,7 +191,7 @@ so every role incl. System Manager needs explicit rows — handled by
 
 - **Folio per stay** — opens automatically at check-in; charge lines
   (room/meals/F&B/minibar/…) each carry their own GST rate; payments;
-  running balance. `kamra/folio.py`
+  running balance. `hotelpms/folio.py`
 - **Night audit** — manual button on Billing or 3 AM cron
   (`hooks.scheduler_events`): posts the night's room+meal charges for all
   in-house guests, opens missing folios, flags no-shows. Idempotent per date.
@@ -215,7 +215,7 @@ so every role incl. System Manager needs explicit rows — handled by
 - **Corporate accounts** (Company doctype, negotiated rate plan, credit flag)
   and **Group Bookings** (`create_group_booking` → N reservations under one
   GRP parent)
-- Pricing engine in `kamra/pricing.py` — deterministic; occupancy pricing →
+- Pricing engine in `hotelpms/pricing.py` — deterministic; occupancy pricing →
   seasons → rate plan → meals → voucher → tax
 - Scripts: `bootstrap_v1.py`, `seed_v1.py` (note: run via `bench console`,
   `bench execute` has an eval quirk in v16)
@@ -235,6 +235,6 @@ so every role incl. System Manager needs explicit rows — handled by
 ## Next
 
 - Folio + line-item charges, night audit, GST invoicing (india-compliance)
-- MCP tool layer over `kamra/api.py` for AI agents
+- MCP tool layer over `hotelpms/api.py` for AI agents
 - Tape chart (drag-drop reservation calendar), housekeeping mobile PWA
 - ERPNext integration for accounting

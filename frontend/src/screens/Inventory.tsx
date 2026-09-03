@@ -114,7 +114,7 @@ export default function Inventory() {
   const [ledgerOf, setLedgerOf] = useState<StockRow | null>(null)
 
   useEffect(() => {
-    call<{ name: string; outlet_name: string }[]>("kamra.pos.outlets", { property: getCurrentProperty() })
+    call<{ name: string; outlet_name: string }[]>("hotelpms.pos.outlets", { property: getCurrentProperty() })
       .then((o) => { setOutlets(o); if (o.length && !outlet) setOutlet(o[0].name) })
       .catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,9 +123,9 @@ export default function Inventory() {
   const load = useCallback(() => {
     if (!outlet) return
     const property = getCurrentProperty()
-    call<StockRow[]>("kamra.inventory.stock_list", { property, outlet })
+    call<StockRow[]>("hotelpms.inventory.stock_list", { property, outlet })
       .then(setRows).catch((e) => setErr(String(e)))
-    call<LowRow[]>("kamra.inventory.low_stock", { property, outlet })
+    call<LowRow[]>("hotelpms.inventory.low_stock", { property, outlet })
       .then(setLow).catch(() => {})
   }, [outlet])
 
@@ -134,7 +134,7 @@ export default function Inventory() {
   const act = useCallback(async (method: string, params: Record<string, unknown>) => {
     setBusy(true); setErr(null)
     try {
-      await call(`kamra.inventory.${method}`, { property: getCurrentProperty(), outlet, ...params })
+      await call(`hotelpms.inventory.${method}`, { property: getCurrentProperty(), outlet, ...params })
       setModal(null)
       load()
     } catch (e) {
@@ -221,7 +221,7 @@ export default function Inventory() {
                   <Button key={d.name} variant="outline"
                     className="h-8 border-amber-400 px-2 text-xs text-amber-800"
                     onClick={async () => {
-                      await call("kamra.inventory.set_menu_availability", {
+                      await call("hotelpms.inventory.set_menu_availability", {
                         menu_item: d.name, available: 0,
                       })
                       load()
@@ -467,7 +467,7 @@ function LedgerModal({ row, outlet, onClose }: {
 }) {
   const [entries, setEntries] = useState<LedgerRow[] | null>(null)
   useEffect(() => {
-    call<LedgerRow[]>("kamra.inventory.ingredient_ledger", {
+    call<LedgerRow[]>("hotelpms.inventory.ingredient_ledger", {
       property: getCurrentProperty(), outlet, ingredient: row.ingredient, limit: 50,
     }).then(setEntries).catch(() => setEntries([]))
   }, [row.ingredient, outlet])

@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="branding/png/kamra-mark-512.png" width="96" alt="Kamra — open-source hotel PMS" />
+  <img src="branding/png/hotelpms-mark-512.png" width="96" alt="HotelPMS — open-source hotel PMS" />
 </p>
 
-<h1 align="center">Kamra PMS</h1>
+<h1 align="center">HotelPMS</h1>
 
 <p align="center">
   <b>Open-source hotel &amp; short-term rental PMS</b> — front desk, booking engine,<br/>
@@ -10,32 +10,32 @@
 </p>
 
 <p align="center">
-  <a href="https://demo.kamrapms.com"><img src="https://img.shields.io/badge/demo-live-0f766e?style=flat-square" alt="Live demo" /></a>
-  <a href="https://github.com/Kamra-PMS/kamra-pms/releases/latest"><img src="https://img.shields.io/github/v/release/Kamra-PMS/kamra-pms?style=flat-square&label=release" alt="Latest release" /></a>
+  <a href="https://demo.hotelpms.yemenfrappe.com"><img src="https://img.shields.io/badge/demo-live-0f766e?style=flat-square" alt="Live demo" /></a>
+  <a href="https://github.com/YemenFrappe/hotelpms/releases/latest"><img src="https://img.shields.io/github/v/release/YemenFrappe/hotelpms?style=flat-square&label=release" alt="Latest release" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square" alt="AGPL-3.0" /></a>
-  <a href="https://cloud.frappe.io/marketplace/apps/kamra"><img src="https://img.shields.io/badge/Frappe%20Cloud-Marketplace-ed8936?style=flat-square" alt="Frappe Cloud Marketplace" /></a>
-  <a href="https://kamrapms.com/docs/"><img src="https://img.shields.io/badge/docs-kamrapms.com-111827?style=flat-square" alt="Documentation" /></a>
-  <img src="https://img.shields.io/github/stars/Kamra-PMS/kamra-pms?style=flat-square" alt="GitHub stars" />
+  <a href="https://cloud.frappe.io/marketplace/apps/hotelpms"><img src="https://img.shields.io/badge/Frappe%20Cloud-Marketplace-ed8936?style=flat-square" alt="Frappe Cloud Marketplace" /></a>
+  <a href="https://hotelpms.yemenfrappe.com/docs/"><img src="https://img.shields.io/badge/docs-hotelpms.yemenfrappe.com-111827?style=flat-square" alt="Documentation" /></a>
+  <img src="https://img.shields.io/github/stars/YemenFrappe/hotelpms?style=flat-square" alt="GitHub stars" />
 </p>
 
 <p align="center">
-  <a href="https://demo.kamrapms.com"><b>▶ Live demo</b></a> ·
-  <a href="https://kamrapms.com/docs/"><b>Docs</b></a> ·
+  <a href="https://hotelpms.yemenfrappe.com/hotelpms/book"><b>▶ Live demo</b></a> ·
+  <a href="https://hotelpms.yemenfrappe.com/docs/"><b>Docs</b></a> ·
   <a href="#install"><b>Install</b></a> ·
-  <a href="https://kamrapms.com/docs/ai-and-mcp"><b>AI / MCP</b></a> ·
-  <a href="mailto:hello@kamrapms.com"><b>Contact</b></a>
+  <a href="https://hotelpms.yemenfrappe.com/docs/ai-and-mcp"><b>AI / MCP</b></a> ·
+  <a href="mailto:product@hotelpms.sa"><b>Contact</b></a>
 </p>
 
-> **Try it in 30 seconds → [demo.kamrapms.com](https://demo.kamrapms.com)**  
-> Tap any role to sign in (credentials are on the page). Guest booking: [/book](https://demo.kamrapms.com/book) · Housekeeping app: [/kamra/hk](https://demo.kamrapms.com/kamra/hk) · Live villa catalog: [ewa.kamrapms.com/book](https://ewa.kamrapms.com/kamra/book)
+> **Try it in 30 seconds → [hotelpms.yemenfrappe.com](https://hotelpms.yemenfrappe.com/hotelpms/login)**
+> Tap any role to sign in (credentials are on the page). Guest booking: [/hotelpms/book](https://hotelpms.yemenfrappe.com/hotelpms/book) · Housekeeping app: [/hotelpms/hk](https://hotelpms.yemenfrappe.com/hotelpms/hk)
 
-**Kamra** is a full **property management system (PMS)** for hotels, resorts, and **short-term rentals / villas**. It runs on **Frappe** (the framework behind ERPNext), is **AGPL-3.0**, and is built so humans *and* AI agents share the same governed APIs — booking, check-in, folios, night audit, pricing — with deterministic money (never from an LLM).
+**HotelPMS** is a full **property management system (PMS)** for hotels, resorts, and **short-term rentals / villas**. It runs on **Frappe** (the framework behind ERPNext), is **AGPL-3.0**, and is built so humans *and* AI agents share the same governed APIs — booking, check-in, folios, night audit, pricing — with deterministic money (never from an LLM).
 
 ---
 
 ## Contents
 
-- [Why Kamra](#why-kamra)
+- [Why HotelPMS](#why-hotelpms)
 - [What makes it different](#what-makes-it-different)
 - [Screenshots](#screenshots)
 - [Short-term rentals](#short-term-rentals)
@@ -48,13 +48,13 @@
 
 ---
 
-## Why Kamra
+## Why HotelPMS
 
 Most hotel PMS software was built twenty years ago: per-room SaaS rent, locked-in data, bolt-on chatbots, and screens that need a week of training.
 
-Kamra is the alternative we wanted:
+HotelPMS is the alternative we wanted:
 
-| Pain with legacy PMS | With Kamra |
+| Pain with legacy PMS | With HotelPMS |
 |---|---|
 | Per-room / per-module pricing | **Free forever** (AGPL) — cost doesn't scale with rooms |
 | Data lock-in | **You host it** — on-prem, VPS, or Frappe Cloud |
@@ -66,7 +66,7 @@ Kamra is the alternative we wanted:
 
 ## What makes it different
 
-- **Agent-ready, not agent-locked.** [MCP server](https://kamrapms.com/docs/ai-and-mcp) with 50+ governed tools — role-scoped, permission-checked, fully logged. Connect Claude; no bundled agent to trust.
+- **Agent-ready, not agent-locked.** [MCP server](https://hotelpms.yemenfrappe.com/docs/ai-and-mcp) with 50+ governed tools — role-scoped, permission-checked, fully logged. Connect Claude; no bundled agent to trust.
 - **Bring your own key.** No AI markup or model lock-in. Optional [HeyKoala](https://heykoala.ai) for voice / WhatsApp concierge.
 - **Deterministic money.** Rates, tax slabs, availability, and no-overbooking guards come from code — never from a language model.
 - **Full audit trail.** Every human or AI action: who, what, why.
@@ -76,7 +76,7 @@ Kamra is the alternative we wanted:
 
 ## Screenshots
 
-*From the [live demo](https://demo.kamrapms.com) — open it and click around.*
+*From the [live demo](https://demo.hotelpms.yemenfrappe.com) — open it and click around.*
 
 | | |
 |---|---|
@@ -95,7 +95,7 @@ Kamra is the alternative we wanted:
 
 **Guest-facing booking page** — date range, **Check availability**, rates, gallery, policies, pay-at-hotel:
 
-[![Public booking page](docs/screenshots/public-booking.png)](https://demo.kamrapms.com/book)
+[![Public booking page](docs/screenshots/public-booking.png)](https://demo.hotelpms.yemenfrappe.com/book)
 
 ---
 
@@ -108,9 +108,9 @@ Same PMS for **villas and multi-site STR portfolios**: sellable units (room / wh
 | ![STR catalog](docs/screenshots/str-catalog.png) | ![STR villas](docs/screenshots/str-villas.png) |
 | **Catalog** — check-in / out + Check availability | **Places to stay** — per-villa cards & from-rates |
 
-[![Villa listing](docs/screenshots/str-listing.png)](https://ewa.kamrapms.com/kamra/book)
+[![Villa listing](docs/screenshots/str-listing.png)](https://ewa.hotelpms.yemenfrappe.com/hotelpms/book)
 
-Live example: [ewa.kamrapms.com/book](https://ewa.kamrapms.com/kamra/book).
+Live example: [ewa.hotelpms.yemenfrappe.com/book](https://ewa.hotelpms.yemenfrappe.com/hotelpms/book).
 
 ---
 
@@ -135,20 +135,20 @@ Live example: [ewa.kamrapms.com/book](https://ewa.kamrapms.com/kamra/book).
 
 ## Documentation & API
 
-Full manual: **[kamrapms.com/docs](https://kamrapms.com/docs/)** — quickstart, self-hosting, features, user guide, AI/MCP, FAQ.
+Full manual: **[hotelpms.yemenfrappe.com/docs](https://hotelpms.yemenfrappe.com/docs/)** — quickstart, self-hosting, features, user guide, AI/MCP, FAQ.
 
-Going live? Use the **[go-live checklist](https://kamrapms.com/docs/go-live)**.
+Going live? Use the **[go-live checklist](https://hotelpms.yemenfrappe.com/docs/go-live)**.
 
 ### REST & agents
 
-Kamra exposes **170+ REST endpoints** — the same governed layer the UI and AI use:
+HotelPMS exposes **170+ REST endpoints** — the same governed layer the UI and AI use:
 
-- [REST API reference](https://kamrapms.com/docs/api-reference)
-- [Postman collection](https://kamrapms.com/docs/kamra.postman_collection.json)
-- [MCP tool reference](https://kamrapms.com/docs/mcp-tools)
+- [REST API reference](https://hotelpms.yemenfrappe.com/docs/api-reference)
+- [Postman collection](https://hotelpms.yemenfrappe.com/docs/hotelpms.postman_collection.json)
+- [MCP tool reference](https://hotelpms.yemenfrappe.com/docs/mcp-tools)
 
 ```bash
-curl -X POST https://<your-kamra>/api/method/kamra.api.get_quote \
+curl -X POST https://<your-hotelpms>/api/method/hotelpms.api.get_quote \
   -H "Authorization: token <api_key>:<api_secret>" \
   -H "Content-Type: application/json" \
   -d '{"property":"Your Property","room_type":"Your Property-DLX",
@@ -163,16 +163,16 @@ In-repo: [`docs/`](docs/) · [user guide](docs/user-guide.md) · [AI & API](docs
 
 ```bash
 bench get-app payments
-bench get-app kamra https://github.com/Kamra-PMS/kamra-pms --branch main
-bench --site your-site install-app kamra
+bench get-app hotelpms https://github.com/YemenFrappe/hotelpms --branch main
+bench --site your-site install-app hotelpms
 ```
 
-After install: product UI at **`/kamra`**, booking at **`/book`**, housekeeping at **`/hk`**. Desk remains at `/app`. Sign in as **Administrator**, open `/kamra/setup`, create your property, add staff.
+After install: product UI at **`/hotelpms`**, booking at **`/book`**, housekeeping at **`/hk`**. Desk remains at `/app`. Sign in as **Administrator**, open `/hotelpms/setup`, create your property, add staff.
 
 | Channel | Branch / tag | Use for |
 |---|---|---|
-| **Stable** | `main` / `vX.Y.Z` | Production, [Frappe Cloud Marketplace](https://cloud.frappe.io/marketplace/apps/kamra), [demo](https://demo.kamrapms.com), `ghcr.io/kamra-pms/kamra:latest` |
-| **Nightly** | `develop` | Previews, `ghcr.io/kamra-pms/kamra:nightly` |
+| **Stable** | `main` / `vX.Y.Z` | Production, [Frappe Cloud Marketplace](https://cloud.frappe.io/marketplace/apps/hotelpms), [demo](https://demo.hotelpms.yemenfrappe.com), `ghcr.io/hotelpms-pms/hotelpms:latest` |
+| **Nightly** | `develop` | Previews, `ghcr.io/hotelpms-pms/hotelpms:nightly` |
 
 Production installs should use `--branch main` (`develop` is the default GitHub branch for contributors). Releases are SemVer with a **patch-first** cadence — see [`RELEASING.md`](RELEASING.md) and [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -183,20 +183,20 @@ Production installs should use `--branch main` (`develop` is the default GitHub 
 ```bash
 bench init --frappe-branch v16.25.0 frappe-bench && cd frappe-bench
 bench get-app payments
-bench get-app kamra https://github.com/Kamra-PMS/kamra-pms
-bench new-site kamra.localhost --admin-password admin
-bench --site kamra.localhost install-app kamra
+bench get-app hotelpms https://github.com/YemenFrappe/hotelpms
+bench new-site hotelpms.localhost --admin-password admin
+bench --site hotelpms.localhost install-app hotelpms
 bench serve --port 8000
-cd apps/kamra/frontend && npm install && npm run dev   # hot-reload UI on :5173
+cd apps/hotelpms/frontend && npm install && npm run dev   # hot-reload UI on :5173
 ```
 
-Rebuild the SPA with `npm run build` at the app root (emits `kamra/public/frontend`). Seed demo data: `bench --site … execute kamra.scripts.seed_demo.execute`. Details: [docs-dev.md](docs-dev.md).
+Rebuild the SPA with `npm run build` at the app root (emits `hotelpms/public/frontend`). Seed demo data: `bench --site … execute hotelpms.scripts.seed_demo.execute`. Details: [docs-dev.md](docs-dev.md).
 
 Connect Claude (hosted MCP — no local Python):
 
 ```bash
-# Kamra Agent → Connect your AI → Connect Claude, or:
-claude mcp add --transport http kamra https://pms.yourhotel.com/mcp
+# HotelPMS Agent → Connect your AI → Connect Claude, or:
+claude mcp add --transport http hotelpms https://pms.yourhotel.com/mcp
 ```
 
 ---
@@ -211,19 +211,19 @@ claude mcp add --transport http kamra https://pms.yourhotel.com/mcp
 
 ## License & contributors
 
-**AGPL-3.0** — free forever. Anyone offering Kamra as a hosted service must share modifications back.
+**AGPL-3.0** — free forever. Anyone offering HotelPMS as a hosted service must share modifications back.
 
 Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Thanks to [@Mohammed-Muneef](https://github.com/Mohammed-Muneef) (laundry, kitchen display v2, inventory & recipes, menu import, ID-document hardening).
 
 ### Links
 
-- **Demo:** [demo.kamrapms.com](https://demo.kamrapms.com)
-- **Docs:** [kamrapms.com/docs](https://kamrapms.com/docs/)
-- **Issues:** [github.com/Kamra-PMS/kamra-pms](https://github.com/Kamra-PMS/kamra-pms)
-- **Email:** [hello@kamrapms.com](mailto:hello@kamrapms.com)
+- **Demo:** [demo.hotelpms.yemenfrappe.com](https://demo.hotelpms.yemenfrappe.com)
+- **Docs:** [hotelpms.yemenfrappe.com/docs](https://hotelpms.yemenfrappe.com/docs/)
+- **Issues:** [github.com/YemenFrappe/hotelpms](https://github.com/YemenFrappe/hotelpms)
+- **Email:** [hello@hotelpms.yemenfrappe.com](mailto:hello@hotelpms.yemenfrappe.com)
 
 Built by [HeyKoala](https://heykoala.ai).
 
 ---
 
-*Kamra means "room". The door in our logo is open on purpose.*
+*HotelPMS means "room". The door in our logo is open on purpose.*

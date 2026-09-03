@@ -25,7 +25,7 @@ import {
 
 /** Desktop home for the full laundry module: the operational board (pickup →
  * collect → process → deliver + cancel), the price menu (rate card) and a
- * billing view. Reuses kamra.laundry.* — the same backend the /hk phone app
+ * billing view. Reuses hotelpms.laundry.* — the same backend the /hk phone app
  * drives — so the two stay in lockstep. */
 
 const OPERATOR_ROLES = [
@@ -882,7 +882,7 @@ function PriceMenu({
     if (!form) return
     setErr(null)
     try {
-      await call("kamra.laundry.save_laundry_rate", {
+      await call("hotelpms.laundry.save_laundry_rate", {
         property,
         name: form.name || null,
         item_name: form.item,
@@ -1014,7 +1014,7 @@ function PriceMenu({
                       <button
                         className="ml-2 text-xs text-zinc-400 hover:text-rose-600"
                         onClick={async () => {
-                          await call("kamra.laundry.delete_laundry_rate", {
+                          await call("hotelpms.laundry.delete_laundry_rate", {
                             name: r.name,
                           })
                           onChanged()
@@ -1059,7 +1059,7 @@ function Billing({
   const [rev, setRev] = useState<Revenue | null>(null)
 
   useEffect(() => {
-    call<Revenue>("kamra.laundry.laundry_revenue", { property, days: 30 })
+    call<Revenue>("hotelpms.laundry.laundry_revenue", { property, days: 30 })
       .then(setRev)
       .catch(() => setRev(null))
   }, [property])

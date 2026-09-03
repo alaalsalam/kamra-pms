@@ -29,7 +29,7 @@ export default function BillingRulesEditor({ row }: { row: Row; reload: () => vo
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    call<Rule[]>("kamra.api.get_billing_rules", { company: row.name }).then(
+    call<Rule[]>("hotelpms.api.get_billing_rules", { company: row.name }).then(
       (rules) =>
         setToCompany(
           new Set(
@@ -52,7 +52,7 @@ export default function BillingRulesEditor({ row }: { row: Row; reload: () => vo
   async function save() {
     setBusy(true)
     try {
-      await call("kamra.api.set_billing_rules", {
+      await call("hotelpms.api.set_billing_rules", {
         company: row.name,
         rules: ROUTABLE.filter((t) => toCompany.has(t)).map((t) => ({
           charge_type: t,

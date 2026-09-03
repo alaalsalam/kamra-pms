@@ -41,7 +41,7 @@ export default function CancellationLetter() {
 
   useEffect(() => {
     if (name)
-      call<Letter>("kamra.api.cancellation_letter", { reservation: name }).then(
+      call<Letter>("hotelpms.api.cancellation_letter", { reservation: name }).then(
         setD,
       )
   }, [name])

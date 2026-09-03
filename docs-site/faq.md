@@ -2,7 +2,7 @@
 
 ## Is anything locked behind a paid plan?
 
-**No.** Every feature is open source and included everywhere. Kamra Cloud
+**No.** Every feature is open source and included everywhere. HotelPMS Cloud
 adds hosting, backups, updates and support — plus *connected services*
 that carry third-party licensing costs (live GST e-invoicing through a
 licensed provider, WhatsApp gateway, payment gateway setup). Those are
@@ -18,7 +18,7 @@ scales only with the server your property needs.
 ## What are the default login credentials?
 
 There aren't any. After `bench new-site … --admin-password <password>`,
-open `/kamra` and sign in as **Administrator** or **admin@example.com**
+open `/hotelpms` and sign in as **Administrator** or **admin@example.com**
 with that password. Forgot it:
 `bench --site <site> set-admin-password <new-password>` (on Docker, prefix
 with `docker compose exec backend`). Staff should then get their own email
@@ -41,27 +41,27 @@ No. Rates, taxes, availability and policy fees are deterministic code,
 verified by an automated eval suite in CI. AI agents call governed tools
 as permission-checked users and cannot go around them.
 
-## Which Frappe version does Kamra need?
+## Which Frappe version does HotelPMS need?
 
 Frappe **v16** (with the `payments` app). Install from the `main` branch
 for stable; `develop` is the nightly channel.
 
-## How does Kamra version its own releases?
+## How does HotelPMS version its own releases?
 
 **Patch-first.** Small features and fixes ship as `2.6.1`, `2.6.2`, and so
 on. A larger `2.7.0`-style cut only happens when maintainers deliberately
 want one — not automatically on every `feat:` commit. See the
-[changelog](https://github.com/Kamra-PMS/kamra-pms/blob/main/CHANGELOG.md)
-and [releasing notes](https://github.com/Kamra-PMS/kamra-pms/blob/main/RELEASING.md)
+[changelog](https://github.com/YemenFrappe/hotelpms/blob/main/CHANGELOG.md)
+and [releasing notes](https://github.com/YemenFrappe/hotelpms/blob/main/RELEASING.md)
 in the repo.
 
 ## How do I report a bug or ask for a feature?
 
-[GitHub issues](https://github.com/Kamra-PMS/kamra-pms/issues) for bugs
+[GitHub issues](https://github.com/YemenFrappe/hotelpms/issues) for bugs
 and requests, discussions for questions. Security reports: see
 `SECURITY.md` — please don't open public issues for those.
 
-## Who builds Kamra?
+## Who builds HotelPMS?
 
 [HeyKoala](https://heykoala.ai). The PMS is our open-source foundation;
 we make money hosting it and building AI hotel staff on top — not by

@@ -1,5 +1,5 @@
-// The SPA is served at /kamra in production and at / by the Vite dev server.
-export const ROUTER_BASENAME = import.meta.env.PROD ? "/kamra" : "/"
+// The SPA is served at /hotelpms in production and at / by the Vite dev server.
+export const ROUTER_BASENAME = import.meta.env.PROD ? "/hotelpms" : "/"
 
 // Prefix an in-app path with the basename for a full-page navigation
 // (window.location), which the router's own navigate() would otherwise add.

@@ -11,10 +11,10 @@ import { getLang, setLang, type Lang } from "../lib/dir"
 import { Button } from "../components/ui/button"
 import ImageField from "../components/ImageField"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
-import { cur, moneyLocale } from "../lib/money"
+import { cur, moneyLocale, taxLabel } from "../lib/money"
 
 /** Settings hub - everything an owner/GM configures once and forgets:
- * property identity, GST, privacy, booking page, payments, agent access. */
+ * property identity, tax, privacy, booking page, payments, agent access. */
 
 type Doc = Record<string, unknown>
 
@@ -84,6 +84,7 @@ function Field(props: {
       ) : (
         <input
           className={inputCls}
+          dir={spec.field.includes("phone") || spec.field === "gstin" ? "ltr" : undefined}
           type={spec.type ?? "text"}
           placeholder={spec.type === "password" ? "unchanged" : undefined}
           value={
@@ -194,12 +195,12 @@ const PROPERTY_SPECS: Spec[] = [
   {
     field: "country",
     label: "Country",
-    hint: "Selects the tax & invoicing pack. India and Indonesia today; more via the Marketplace.",
+    hint: "Selects the local tax, currency and invoicing pack.",
   },
   { field: "phone", label: "Phone" },
   { field: "email", label: "Email" },
   { field: "website", label: "Website" },
-  { field: "gstin", label: "GSTIN" },
+  { field: "gstin", label: taxLabel() === "VAT" ? "VAT Registration No." : "GSTIN" },
   { field: "address_line", label: "Address" },
   { field: "city", label: "City" },
   { field: "state", label: "State" },
@@ -211,7 +212,7 @@ const STAY_TAX_SPECS: Spec[] = [
   { field: "checkout_time", label: "Check-out time", type: "time" },
   {
     field: "gst_mode",
-    label: "GST mode",
+    label: taxLabel() === "VAT" ? "VAT mode" : "GST mode",
     type: "select",
     options: ["Slab", "Fixed"],
     hint: "Slab: rate switches at the threshold per night",
@@ -221,11 +222,11 @@ const STAY_TAX_SPECS: Spec[] = [
     label: `Slab threshold (${cur()})`,
     type: "number",
   },
-  { field: "gst_rate_low", label: "GST % below threshold", type: "number" },
-  { field: "gst_rate_high", label: "GST % above threshold", type: "number" },
+  { field: "gst_rate_low", label: `${taxLabel()} % below threshold`, type: "number" },
+  { field: "gst_rate_high", label: `${taxLabel()} % above threshold`, type: "number" },
   {
     field: "rates_include_tax",
-    label: "Displayed rates include GST",
+    label: `Displayed rates include ${taxLabel()}`,
     type: "check",
   },
   {
@@ -431,7 +432,7 @@ export default function Settings() {
       />
       <SettingsCard
         title="Stay, tax & privacy"
-        description="Check-in/out times, GST slabs and how long guest IDs are kept."
+        description={`Check-in/out times, ${taxLabel()} settings and how long guest IDs are kept.`}
         specs={STAY_TAX_SPECS}
         doc={prop}
         onSave={async (changes) => {
@@ -490,7 +491,7 @@ export default function Settings() {
 
       <SettingsCard
         title="AI assistant (bring your own key)"
-        description="Kamra Agent, the in-app assistant for staff. Your key, your data - the model can only act through Kamra's governed tools, and every action is audit-logged."
+        description="HotelPMS Assistant, the in-app assistant for staff. Your key, your data - the model can only act through HotelPMS's governed tools, and every action is audit-logged."
         specs={AI_SPECS}
         doc={ai}
         onSave={async (changes) => {
@@ -537,7 +538,7 @@ export default function Settings() {
             <CardTitle>Agent access (MCP)</CardTitle>
             <p className="mt-0.5 text-xs text-zinc-400">
               Connect Claude to this property's governed tool layer. Staff
-              click Connect Claude on Kamra Agent — no API keys on a laptop.
+              click Connect Claude on HotelPMS Assistant — no API keys on a laptop.
               Every agent action lands in the Agent Action Log.
             </p>
           </div>
@@ -545,19 +546,19 @@ export default function Settings() {
         <CardContent className="space-y-3 text-sm">
           <p className="text-zinc-600">
             Open{" "}
-            <a href="/kamra/assistant" className="font-medium text-brand-700 hover:underline">
-              Kamra Agent → Connect your AI
+            <a href="/hotelpms/assistant" className="font-medium text-brand-700 hover:underline">
+              HotelPMS Assistant → Connect your AI
             </a>{" "}
             and click <strong>Connect Claude</strong>. Claude opens with this
             hotel&apos;s MCP URL filled in; confirm, sign in as yourself, done.
             Service keys for unattended agents stay on{" "}
-            <a href="/kamra/developers" className="font-medium text-brand-700 hover:underline">
+            <a href="/hotelpms/developers" className="font-medium text-brand-700 hover:underline">
               Developers
             </a>
             .
           </p>
           <pre className="overflow-x-auto rounded-lg bg-zinc-100 p-3 text-xs leading-relaxed text-zinc-700">
-            {`claude mcp add --transport http kamra ${window.location.origin}/mcp`}
+            {`claude mcp add --transport http hotelpms ${window.location.origin}/mcp`}
           </pre>
           <p className="text-xs text-zinc-400">
             Tools include availability, quotes, bookings, check-in/out, folio
@@ -633,7 +634,7 @@ function LaundryRatesCard({ property }: { property: string }) {
   const [importMsg, setImportMsg] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    call<LaundryRate[]>("kamra.laundry.laundry_rates", { property }).then(setRates).catch(() => {})
+    call<LaundryRate[]>("hotelpms.laundry.laundry_rates", { property }).then(setRates).catch(() => {})
   }, [property])
   useEffect(load, [load])
 
@@ -654,7 +655,7 @@ function LaundryRatesCard({ property }: { property: string }) {
     setImportMsg(null)
     try {
       const res = await call<{ created: number; updated: number; issues: { row: number; item: string; error: string }[] }>(
-        "kamra.laundry.import_laundry_rates",
+        "hotelpms.laundry.import_laundry_rates",
         { property, csv_text: await file.text() },
       )
       setImportMsg(
@@ -671,7 +672,7 @@ function LaundryRatesCard({ property }: { property: string }) {
     if (!form) return
     setErr(null)
     try {
-      await call("kamra.laundry.save_laundry_rate", {
+      await call("hotelpms.laundry.save_laundry_rate", {
         property, name: form.name || null, item_name: form.item,
         service_type: form.service, rate: form.rate,
         express_rate: form.express || null,
@@ -753,7 +754,7 @@ function LaundryRatesCard({ property }: { property: string }) {
                       Edit
                     </button>
                     <button className="ml-2 text-xs text-zinc-400 hover:text-rose-600"
-                      onClick={async () => { await call("kamra.laundry.delete_laundry_rate", { name: r.name }); load() }}>
+                      onClick={async () => { await call("hotelpms.laundry.delete_laundry_rate", { name: r.name }); load() }}>
                       Delete
                     </button>
                   </td>
@@ -783,7 +784,7 @@ function HurdleRatesCard({ property }: { property: string }) {
   const [err, setErr] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    call<HurdleTier[]>("kamra.api.hurdle_rates", { property }).then(setTiers).catch(() => {})
+    call<HurdleTier[]>("hotelpms.api.hurdle_rates", { property }).then(setTiers).catch(() => {})
   }, [property])
   useEffect(load, [load])
 
@@ -791,7 +792,7 @@ function HurdleRatesCard({ property }: { property: string }) {
     if (!form) return
     setErr(null)
     try {
-      await call("kamra.api.save_hurdle_rate", {
+      await call("hotelpms.api.save_hurdle_rate", {
         property, name: form.name || null, occupancy_from: form.from,
         premium_pct: form.premium || 0, min_rate: form.min || 0,
       })
@@ -867,7 +868,7 @@ function HurdleRatesCard({ property }: { property: string }) {
                       Edit
                     </button>
                     <button className="ml-2 text-xs text-zinc-400 hover:text-rose-600"
-                      onClick={async () => { await call("kamra.api.delete_hurdle_rate", { name: t.name }); load() }}>
+                      onClick={async () => { await call("hotelpms.api.delete_hurdle_rate", { name: t.name }); load() }}>
                       Delete
                     </button>
                   </td>

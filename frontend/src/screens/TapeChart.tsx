@@ -166,7 +166,7 @@ export default function TapeChart() {
   const [allocBusy, setAllocBusy] = useState(false)
   const [collapsed, setCollapsed] = useState<Set<string>>(() => {
     try {
-      return new Set(JSON.parse(localStorage.getItem("kamra:tape-collapsed") || "[]"))
+      return new Set(JSON.parse(localStorage.getItem("hotelpms:tape-collapsed") || "[]"))
     } catch {
       return new Set()
     }
@@ -176,7 +176,7 @@ export default function TapeChart() {
       const next = new Set(prev)
       if (next.has(name)) next.delete(name)
       else next.add(name)
-      localStorage.setItem("kamra:tape-collapsed", JSON.stringify([...next]))
+      localStorage.setItem("hotelpms:tape-collapsed", JSON.stringify([...next]))
       return next
     })
 
@@ -208,11 +208,11 @@ export default function TapeChart() {
 
   const load = useCallback(() => {
     if (mode === "day") {
-      call<TapeData>("kamra.api.tape_chart", {
+      call<TapeData>("hotelpms.api.tape_chart", {
         property: getCurrentProperty(), start_date: start, days: DAYS,
       }).then(setData)
     } else {
-      call<HourlyData>("kamra.api.tape_chart_hourly", {
+      call<HourlyData>("hotelpms.api.tape_chart_hourly", {
         property: getCurrentProperty(), date: start,
       }).then(setHourly)
     }
@@ -254,7 +254,7 @@ export default function TapeChart() {
   async function suggestAlloc() {
     setAllocBusy(true)
     try {
-      const d = await call<AllocData>("kamra.allocation.suggest_allocation", {
+      const d = await call<AllocData>("hotelpms.allocation.suggest_allocation", {
         property: getCurrentProperty(), date: start,
       })
       setAlloc(d)
@@ -269,7 +269,7 @@ export default function TapeChart() {
     if (!alloc) return
     setAllocBusy(true)
     try {
-      await call("kamra.allocation.apply_allocation", {
+      await call("hotelpms.allocation.apply_allocation", {
         property: getCurrentProperty(),
         assignments: JSON.stringify(alloc.proposals),
       })
@@ -595,7 +595,7 @@ export default function TapeChart() {
               <Button variant="outline" onClick={() => setSel(null)}>Close</Button>
               {draft.room !== sel.room && (
                 <Button disabled={busy}
-                  onClick={() => act(() => call("kamra.api.move_reservation",
+                  onClick={() => act(() => call("hotelpms.api.move_reservation",
                     { reservation: sel.name, new_room: draft.room }))}>
                   Move room
                 </Button>
@@ -603,7 +603,7 @@ export default function TapeChart() {
               {(draft.check_in !== sel.check_in_date ||
                 draft.check_out !== sel.check_out_date) && (
                 <Button disabled={busy}
-                  onClick={() => act(() => call("kamra.api.amend_stay",
+                  onClick={() => act(() => call("hotelpms.api.amend_stay",
                     { reservation: sel.name, check_in_date: draft.check_in,
                       check_out_date: draft.check_out }))}>
                   Update stay
@@ -645,7 +645,7 @@ export default function TapeChart() {
                 <input type="time" className={inputCls} value={draft.to_time}
                   onChange={(e) => setDraft({ ...draft, to_time: e.target.value })} />
                 <Button variant="outline" disabled={busy}
-                  onClick={() => act(() => call("kamra.api.set_stay_times", {
+                  onClick={() => act(() => call("hotelpms.api.set_stay_times", {
                     reservation: sel.name, eta: draft.from_time,
                     etd: draft.to_time }))}>
                   Set

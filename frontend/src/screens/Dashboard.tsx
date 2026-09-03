@@ -98,7 +98,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    call<{ name: string }[]>("kamra.api.my_properties")
+    call<{ name: string }[]>("hotelpms.api.my_properties")
       .then((p) => setMulti((p?.length ?? 0) > 1))
       .catch(() => setMulti(false))
   }, [])
@@ -106,11 +106,11 @@ export default function Dashboard() {
   const load = useCallback(() => {
     setError(null)
     if (scope === "property") {
-      call<PropDash>("kamra.dashboards.property_dashboard", {
+      call<PropDash>("hotelpms.dashboards.property_dashboard", {
         property: getCurrentProperty(),
       }).then(setProp).catch((e) => setError(serverError(e)))
     } else {
-      call<Portfolio>("kamra.dashboards.portfolio_dashboard", {})
+      call<Portfolio>("hotelpms.dashboards.portfolio_dashboard", {})
         .then(setPort).catch((e) => setError(serverError(e)))
     }
   }, [scope])

@@ -93,7 +93,7 @@ export const laundryApi = {
     orderType: OrderType = "Guest",
     houseLabel: string | null = null,
   ) =>
-    call("kamra.laundry.request_pickup", {
+    call("hotelpms.laundry.request_pickup", {
       property,
       room: room || null,
       notes: notes || null,
@@ -112,7 +112,7 @@ export const laundryApi = {
     houseLabel: string | null = null,
     complimentary = false,
   ) =>
-    call("kamra.laundry.collect_laundry", {
+    call("hotelpms.laundry.collect_laundry", {
       property,
       room: room || null,
       items,
@@ -124,16 +124,16 @@ export const laundryApi = {
     }),
 
   setStatus: (order: string, status: string) =>
-    call("kamra.laundry.laundry_status", { order, status }),
+    call("hotelpms.laundry.laundry_status", { order, status }),
 
   returnItems: (order: string, rows: Record<string, number>) =>
-    call("kamra.laundry.return_items", { order, rows }),
+    call("hotelpms.laundry.return_items", { order, rows }),
 
   deliver: (order: string, shortageNote: string | null) =>
-    call("kamra.laundry.deliver_laundry", { order, shortage_note: shortageNote }),
+    call("hotelpms.laundry.deliver_laundry", { order, shortage_note: shortageNote }),
 
   cancel: (order: string, reason: string) =>
-    call("kamra.laundry.cancel_laundry", { order, reason }),
+    call("hotelpms.laundry.cancel_laundry", { order, reason }),
 }
 
 /**
@@ -149,10 +149,10 @@ export function useLaundryBoard(property: string) {
   const [busy, setBusy] = useState(false)
 
   const reload = useCallback(() => {
-    call<Board>("kamra.laundry.laundry_board", { property })
+    call<Board>("hotelpms.laundry.laundry_board", { property })
       .then(setBoard)
       .catch((e) => setError(serverError(e)))
-    call<Rate[]>("kamra.laundry.laundry_rates", { property })
+    call<Rate[]>("hotelpms.laundry.laundry_rates", { property })
       .then(setRates)
       .catch(() => {})
   }, [property])

@@ -10,8 +10,8 @@ frontend/dist/
 frontend/tsconfig.tsbuildinfo
 
 # Frappe
-kamra/public/dist/
-kamra/public/node_modules/
+hotelpms/public/dist/
+hotelpms/public/node_modules/
 *.log
 
 # Local
@@ -22,3 +22,6 @@ docs-site/.vitepress/dist/
 docs-site/.vitepress/cache/
 
 graphify-out/
+
+# BildFast keeps its recoverable checkpoint repository as runtime state.
+.bildfast/checkpoints.git/

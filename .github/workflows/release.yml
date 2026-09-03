@@ -3,9 +3,9 @@ name: Release
 # Publishes release artifacts for a tag:
 #   1. GitHub Release        (only when a tag is pushed by hand — the
 #                             release-please flow creates the Release itself)
-#   2. Docker image          ghcr.io/kamra-pms/kamra:<tag> + :latest
+#   2. Docker image          ghcr.io/hotelpms-pms/hotelpms:<tag> + :latest
 #                            (the self-host one-click channel)
-#   3. Demo deploy           demo.kamrapms.com via SSH -> redeploy.sh
+#   3. Demo deploy           demo.hotelpms.yemenfrappe.com via SSH -> redeploy.sh
 #
 # Invoked three ways: manual tag push, workflow_call from release-please.yml
 # (tags created with GITHUB_TOKEN never fire the tag-push trigger), or
@@ -50,7 +50,7 @@ jobs:
           # fails with "GitHub Releases requires a tag". Idempotent: if
           # release-please already published the release, this updates it.
           tag_name: ${{ inputs.tag || github.ref_name }}
-          name: Kamra PMS ${{ inputs.tag || github.ref_name }}
+          name: HotelPMS ${{ inputs.tag || github.ref_name }}
           generate_release_notes: true
           # CHANGELOG.md stays the curated, human record; this auto-summary
           # from PR/commit titles supplements it on the Release page.
@@ -69,13 +69,13 @@ jobs:
           repository: frappe/frappe_docker
 
       - name: Write apps.json
-        # Same layered build the demo VPS uses; kamra pinned to the release
+        # Same layered build the demo VPS uses; hotelpms pinned to the release
         # tag so the image is reproducible.
         run: |
           cat > apps.json <<EOF
           [
             {"url": "https://github.com/frappe/payments", "branch": "develop"},
-            {"url": "https://github.com/Kamra-PMS/kamra-pms", "branch": "${{ steps.tag.outputs.tag }}"}
+            {"url": "https://github.com/YemenFrappe/hotelpms", "branch": "${{ steps.tag.outputs.tag }}"}
           ]
           EOF
 
@@ -95,8 +95,8 @@ jobs:
           file: images/layered/Containerfile
           push: true
           tags: |
-            ghcr.io/kamra-pms/kamra:${{ steps.tag.outputs.tag }}
-            ghcr.io/kamra-pms/kamra:latest
+            ghcr.io/hotelpms-pms/hotelpms:${{ steps.tag.outputs.tag }}
+            ghcr.io/hotelpms-pms/hotelpms:latest
           build-args: |
             FRAPPE_PATH=https://github.com/frappe/frappe
             FRAPPE_BRANCH=version-16
@@ -105,7 +105,7 @@ jobs:
             apps_json=./apps.json
 
   deploy-demo:
-    name: Deploy demo.kamrapms.com
+    name: Deploy demo.hotelpms.yemenfrappe.com
     needs: docker
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -139,18 +139,18 @@ jobs:
           # same asset-tar bound as nightly (see nightly.yml) - idempotent
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
             "${DEPLOY_USER:-root}@${DEPLOY_HOST}" \
-            "sed -i 's|tar -C /home/frappe/frappe-bench -chf |timeout 300 tar -C /home/frappe/frappe-bench --exclude=node_modules -chf |' ~/kamra-deploy/redeploy.sh || true"
+            "sed -i 's|tar -C /home/frappe/frappe-bench -chf |timeout 300 tar -C /home/frappe/frappe-bench --exclude=node_modules -chf |' ~/hotelpms-deploy/redeploy.sh || true"
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
             "${DEPLOY_USER:-root}@${DEPLOY_HOST}" \
-            "bash ~/kamra-deploy/redeploy.sh stable '${{ steps.tag.outputs.tag }}'"
+            "bash ~/hotelpms-deploy/redeploy.sh stable '${{ steps.tag.outputs.tag }}'"
           # refresh the demo's showcase data (idempotent) so new demo
           # content - menu, tables, laundry rates, tickets - shows up
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
             "${DEPLOY_USER:-root}@${DEPLOY_HOST}" bash -s <<'SEED'
-          cd ~/kamra-deploy/frappe_docker
-          docker compose --project-name kamra --env-file kamra.env \
+          cd ~/hotelpms-deploy/frappe_docker
+          docker compose --project-name hotelpms --env-file hotelpms.env \
             -f compose.yaml -f overrides/compose.mariadb.yaml \
             -f overrides/compose.redis.yaml -f overrides/compose.noproxy.yaml \
-            exec -T backend bench --site demo.kamrapms.com \
-            execute kamra.scripts.seed_showcase.execute || true
+            exec -T backend bench --site demo.hotelpms.yemenfrappe.com \
+            execute hotelpms.scripts.seed_showcase.execute || true
           SEED

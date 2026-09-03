@@ -44,7 +44,7 @@ export default function HkLaundry({ rooms }: { rooms: Room[] }) {
       .filter((r) => (counting.qty[r.name] || 0) > 0)
       .map((r) => ({ item_name: r.item_name, service_type: r.service_type, qty: counting.qty[r.name] }))
     await act(async () => {
-      await call("kamra.laundry.collect_laundry", {
+      await call("hotelpms.laundry.collect_laundry", {
         property, room: counting.room, items,
         order: counting.order, express: counting.express ? 1 : 0,
       })
@@ -61,11 +61,11 @@ export default function HkLaundry({ rooms }: { rooms: Room[] }) {
     if (!returning) return
     const r = returning
     await act(async () => {
-      await call("kamra.laundry.return_items", {
+      await call("hotelpms.laundry.return_items", {
         order: r.order.name,
         rows: Object.fromEntries(r.order.items.map((it) => [it.name, r.back[it.name] ?? it.returned_qty])),
       })
-      await call("kamra.laundry.deliver_laundry", {
+      await call("hotelpms.laundry.deliver_laundry", {
         order: r.order.name,
         shortage_note: returnPending > 0 ? r.note : null,
       })
@@ -109,7 +109,7 @@ export default function HkLaundry({ rooms }: { rooms: Room[] }) {
           <button
             className="flex-1 rounded-xl bg-sky-600 py-2.5 text-sm font-semibold text-white"
             disabled={busy}
-            onClick={() => act(() => call("kamra.laundry.laundry_status", { order: o.name, status: "In Process" }))}>
+            onClick={() => act(() => call("hotelpms.laundry.laundry_status", { order: o.name, status: "In Process" }))}>
             Send to laundry
           </button>
         )}
@@ -117,7 +117,7 @@ export default function HkLaundry({ rooms }: { rooms: Room[] }) {
           <button
             className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white"
             disabled={busy}
-            onClick={() => act(() => call("kamra.laundry.laundry_status", { order: o.name, status: "Ready" }))}>
+            onClick={() => act(() => call("hotelpms.laundry.laundry_status", { order: o.name, status: "Ready" }))}>
             Mark ready
           </button>
         )}
@@ -214,7 +214,7 @@ export default function HkLaundry({ rooms }: { rooms: Room[] }) {
             className="w-full rounded-xl bg-brand-600 py-3 text-base font-semibold text-white disabled:opacity-50"
             disabled={busy || !pickup.room}
             onClick={() => act(async () => {
-              await call("kamra.laundry.request_pickup", {
+              await call("hotelpms.laundry.request_pickup", {
                 property, room: pickup.room, notes: pickup.notes || null,
                 express: pickup.express ? 1 : 0,
               })

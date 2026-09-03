@@ -1,6 +1,6 @@
 # Quickstart (Docker)
 
-The fastest path to a running Kamra: one Docker-capable Linux server, four
+The fastest path to a running HotelPMS: one Docker-capable Linux server, four
 steps, roughly 20 minutes.
 
 ## What you need
@@ -15,7 +15,7 @@ Any provider works. We keep short getting-started pages for
 [Linode](/self-hosting/linode) and [AWS](/self-hosting/aws).
 :::
 
-## 1. Build an image with Kamra in it
+## 1. Build an image with HotelPMS in it
 
 ```bash
 git clone https://github.com/frappe/frappe_docker && cd frappe_docker
@@ -23,11 +23,11 @@ git clone https://github.com/frappe/frappe_docker && cd frappe_docker
 cat > apps.json <<'EOF'
 [
   {"url": "https://github.com/frappe/payments", "branch": "develop"},
-  {"url": "https://github.com/Kamra-PMS/kamra-pms", "branch": "main"}
+  {"url": "https://github.com/YemenFrappe/hotelpms", "branch": "main"}
 ]
 EOF
 
-docker build -t kamra:latest \
+docker build -t hotelpms:latest \
   --build-arg FRAPPE_BRANCH=v16.25.0 \
   --secret id=apps_json,src=apps.json \
   -f images/layered/Containerfile .
@@ -36,7 +36,7 @@ docker build -t kamra:latest \
 ## 2. Start the stack
 
 Follow frappe_docker's compose setup with your image (set
-`CUSTOM_IMAGE=kamra` and `CUSTOM_TAG=latest` in the env file), then:
+`CUSTOM_IMAGE=hotelpms` and `CUSTOM_TAG=latest` in the env file), then:
 
 ```bash
 docker compose --env-file your.env \
@@ -52,14 +52,14 @@ docker compose --env-file your.env \
 docker compose exec backend \
   bench new-site pms.yourhotel.com \
     --admin-password <strong-password> \
-    --install-app payments --install-app kamra
+    --install-app payments --install-app hotelpms
 docker compose exec backend \
   bench --site pms.yourhotel.com enable-scheduler
 ```
 
 ## 4. Sign in and set up
 
-Open `https://pms.yourhotel.com/kamra`. There is **no default password**.
+Open `https://pms.yourhotel.com/hotelpms`. There is **no default password**.
 
 | Field | Use |
 | --- | --- |
@@ -67,7 +67,7 @@ Open `https://pms.yourhotel.com/kamra`. There is **no default password**.
 | or email | `admin@example.com` (same user) |
 | Password | the `--admin-password` you set in step 3 |
 
-Then create your property (rooms, room types, rates). Product UI is `/kamra`; Frappe Desk at `/app` is an admin escape hatch.
+Then create your property (rooms, room types, rates). Product UI is `/hotelpms`; Frappe Desk at `/app` is an admin escape hatch.
 
 Forgot the password? On this Docker stack:
 

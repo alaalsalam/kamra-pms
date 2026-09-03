@@ -1,16 +1,11 @@
 import { useEffect, useRef, useState } from "react"
-import {
-  IndianRupee,
-  LayoutGrid,
-  Moon,
-  Plus,
-  Search,
-  Sun,
-} from "lucide-react"
+import { LayoutGrid, Plus, SaudiRiyal, Search } from "lucide-react"
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { BookingDialog } from "./components/BookingDialog"
+import { BrandLogo } from "./components/BrandLogo"
 import { CommandPalette } from "./components/CommandPalette"
 import HelpPanel from "./components/HelpPanel"
+import UtilityControls from "./components/UtilityControls"
 import { Button } from "./components/ui/button"
 import {
   appForPath,
@@ -26,10 +21,8 @@ import {
   setCurrentProperty,
   type PropertyRow,
 } from "./lib/api"
-import { asset } from "./lib/asset"
 import { useAuth } from "./lib/auth"
 import { subscribeRealtime } from "./lib/realtime"
-import { getTheme, setTheme } from "./lib/theme"
 import { t as translate, useT } from "./lib/i18n"
 import { loadLocale } from "./lib/money"
 import { cn } from "./lib/utils"
@@ -54,7 +47,7 @@ function SearchShortcut() {
   const combo = isMac ? "⌘K" : "Ctrl+K"
   return (
     <button
-      onClick={() => window.dispatchEvent(new Event("kamra:open-palette"))}
+      onClick={() => window.dispatchEvent(new Event("hotelpms:open-palette"))}
       title={`Search: find a guest or booking, or jump anywhere - press ${isMac ? "⌘ Command" : "Ctrl"} + K`}
       aria-label="Open search"
       className="flex w-full items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50/70 px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
@@ -64,29 +57,6 @@ function SearchShortcut() {
       <kbd className="ml-auto hidden rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500 md:inline">
         {combo}
       </kbd>
-    </button>
-  )
-}
-
-function ThemeToggle() {
-  const [dark, setDark] = useState(() =>
-    document.documentElement.classList.contains("dark"),
-  )
-  return (
-    <button
-      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
-      onClick={() => {
-        setTheme(dark ? "light" : "dark")
-        setDark(!dark)
-      }}
-      title={getTheme() === "system" ? "Theme (system)" : "Theme"}
-    >
-      {dark ? (
-        <Sun className="size-4" aria-hidden />
-      ) : (
-        <Moon className="size-4" aria-hidden />
-      )}
     </button>
   )
 }
@@ -189,7 +159,7 @@ export default function AppShell() {
         setProperty(props[0].name)
       }
     })
-    call<{ demo_mode: boolean }>("kamra.public_api.site_info")
+    call<{ demo_mode: boolean }>("hotelpms.public_api.site_info")
       .then((info) => setDemoMode(info.demo_mode))
       .catch(() => setDemoMode(false))
   }, [])
@@ -244,10 +214,10 @@ export default function AppShell() {
         end={item.to === "/"}
         className={({ isActive }) =>
           cn(
-            "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium",
+            "flex items-center gap-2.5 rounded-lg border-s-2 px-2.5 py-2 text-sm font-medium",
             isActive
-              ? "bg-brand-50 text-brand-700"
-              : "text-zinc-600 hover:bg-zinc-100",
+              ? "border-gold-500 bg-brand-50 font-semibold text-brand-700"
+              : "border-transparent text-zinc-600 hover:bg-zinc-100",
           )
         }
       >
@@ -260,27 +230,21 @@ export default function AppShell() {
     <div className="flex min-h-screen flex-col">
       {demoMode && !kiosk && (
         <div className="bg-amber-500 px-4 py-1.5 text-center text-xs font-medium text-amber-950">
-          Shared playground — not your hotel. Data is wiped every night.
+          {t("HotelPMS demo — data is restored every night.")}
           {" "}
           <a
-            href="https://kamrapms.com"
+            href="/hotelpms/book"
             className="underline underline-offset-2 hover:text-black"
           >
-            Get your own Kamra →
+            HotelPMS →
           </a>
         </div>
       )}
       <div className="flex min-h-0 flex-1">
       {!kiosk && (
       <aside className="hidden w-52 shrink-0 border-r border-zinc-200 bg-white px-3 py-5 sm:sticky sm:top-0 sm:block sm:h-screen sm:overflow-y-auto">
-        <div className="mb-5 flex items-center gap-2 px-1">
-          <img src={asset("kamra-mark.svg")} alt="" className="size-7" aria-hidden />
-          <span className="text-lg font-semibold tracking-tight">
-            kamra
-            <span className="ml-1 align-middle text-[10px] font-semibold tracking-[0.2em] text-brand-600">
-              PMS
-            </span>
-          </span>
+        <div className="mb-5 px-1">
+          <BrandLogo size={30} />
         </div>
 
         {currentApp && (
@@ -305,7 +269,7 @@ export default function AppShell() {
 
       <div className="min-w-0 flex-1">
         {!kiosk && (
-        <header className="sticky top-0 z-40 flex items-center gap-2 border-b border-zinc-200 bg-white/90 px-4 py-2.5 backdrop-blur">
+        <header className="sticky top-0 z-40 flex items-center gap-2 border-b border-zinc-200 bg-white px-4 py-2.5">
           <AppSwitcher apps={apps} current={currentApp ?? apps[0]} />
           {properties.length > 1 ? (
             <select
@@ -332,7 +296,7 @@ export default function AppShell() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
+            <UtilityControls tone="light" />
             <span className="hidden text-xs text-zinc-500 md:inline">
               {user}
             </span>
@@ -342,7 +306,7 @@ export default function AppShell() {
             >
               Sign out
             </button>
-            <Button onClick={() => setBooking({})}>
+            <Button variant="gold" onClick={() => setBooking({})}>
               <Plus className="size-4" aria-hidden />
               New booking
             </Button>
@@ -386,7 +350,7 @@ export default function AppShell() {
       )}
 
       <span className="hidden">
-        <IndianRupee className="size-3" aria-hidden />
+        <SaudiRiyal className="size-3" aria-hidden />
       </span>
     </div>
     </div>

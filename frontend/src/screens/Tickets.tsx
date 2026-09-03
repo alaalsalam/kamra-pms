@@ -58,7 +58,7 @@ export default function Tickets() {
   })
 
   const load = useCallback(() => {
-    call<Ticket[]>("kamra.api.tickets_list", {
+    call<Ticket[]>("hotelpms.api.tickets_list", {
       property: getCurrentProperty(),
       show_closed: showClosed ? 1 : 0,
     }).then(setRows)
@@ -75,7 +75,7 @@ export default function Tickets() {
     setBusy(ticket)
     setError(null)
     try {
-      await call("kamra.api.advance_ticket", { ticket, status })
+      await call("hotelpms.api.advance_ticket", { ticket, status })
       load()
     } catch (e) {
       setError(serverError(e))
@@ -88,7 +88,7 @@ export default function Tickets() {
     setBusy("new")
     setError(null)
     try {
-      await call("kamra.api.create_ticket", {
+      await call("hotelpms.api.create_ticket", {
         property: getCurrentProperty(),
         subject: form.subject,
         category: form.category,

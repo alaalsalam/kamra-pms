@@ -4,6 +4,8 @@
  * resolve for backward compatibility. */
 
 export const PRESETS: { name: string; hex: string }[] = [
+  { name: "HotelPMS Navy", hex: "#082B5C" },
+  { name: "HotelPMS Gold", hex: "#B8892E" },
   { name: "Emerald", hex: "#0f6b54" },
   { name: "Ocean", hex: "#0369a1" },
   { name: "Royal", hex: "#4f46e5" },
@@ -15,7 +17,7 @@ const PRESET_HEX: Record<string, string> = Object.fromEntries(
   PRESETS.map((p) => [p.name, p.hex]),
 )
 
-const DEFAULT = "#0f6b54"
+const DEFAULT = "#082B5C"
 
 function toRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "")

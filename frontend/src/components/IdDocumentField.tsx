@@ -10,11 +10,11 @@ import { cn } from "../lib/utils"
  * is_private="0" and sends no doctype/docname, so whatever it uploads lands on
  * a public, guessable /files/ URL attached to nothing. That is fine for a menu
  * photo and catastrophic for an Aadhaar card. This posts a data URL to a
- * token- or role-gated Kamra endpoint that forces is_private=1 instead.
+ * token- or role-gated HotelPMS endpoint that forces is_private=1 instead.
  *
  * One component, two callers: the guest's check-in page passes
- * kamra.public_api.precheckin_upload_id + a token, the desk passes
- * kamra.api.upload_id_document + a reservation. Mirrors the backend, where
+ * hotelpms.public_api.precheckin_upload_id + a token, the desk passes
+ * hotelpms.api.upload_id_document + a reservation. Mirrors the backend, where
  * both gates land in the same storage helper.
  */
 

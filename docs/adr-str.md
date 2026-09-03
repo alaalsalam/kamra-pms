@@ -11,7 +11,7 @@ the operator/CA overrides them.
 
 ### Context
 
-Kamra currently models inventory as:
+HotelPMS currently models inventory as:
 
 - Property (site, policies, modules)
 - Room Type (catalog category, base pricing, amenities)
@@ -140,7 +140,7 @@ bookings.
 
 ### Decision
 
-Create a single Python service `kamra.siu.availability` with the
+Create a single Python service `hotelpms.siu.availability` with the
 signature:
 
 ```python

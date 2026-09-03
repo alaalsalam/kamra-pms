@@ -10,7 +10,7 @@ import {
 import { subscribeRealtime } from "../lib/realtime"
 import { Badge } from "../components/ui/badge"
 import { cn } from "../lib/utils"
-import { asset } from "../lib/asset"
+import { BRAND_LOGO_URL } from "../lib/brand"
 import Login from "./Login"
 import HkLaundry from "./HkLaundry"
 import { serverError } from "../lib/resource"
@@ -85,7 +85,7 @@ export default function HkApp() {
   }, [])
 
   const load = useCallback(() => {
-    call<{ tasks: HkTask[]; rooms: HkRoom[] }>("kamra.api.hk_queue", {
+    call<{ tasks: HkTask[]; rooms: HkRoom[] }>("hotelpms.api.hk_queue", {
       property: getCurrentProperty(),
     }).then(setData)
   }, [])
@@ -154,7 +154,7 @@ export default function HkApp() {
       {t.claimable ? (
         <button
           disabled={busy === t.name}
-          onClick={() => run(t.name, "kamra.api.hk_claim_task")}
+          onClick={() => run(t.name, "hotelpms.api.hk_claim_task")}
           className="mt-3 w-full rounded-xl bg-brand-600 py-3 text-base font-semibold text-white active:bg-brand-700"
         >
           Take this room
@@ -179,7 +179,7 @@ export default function HkApp() {
               <button
                 disabled={busy === t.name}
                 onClick={() =>
-                  run(t.name, "kamra.api.hk_reject_task", { reason }).then(() => {
+                  run(t.name, "hotelpms.api.hk_reject_task", { reason }).then(() => {
                     setRejecting(null)
                     setReason("")
                   })
@@ -201,7 +201,7 @@ export default function HkApp() {
             </button>
             <button
               disabled={busy === t.name}
-              onClick={() => run(t.name, "kamra.api.hk_accept_task")}
+              onClick={() => run(t.name, "hotelpms.api.hk_accept_task")}
               className="flex-1 rounded-xl bg-brand-600 py-3 text-base font-semibold text-white active:bg-brand-700"
             >
               Accept
@@ -214,7 +214,7 @@ export default function HkApp() {
           {t.status === "Pending" ? (
             <button
               disabled={busy === t.name}
-              onClick={() => run(t.name, "kamra.api.hk_update_task", { status: "In Progress" })}
+              onClick={() => run(t.name, "hotelpms.api.hk_update_task", { status: "In Progress" })}
               className="flex-1 rounded-xl border border-zinc-300 py-3 text-base font-semibold text-zinc-700 active:bg-zinc-100"
             >
               Start
@@ -226,7 +226,7 @@ export default function HkApp() {
           )}
           <button
             disabled={busy === t.name}
-            onClick={() => run(t.name, "kamra.api.hk_update_task", { status: "Done" })}
+            onClick={() => run(t.name, "hotelpms.api.hk_update_task", { status: "Done" })}
             className="flex-1 rounded-xl bg-brand-600 py-3 text-base font-semibold text-white active:bg-brand-700"
           >
             Done ✓
@@ -239,7 +239,7 @@ export default function HkApp() {
   return (
     <div className="min-h-screen bg-zinc-50 pb-20">
       <header className="sticky top-0 z-40 flex items-center gap-2 border-b border-zinc-200 bg-white px-4 py-3">
-        <img src={asset("kamra-mark.svg")} alt="" className="size-6" aria-hidden />
+        <img src={BRAND_LOGO_URL} alt="" className="size-7 rounded-md object-contain" aria-hidden />
         <span className="font-semibold">Housekeeping</span>
         <span className="ml-auto flex items-center gap-3">
           <button
@@ -272,7 +272,7 @@ export default function HkApp() {
                 <li className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-zinc-400">
                   Nothing assigned to you. Check{" "}
                   <button className="font-semibold text-brand-700" onClick={() => setView("pool")}>
-                    Available
+                    available rooms
                   </button>{" "}
                   to pick up a room.
                 </li>
@@ -441,7 +441,7 @@ export default function HkApp() {
                     onClick={async () => {
                       setBusy("log")
                       try {
-                        await call("kamra.api.hk_log_item", {
+                        await call("hotelpms.api.hk_log_item", {
                           property: getCurrentProperty(),
                           item_description: logItem.desc.trim(),
                           condition: logItem.condition,
@@ -531,7 +531,7 @@ export default function HkApp() {
                     onClick={async () => {
                       setBusy("charge")
                       try {
-                        await call("kamra.api.hk_post_consumable", {
+                        await call("hotelpms.api.hk_post_consumable", {
                           room: charge.room,
                           charge_type: charge.type,
                           description: charge.desc.trim(),

@@ -277,7 +277,7 @@ export default function Today() {
     try {
       const [s, k] = await Promise.all([
         getSnapshot(),
-        call("kamra.dashboards.property_dashboard", {
+        call("hotelpms.dashboards.property_dashboard", {
           property: getCurrentProperty(),
         }).catch(() => null),
       ])

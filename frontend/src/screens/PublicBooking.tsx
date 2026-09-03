@@ -1,20 +1,40 @@
 import { useEffect, useState } from "react"
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
 import {
+  BadgeCheck,
   BedDouble,
+  BellRing,
+  CalendarDays,
+  Car,
   Check,
+  Coffee,
+  Dumbbell,
   ExternalLink,
+  Headphones,
+  Lock,
   MapPin,
   Phone,
   Search,
+  ShieldCheck,
+  Snowflake,
+  Sparkles,
   Star,
+  Tv,
   Users,
+  Utensils,
+  Waves,
+  Wifi,
+  Wine,
+  Zap,
+  type LucideIcon,
 } from "lucide-react"
 import { call, getDefaultProperty } from "../lib/api"
 import { serverError } from "../lib/resource"
 import { accentVars } from "../lib/accents"
+import { cn } from "../lib/utils"
 import { Badge } from "../components/ui/badge"
 import { Button } from "../components/ui/button"
+import { PublicFooter, PublicHeader } from "../components/PublicChrome"
 import { Sheet } from "../components/ui/sheet"
 import { cur, moneyLocale, adoptUiLocale } from "../lib/money"
 import { formatPhoneDisplay, formatPhoneTel } from "../lib/phone"
@@ -65,6 +85,11 @@ interface Showcase {
     meta_description: string | null
     og_image: string | null
     page_slug: string | null
+  }
+  ui_locale?: {
+    currency_symbol?: string
+    locale?: string
+    currency?: string
   }
   room_types: {
     name: string
@@ -122,7 +147,7 @@ interface StayResult {
 
 const inputCls =
   "w-full rounded-lg border border-zinc-300 bg-white px-3.5 py-2.5 text-base " +
-  "focus:outline-2 focus:outline-offset-1 focus:outline-brand-600"
+  "focus:outline-2 focus:outline-offset-1 focus:outline-gold-500"
 
 function todayPlus(days: number) {
   const d = new Date()
@@ -149,6 +174,43 @@ function setMetaTag(name: string, content: string) {
     document.head.appendChild(el)
   }
   el.content = content
+}
+
+/** Best-effort icon for an amenity label (bilingual). Falls back to a check. */
+function amenityIcon(name: string): LucideIcon {
+  const s = name.toLowerCase()
+  if (/wifi|wi-fi|واي|إنترنت|انترنت|internet/.test(s)) return Wifi
+  if (/تكييف|مكيف|air|\ba\/?c\b|conditioning/.test(s)) return Snowflake
+  if (/tv|تلفاز|تلفزيون|television|شاشة/.test(s)) return Tv
+  if (/coffee|قهوة|tea|شاي|kettle|غلاية/.test(s)) return Coffee
+  if (/minibar|ميني|\bbar\b|بار/.test(s)) return Wine
+  if (/pool|مسبح|سباحة|swim/.test(s)) return Waves
+  if (/park|موقف|مواقف|parking|سيارات/.test(s)) return Car
+  if (/breakfast|إفطار|فطور|dining|مطعم|restaurant|dinner/.test(s)) return Utensils
+  if (/service|خدمة|24|concierge/.test(s)) return BellRing
+  if (/safe|خزنة|خزينة|locker/.test(s)) return Lock
+  if (/gym|fitness|رياضة|لياقة/.test(s)) return Dumbbell
+  if (/spa|سبا|massage|مساج|wellness/.test(s)) return Sparkles
+  return Check
+}
+
+/** Section title with a short gold rule underneath. */
+function SectionHeading({
+  title,
+  subtitle,
+}: {
+  title: string
+  subtitle?: string
+}) {
+  return (
+    <div>
+      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+        {title}
+      </h2>
+      <span className="mt-2 block h-0.5 w-12 rounded bg-gold-500" aria-hidden />
+      {subtitle && <p className="mt-2 text-sm text-zinc-500">{subtitle}</p>}
+    </div>
+  )
 }
 
 export default function PublicBooking() {
@@ -194,6 +256,8 @@ export default function PublicBooking() {
   const [done, setDone] = useState<{ reservation: string; amount: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // the room the guest is reviewing in the sticky stay-summary
+  const [selected, setSelected] = useState<string | null>(null)
 
   const checkOut = search.check_out_date
 
@@ -203,7 +267,7 @@ export default function PublicBooking() {
       property?: string
       sites?: typeof sites
       listing_slug?: string
-    }>("kamra.public_api.catalog_index")
+    }>("hotelpms.public_api.catalog_index")
       .then((idx) => {
         setCatalogMode(idx.mode)
         if (idx.mode === "single_listing" && idx.listing_slug) {
@@ -221,7 +285,7 @@ export default function PublicBooking() {
         if (!ctx) return
         const p = typeof ctx === "object" && "p" in ctx ? ctx.p : ctx
         setProperty(p)
-        return call<Showcase>("kamra.public_api.showcase", { property: p })
+        return call<Showcase>("hotelpms.public_api.showcase", { property: p })
       })
       .then((d) => {
         if (!d) return
@@ -281,7 +345,7 @@ export default function PublicBooking() {
         "@type": "PostalAddress",
         addressLocality: p.city,
         addressRegion: p.state,
-        addressCountry: "IN",
+        addressCountry: p.country === "Saudi Arabia" ? "SA" : p.country,
       },
       checkinTime: p.checkin_time?.slice(0, 5),
       checkoutTime: p.checkout_time?.slice(0, 5),
@@ -292,7 +356,7 @@ export default function PublicBooking() {
       makesOffer: data.room_types.map((rt) => ({
         "@type": "Offer",
         name: rt.room_type_name,
-        priceCurrency: "INR",
+        priceCurrency: data.ui_locale?.currency || "SAR",
         price: rt.base_price,
         itemOffered: {
           "@type": offerType,
@@ -304,10 +368,10 @@ export default function PublicBooking() {
         },
       })),
     }
-    let script = document.getElementById("kamra-jsonld") as HTMLScriptElement | null
+    let script = document.getElementById("hotelpms-jsonld") as HTMLScriptElement | null
     if (!script) {
       script = document.createElement("script")
-      script.id = "kamra-jsonld"
+      script.id = "hotelpms-jsonld"
       script.type = "application/ld+json"
       document.head.appendChild(script)
     }
@@ -322,7 +386,7 @@ export default function PublicBooking() {
 
   function fetchResults() {
     if (!property) return
-    call<StayResult[]>("kamra.public_api.search_stay", {
+    call<StayResult[]>("hotelpms.public_api.search_stay", {
       property,
       check_in_date: search.check_in_date,
       check_out_date: checkOut,
@@ -341,7 +405,7 @@ export default function PublicBooking() {
     setError(null)
     try {
       const res = await call<{ reservation: string; amount_after_tax: number }>(
-        "kamra.public_api.book",
+        "hotelpms.public_api.book",
         {
           property,
           room_type: booking,
@@ -395,13 +459,42 @@ export default function PublicBooking() {
     sites.find((s) => s.cover_image)?.cover_image ||
     null
 
+  // the sticky summary always reflects a room: the one the guest picked, or
+  // else the first available one, so it is never empty while dates are valid.
+  const availableRooms = data.room_types.filter((rt) => results[rt.name]?.quote)
+  const selName =
+    selected && results[selected]?.quote
+      ? selected
+      : (availableRooms[0]?.name ?? null)
+  const selRt = selName
+    ? data.room_types.find((rt) => rt.name === selName)
+    : null
+  const selRes = selName ? results[selName] : null
+  const nights = nightsBetween(search.check_in_date, checkOut)
+
   return (
     <div
       className="min-h-screen bg-zinc-50"
       style={accentVars(data?.property.brand_accent)}
     >
+      <PublicHeader
+        links={[{ label: "Rooms", href: "#stay-results" }]}
+        cta={
+          <button
+            type="button"
+            onClick={() =>
+              document
+                .getElementById("stay-search")
+                ?.scrollIntoView({ behavior: "smooth", block: "center" })
+            }
+            className="btn-gold rounded-lg px-4 py-1.5 text-sm"
+          >
+            Book now
+          </button>
+        }
+      />
       {/* hero — photo when available, otherwise brand accent fill */}
-      <div className="relative h-72 overflow-hidden sm:h-96">
+      <div className="relative h-80 overflow-hidden sm:h-[30rem]">
         {heroSrc ? (
           <img
             src={heroSrc}
@@ -420,10 +513,16 @@ export default function PublicBooking() {
           className={
             "absolute inset-0 " +
             (heroSrc
-              ? "bg-gradient-to-t from-black/75 via-black/25 to-black/10"
-              : "bg-gradient-to-t from-black/40 via-transparent to-transparent")
+              ? "hero-scrim"
+              : "bg-gradient-to-t from-navy-950/40 via-transparent to-transparent")
           }
         />
+        <div className="absolute inset-x-0 top-0 mx-auto flex max-w-6xl items-center justify-end px-5 py-5 text-white">
+          <div className="hidden items-center gap-2 rounded-full border border-gold-400/40 bg-navy-950/50 px-3 py-1.5 text-xs font-medium text-gold-100 sm:flex">
+            <ShieldCheck className="size-4 text-gold-300" aria-hidden />
+            Direct booking · best available rate
+          </div>
+        </div>
         <div className="absolute inset-x-0 bottom-0 mx-auto flex max-w-5xl items-end gap-4 px-5 pb-6 text-white">
           {/* hotel logo slot - falls back to a monogram until one is set */}
           <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/30 bg-white shadow-lg sm:size-20">
@@ -456,9 +555,17 @@ export default function PublicBooking() {
               {p.city}, {p.state}
             </span>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {p.property_name}
           </h1>
+          <div className="mt-3 flex items-center gap-1" aria-hidden>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="size-4 fill-gold-400 text-gold-400" />
+            ))}
+          </div>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/85 sm:text-base">
+            Book direct with instant confirmation, secure guest details and flexible stay options.
+          </p>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
             {p.google_reviews_url && (
               <a
@@ -486,7 +593,7 @@ export default function PublicBooking() {
                 className="inline-flex items-center gap-1 text-white/80 underline-offset-2 hover:underline"
               >
                 <Phone className="size-3.5" aria-hidden />
-                {formatPhoneDisplay(p.phone, p.country)}
+                <span dir="ltr">{formatPhoneDisplay(p.phone, p.country)}</span>
               </a>
             )}
           </div>
@@ -494,9 +601,21 @@ export default function PublicBooking() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl px-5 pb-16">
+      <div className="mx-auto max-w-6xl px-5 pb-16">
         {/* search bar */}
-        <div className="relative z-10 -mt-6 mb-8 rounded-xl border border-zinc-200 bg-white p-4 shadow-lg">
+        <div
+          id="stay-search"
+          className="relative z-10 -mt-12 mb-8 rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl shadow-navy-950/20 sm:p-6"
+        >
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-bold text-zinc-900">Plan your stay</p>
+              <p className="text-xs text-zinc-500">Choose your dates and see live availability instantly.</p>
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-gold-50 px-2.5 py-1 text-xs font-semibold text-gold-700">
+              <ShieldCheck className="size-3.5" aria-hidden /> Secure direct booking
+            </span>
+          </div>
           <div className="grid gap-3 sm:grid-cols-4">
             <label className="block">
               <span className="mb-1 block text-xs font-medium text-zinc-500">Check-in</span>
@@ -560,7 +679,8 @@ export default function PublicBooking() {
             {minNights > 1 ? ` · ${minNights}-night minimum` : ""}
           </p>
           <Button
-            className="mt-3 w-full justify-center gap-2 py-2.5 text-base"
+            variant="gold"
+            className="mt-4 w-full justify-center gap-2 py-3 text-base"
             onClick={() => {
               fetchResults()
               document
@@ -574,11 +694,11 @@ export default function PublicBooking() {
         </div>
 
         {p.description && (
-          <p className="mb-3 max-w-3xl text-[15px] leading-relaxed text-zinc-600">
+          <p className="mb-4 max-w-3xl text-[15px] leading-relaxed text-zinc-600">
             {p.description}
           </p>
         )}
-        <div className="mb-8 flex flex-wrap gap-2">
+        <div className="mb-10 flex flex-wrap gap-2">
           {p.amenities.map((a) => (
             <Badge key={a} tone="zinc">{a}</Badge>
           ))}
@@ -678,16 +798,31 @@ export default function PublicBooking() {
             </div>
           </div>
         ) : (
-          <>
-            {/* room cards — hotel / single-site catalog */}
-            <div id="stay-results" className="space-y-5">
+          <div
+            id="stay-results"
+            className="grid items-start gap-8 lg:grid-cols-3"
+          >
+            <div className="space-y-5 lg:col-span-2">
+              <SectionHeading
+                title="Available rooms"
+                subtitle="Pick a room to see your total in the summary, then continue."
+              />
               {data.room_types.map((rt) => {
                 const r = results[rt.name]
                 const soldOut = r && r.rooms_left === 0
+                const isSel = selName === rt.name
+                const amenIcons = rt.amenities.slice(0, 6)
                 return (
                   <div
                     key={rt.name}
-                    className="grid overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm sm:grid-cols-5"
+                    onClick={() => r?.quote && setSelected(rt.name)}
+                    className={cn(
+                      "grid overflow-hidden rounded-2xl border bg-white shadow-sm transition sm:grid-cols-5",
+                      r?.quote && "cursor-pointer",
+                      isSel
+                        ? "border-gold-400 ring-2 ring-gold-300"
+                        : "border-zinc-200 hover:border-gold-300 hover:shadow-md",
+                    )}
                   >
                     <div className="relative sm:col-span-2">
                       {rt.media[0] ? (
@@ -703,68 +838,79 @@ export default function PublicBooking() {
                         </div>
                       )}
                       {rt.media.length > 1 && (
-                        <span className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-xs text-white">
+                        <span className="absolute bottom-2 end-2 rounded-md bg-navy-950/70 px-2 py-0.5 text-xs text-white">
                           {rt.media.length} photos
                         </span>
                       )}
+                      {isSel && (
+                        <span className="absolute start-2 top-2 inline-flex items-center gap-1 rounded-full bg-gold-500 px-2.5 py-1 text-xs font-semibold text-navy-950 shadow">
+                          <Check className="size-3.5" aria-hidden /> Selected
+                        </span>
+                      )}
                     </div>
-                    <div className="flex flex-col justify-between p-5 sm:col-span-3">
+                    <div className="flex flex-col justify-between gap-3 p-5 sm:col-span-3">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h2 className="text-lg font-semibold">{rt.room_type_name}</h2>
+                          <h3 className="text-lg font-semibold text-zinc-900">
+                            {rt.room_type_name}
+                          </h3>
                           {rt.bed_type && <Badge tone="zinc">{rt.bed_type} bed</Badge>}
                           {rt.room_view && <Badge tone="sky">{rt.room_view}</Badge>}
-                          <span className="inline-flex items-center gap-1 text-xs text-zinc-500">
-                            <Users className="size-3.5" aria-hidden />
-                            up to {rt.adults_capacity} adults
-                          </span>
                         </div>
-                        {locations.length > 1 && rt.location_name && (
-                          <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-brand-700">
-                            <MapPin className="size-3.5" aria-hidden />
-                            {rt.location_name}
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+                          <span className="inline-flex items-center gap-1">
+                            <Users className="size-3.5" aria-hidden />
+                            up to {rt.adults_capacity} guests
+                          </span>
+                          {locations.length > 1 && rt.location_name && (
+                            <span className="inline-flex items-center gap-1 font-medium text-brand-700">
+                              <MapPin className="size-3.5" aria-hidden />
+                              {rt.location_name}
+                            </span>
+                          )}
+                        </div>
+                        {rt.description && (
+                          <p className="mt-2 line-clamp-2 text-sm text-zinc-500">
+                            {rt.description}
                           </p>
                         )}
-                        {rt.description && (
-                          <p className="mt-1 text-sm text-zinc-500">{rt.description}</p>
+                        {amenIcons.length > 0 && (
+                          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+                            {amenIcons.map((a) => {
+                              const Icon = amenityIcon(a)
+                              return (
+                                <li
+                                  key={a}
+                                  className="inline-flex items-center gap-1.5 text-xs text-zinc-600"
+                                >
+                                  <Icon
+                                    className="size-4 text-gold-600"
+                                    aria-hidden
+                                  />
+                                  {a}
+                                </li>
+                              )
+                            })}
+                            {rt.amenities.length > 6 && (
+                              <li className="inline-flex items-center text-xs font-medium text-zinc-400">
+                                +{rt.amenities.length - 6}
+                              </li>
+                            )}
+                          </ul>
                         )}
-                        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                          {rt.amenities.map((a) => (
-                            <li
-                              key={a}
-                              className="inline-flex items-center gap-1 text-xs text-zinc-500"
-                            >
-                              <Check className="size-3 text-brand-600" aria-hidden />
-                              {a}
-                            </li>
-                          ))}
-                        </ul>
                       </div>
-                      <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+                      <div className="flex flex-wrap items-end justify-between gap-3 border-t border-zinc-100 pt-3">
                         <div>
                           {r?.quote ? (
                             <>
-                              <p className="text-2xl font-semibold">
+                              <p className="text-2xl font-semibold text-gold">
                                 {cur()}
                                 {inr(r.quote.amount_after_tax)}
-                                <span className="ml-1 text-sm font-normal text-zinc-500">
+                                <span className="ms-1 text-sm font-normal text-zinc-500">
                                   total · {r.quote.nights} night
                                   {r.quote.nights === 1 ? "" : "s"}, taxes in
                                 </span>
                               </p>
-                              {(r.quote.cleaning_fee || 0) > 0 && (
-                                <p className="text-xs text-zinc-500">
-                                  Includes {cur()}
-                                  {inr(r.quote.cleaning_fee || 0)} cleaning fee
-                                </p>
-                              )}
-                              {(r.quote.totals?.deposit_required || 0) > 0 && (
-                                <p className="text-xs text-zinc-500">
-                                  Refundable deposit {cur()}
-                                  {inr(r.quote.totals?.deposit_required || 0)} due
-                                  separately
-                                </p>
-                              )}
                               {r.rooms_left <= 2 && (
                                 <p className="text-xs font-medium text-rose-600">
                                   Only {r.rooms_left} left for these dates
@@ -787,15 +933,23 @@ export default function PublicBooking() {
                             <Button
                               variant="outline"
                               className="px-4 py-2.5"
-                              onClick={() => navigate(`/stay/${rt.listing_slug}`)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                navigate(`/stay/${rt.listing_slug}`)
+                              }}
                             >
-                              View listing
+                              View room
                             </Button>
                           )}
                           <Button
+                            variant="gold"
                             className="px-5 py-2.5 text-base"
                             disabled={!r?.quote}
-                            onClick={() => setBooking(rt.name)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelected(rt.name)
+                              setBooking(rt.name)
+                            }}
                           >
                             {bookCta}
                           </Button>
@@ -806,7 +960,139 @@ export default function PublicBooking() {
                 )
               })}
             </div>
-          </>
+
+            {/* sticky stay summary — the guided booking rail */}
+            <aside className="lg:sticky lg:top-24">
+              <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg">
+                <div className="flex items-center gap-2 bg-navy-900 px-5 py-4 text-white">
+                  <CalendarDays className="size-4 text-gold-300" aria-hidden />
+                  <p className="text-sm font-semibold">Stay summary</p>
+                </div>
+                <div className="space-y-4 p-5 text-sm">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-zinc-500">Check-in</p>
+                      <p className="font-semibold text-zinc-900">
+                        {search.check_in_date}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500">Check-out</p>
+                      <p className="font-semibold text-zinc-900">{checkOut}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500">Nights</p>
+                      <p className="font-semibold text-zinc-900">{nights}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500">Guests</p>
+                      <p className="font-semibold text-zinc-900">
+                        {search.adults} adults
+                        {search.children ? `, ${search.children} children` : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rule-gold" />
+
+                  {selRt && selRes?.quote ? (
+                    <>
+                      <div className="flex items-center gap-3">
+                        {selRt.media[0] ? (
+                          <img
+                            src={selRt.media[0].url}
+                            alt=""
+                            className="size-14 shrink-0 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <span className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
+                            <BedDouble className="size-5 text-zinc-300" aria-hidden />
+                          </span>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-zinc-900">
+                            {selRt.room_type_name}
+                          </p>
+                          <p className="text-xs text-zinc-500">Taxes included</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 border-t border-zinc-100 pt-3 text-zinc-600">
+                        <div className="flex justify-between">
+                          <span>Per night</span>
+                          <span className="tabular-nums">
+                            {cur()}
+                            {inr(
+                              Math.round(
+                                (selRes.quote.amount_after_tax -
+                                  (selRes.quote.cleaning_fee || 0)) /
+                                  Math.max(1, selRes.quote.nights),
+                              ),
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Nights</span>
+                          <span className="tabular-nums">
+                            {selRes.quote.nights}
+                          </span>
+                        </div>
+                        {(selRes.quote.cleaning_fee || 0) > 0 && (
+                          <div className="flex justify-between">
+                            <span>Cleaning fee</span>
+                            <span className="tabular-nums">
+                              {cur()}
+                              {inr(selRes.quote.cleaning_fee || 0)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between text-xs text-zinc-400">
+                          <span>Taxes &amp; fees</span>
+                          <span>included</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-end justify-between border-t border-zinc-100 pt-3">
+                        <span className="text-sm font-medium text-zinc-700">
+                          Total
+                        </span>
+                        <span className="text-2xl font-semibold text-gold">
+                          {cur()}
+                          {inr(selRes.quote.amount_after_tax)}
+                        </span>
+                      </div>
+                      {(selRes.quote.totals?.deposit_required || 0) > 0 && (
+                        <p className="text-xs text-zinc-500">
+                          A refundable deposit of {cur()}
+                          {inr(selRes.quote.totals?.deposit_required || 0)} is
+                          collected separately.
+                        </p>
+                      )}
+
+                      <Button
+                        variant="gold"
+                        className="w-full justify-center py-2.5 text-base"
+                        onClick={() => selName && setBooking(selName)}
+                      >
+                        Continue to book
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-zinc-200 p-4 text-center text-sm text-zinc-500">
+                      {availableRooms.length === 0
+                        ? "No rooms available for these dates. Try adjusting your dates above."
+                        : "Select a room to see your total and continue."}
+                    </div>
+                  )}
+
+                  <p className="flex items-center justify-center gap-1.5 text-xs text-zinc-400">
+                    <ShieldCheck className="size-3.5 text-emerald-500" aria-hidden />
+                    Your details are protected
+                  </p>
+                </div>
+              </div>
+            </aside>
+          </div>
         )}
 
         {catalogMode !== "sites" && (
@@ -960,10 +1246,27 @@ export default function PublicBooking() {
         </>
         )}
 
-        <p className="mt-10 text-center text-xs text-zinc-400">
-          Powered by Kamra - the open-source, agent-ready hotel PMS
-        </p>
+        <div className="mt-14 grid grid-cols-1 gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { icon: ShieldCheck, t: "Secure payment", d: "100% encrypted transactions" },
+            { icon: Zap, t: "Instant confirmation", d: "Book now, confirmed instantly" },
+            { icon: BadgeCheck, t: "Best direct rate", d: "Guaranteed best available price" },
+            { icon: Headphones, t: "24/7 support", d: "Here whenever you need us" },
+          ].map((it) => (
+            <div key={it.t} className="flex items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gold-50 text-gold-600">
+                <it.icon className="size-5" aria-hidden />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-zinc-900">{it.t}</p>
+                <p className="text-xs text-zinc-500">{it.d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      <PublicFooter note={`${p.property_name} · ${p.city}, ${p.state} — book direct for the best available rate.`} />
 
       {booking && (
         <Sheet
@@ -985,6 +1288,7 @@ export default function PublicBooking() {
               </Button>
             ) : (
               <Button
+                variant="gold"
                 className="w-full justify-center py-2.5 text-base"
                 disabled={busy || !form.guest_name || !form.phone}
                 onClick={submitBooking}
@@ -1013,7 +1317,8 @@ export default function PublicBooking() {
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-zinc-600">Phone</span>
-                <input className={inputCls} value={form.phone} placeholder="+91 …"
+                <input className={inputCls} type="tel" dir="ltr" value={form.phone}
+                  placeholder="+966 5X XXX XXXX"
                   onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               </label>
               <label className="block">
@@ -1158,7 +1463,7 @@ export default function PublicBooking() {
                       )
                       try {
                         const r = await call<{ ok: boolean; message: string }>(
-                          "kamra.public_api.check_voucher",
+                          "hotelpms.public_api.check_voucher",
                           { property, code: voucher.trim(), nights },
                         )
                         setVoucherMsg({ ok: r.ok, text: r.message })

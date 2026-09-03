@@ -1,7 +1,7 @@
 import { cn } from "../../lib/utils"
 import type { ButtonHTMLAttributes } from "react"
 
-type Variant = "primary" | "outline" | "ghost"
+type Variant = "primary" | "outline" | "ghost" | "gold" | "navy"
 
 const variants: Record<Variant, string> = {
   primary:
@@ -9,6 +9,8 @@ const variants: Record<Variant, string> = {
   outline:
     "border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100 focus-visible:outline-zinc-400",
   ghost: "text-zinc-600 hover:bg-zinc-100 focus-visible:outline-zinc-400",
+  gold: "bg-gold-500 text-navy-950 shadow-sm hover:bg-gold-600 focus-visible:outline-gold-500",
+  navy: "bg-navy-800 text-white hover:bg-navy-700 focus-visible:outline-navy-800",
 }
 
 export function Button({

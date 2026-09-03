@@ -3,8 +3,8 @@ import { WifiOff } from "lucide-react"
 import { whoami } from "../lib/api"
 
 /** A single, calm strip when the server can't be reached — instead of raw
- * fetch errors scattered across screens. The api layer emits kamra:offline
- * on network failure and kamra:online on any success; while offline we ping
+ * fetch errors scattered across screens. The api layer emits hotelpms:offline
+ * on network failure and hotelpms:online on any success; while offline we ping
  * quietly until the server answers, then the strip disappears and the
  * screens' own polling/realtime refetch recovers the data. */
 export default function ConnectionBanner() {
@@ -13,17 +13,17 @@ export default function ConnectionBanner() {
   useEffect(() => {
     const off = () => setOffline(true)
     const on = () => setOffline(false)
-    window.addEventListener("kamra:offline", off)
-    window.addEventListener("kamra:online", on)
+    window.addEventListener("hotelpms:offline", off)
+    window.addEventListener("hotelpms:online", on)
     window.addEventListener("online", off) // browser back online → verify
     return () => {
-      window.removeEventListener("kamra:offline", off)
-      window.removeEventListener("kamra:online", on)
+      window.removeEventListener("hotelpms:offline", off)
+      window.removeEventListener("hotelpms:online", on)
       window.removeEventListener("online", off)
     }
   }, [])
 
-  // while offline, probe every 5s; the first success emits kamra:online
+  // while offline, probe every 5s; the first success emits hotelpms:online
   useEffect(() => {
     if (!offline) return
     const t = setInterval(() => {

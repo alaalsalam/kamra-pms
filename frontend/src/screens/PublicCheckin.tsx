@@ -3,10 +3,12 @@ import { CalendarDays, Check, Clock } from "lucide-react"
 import { useParams } from "react-router-dom"
 import { call } from "../lib/api"
 import { Button } from "../components/ui/button"
+import { PublicFooter, PublicHeader } from "../components/PublicChrome"
 import { SignaturePad } from "../components/SignaturePad"
 import { IdDocumentField } from "../components/IdDocumentField"
 import { GuestLaundryCard } from "./laundry/GuestLaundryCard"
 import { adoptUiLocale } from "../lib/money"
+import { useT } from "../lib/i18n"
 
 
 /** Downscale a picked/captured photo so the upload stays small (max edge
@@ -38,6 +40,7 @@ function DocCapture(props: {
   onFile: (f: File) => Promise<string>
   hasExisting?: boolean
 }) {
+  const { t } = useT()
   const { title, note, value, onChange, onFile, hasExisting } = props
   return (
     <div className="rounded-xl border border-zinc-200 p-3">
@@ -45,8 +48,7 @@ function DocCapture(props: {
       <p className="mb-2 mt-0.5 text-xs text-zinc-400">{note}</p>
       {hasExisting && !value && (
         <p className="mb-2 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs text-emerald-800">
-          ✓ We already have this from your last visit — we'll use it.
-          Add a photo below only to replace it with a newer one.
+          {t("✓ We already have this from your last visit — we'll use it. Add a photo below only to replace it with a newer one.")}
         </p>
       )}
       {value ? (
@@ -54,13 +56,13 @@ function DocCapture(props: {
           <img src={value} alt={title} className="h-20 rounded-lg border border-zinc-200 object-cover" />
           <button type="button" className="text-sm font-medium text-rose-600 hover:underline"
             onClick={() => onChange("")}>
-            Remove & retake
+            {t("Remove & retake")}
           </button>
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
           <label className="cursor-pointer rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white">
-            Take photo
+            {t("Take photo")}
             <input type="file" accept="image/*" capture="environment" className="hidden"
               onChange={async (e) => {
                 const f = e.target.files?.[0]
@@ -68,7 +70,7 @@ function DocCapture(props: {
               }} />
           </label>
           <label className="cursor-pointer rounded-lg border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-700">
-            Upload image
+            {t("Upload image")}
             <input type="file" accept="image/*" className="hidden"
               onChange={async (e) => {
                 const f = e.target.files?.[0]
@@ -83,13 +85,14 @@ function DocCapture(props: {
 
 const inputCls =
   "w-full rounded-lg border border-zinc-300 bg-white px-3.5 py-2.5 text-base " +
-  "focus:outline-2 focus:outline-offset-1 focus:outline-brand-600"
+  "focus:outline-2 focus:outline-offset-1 focus:outline-gold-500"
 
 interface Info {
   property: {
     property_name: string
     logo_url: string | null
     city: string
+    country: string | null
     checkin_time: string
     phone: string | null
     house_rules: string | null
@@ -121,16 +124,18 @@ interface Info {
   }
 }
 
-const ID_TYPES = ["Aadhaar", "Passport", "Driving License", "Voter ID", "Other"]
+const INDIA_ID_TYPES = ["Aadhaar", "Passport", "Driving License", "Voter ID", "Other"]
+const SAUDI_ID_TYPES = ["National ID", "Iqama", "Passport", "Driving License", "Other"]
 
 export default function PublicCheckin() {
+  const { t } = useT()
   const { token } = useParams()
   const [info, setInfo] = useState<Info | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [form, setForm] = useState({
-    id_type: "Aadhaar", id_number: "", email: "", nationality: "Indian",
+    id_type: "National ID", id_number: "", email: "", nationality: "Saudi Arabian",
     address_line: "", city: "", eta: "", special_requests: "",
   })
   const [signature, setSignature] = useState("")
@@ -140,15 +145,16 @@ export default function PublicCheckin() {
 
   useEffect(() => {
     if (!token) return
-    call<Info>("kamra.public_api.precheckin_info", { token })
+    call<Info>("hotelpms.public_api.precheckin_info", { token })
       .then((i) => {
         adoptUiLocale((i as unknown as { ui_locale?: { currency_symbol?: string; locale?: string } }).ui_locale)
         setInfo(i)
+        const saudi = i.property.country === "Saudi Arabia"
         setForm((f) => ({
           ...f,
           email: i.guest.email ?? "",
-          id_type: i.guest.id_type || "Aadhaar",
-          nationality: i.guest.nationality ?? "Indian",
+          id_type: i.guest.id_type || (saudi ? "National ID" : "Aadhaar"),
+          nationality: i.guest.nationality ?? (saudi ? "Saudi Arabian" : "Indian"),
         }))
         // a boolean, never a URL - the guest can't be shown their own photo
         // back (Frappe refuses a Guest session any private file), so after a
@@ -163,7 +169,7 @@ export default function PublicCheckin() {
     setBusy(true)
     setError(null)
     try {
-      await call("kamra.public_api.precheckin_submit", {
+      await call("hotelpms.public_api.precheckin_submit", {
         token, ...form, signature, consent: consent ? 1 : 0,
         address_image: addrImage || "",
       })
@@ -187,8 +193,9 @@ export default function PublicCheckin() {
   const { property: p, stay, guest } = info
 
   return (
-    <div className="min-h-screen bg-zinc-50 px-4 py-8">
-      <div className="mx-auto max-w-lg">
+    <div className="flex min-h-screen flex-col bg-zinc-50">
+      <PublicHeader />
+      <main className="mx-auto w-full max-w-lg flex-1 px-4 py-8">
         <div className="mb-6 flex items-center gap-3">
           <div className="flex size-12 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
             {p.logo_url ? (
@@ -201,13 +208,13 @@ export default function PublicCheckin() {
           </div>
           <div>
             <h1 className="text-lg font-semibold">{p.property_name}</h1>
-            <p className="text-sm text-zinc-500">Online check-in · {p.city}</p>
+            <p className="text-sm text-zinc-500">{t("Online check-in")} · {p.city}</p>
           </div>
         </div>
 
         <div className="mb-5 rounded-xl border border-zinc-200 bg-white p-4 text-sm shadow-sm">
           <p className="font-medium">
-            {guest.full_name} · {stay.room_type} room
+            {guest.full_name} · {stay.room_type}
           </p>
           <p className="mt-1 flex items-center gap-2 text-zinc-500">
             <CalendarDays className="size-4" aria-hidden />
@@ -218,7 +225,7 @@ export default function PublicCheckin() {
           </p>
           <p className="mt-1 flex items-center gap-2 text-zinc-500">
             <Clock className="size-4" aria-hidden />
-            Rooms ready from {p.checkin_time.slice(0, 5)}
+            {t("Rooms ready from")} {p.checkin_time.slice(0, 5)}
           </p>
         </div>
 
@@ -230,29 +237,28 @@ export default function PublicCheckin() {
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
             <p className="flex items-center gap-2 text-lg font-semibold">
               <Check className="size-5" aria-hidden />
-              You're checked in online
+              {t("You're checked in online")}
             </p>
             <p className="mt-1 text-sm">
-              Skip the paperwork at the desk - just show your ID on arrival
-              and pick up the key. See you soon!
+              {t("Skip the paperwork at the desk - just show your ID on arrival and pick up the key. See you soon!")}
             </p>
           </div>
         ) : (
           <div className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-zinc-500">
-              Save time at the desk - fill your details now, show the ID once
-              on arrival.
+              {t("Save time at the desk - fill your details now, show the ID once on arrival.")}
             </p>
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-zinc-600">ID type</span>
+                <span className="mb-1.5 block text-sm font-medium text-zinc-600">{t("ID type")}</span>
                 <select className={inputCls} value={form.id_type}
                   onChange={(e) => setForm({ ...form, id_type: e.target.value })}>
-                  {ID_TYPES.map((t) => <option key={t}>{t}</option>)}
+                  {(info.property.country === "Saudi Arabia" ? SAUDI_ID_TYPES : INDIA_ID_TYPES)
+                    .map((idType) => <option key={idType} value={idType}>{t(idType)}</option>)}
                 </select>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-zinc-600">ID number</span>
+                <span className="mb-1.5 block text-sm font-medium text-zinc-600">{t("ID number")}</span>
                 <input className={inputCls} value={form.id_number}
                   onChange={(e) => setForm({ ...form, id_number: e.target.value })} />
               </label>
@@ -263,23 +269,23 @@ export default function PublicCheckin() {
                 connection must still be able to pre-register - gating here
                 would just move the queue back to the desk. */}
             <IdDocumentField
-              method="kamra.public_api.precheckin_upload_id"
+              method="hotelpms.public_api.precheckin_upload_id"
               params={{ token }}
               uploaded={idUploaded}
               onUploaded={() => setIdUploaded(true)}
-              label="Add a photo of your ID (optional)"
-              hint="It speeds up arrival. Bring the original card either way."
+              label={t("Add a photo of your ID (optional)")}
+              hint={t("It speeds up arrival. Bring the original card either way.")}
             />
             <p className="-mt-1 text-xs text-zinc-500">
               {p.id_retention === "Verify & Discard"
-                ? "Your ID photo is used only to confirm your identity at arrival, and is permanently deleted when you check out. Only hotel staff can see it."
-                : "Your ID photo is kept with the guest register the hotel is required by law to maintain. Only hotel staff can see it."}
+                ? t("Your ID photo is used only to confirm your identity at arrival, and is permanently deleted when you check out. Only hotel staff can see it.")
+                : t("Your ID photo is kept with the guest register the hotel is required by law to maintain. Only hotel staff can see it.")}
               {form.id_type === "Aadhaar" && " A masked Aadhaar (last 4 digits showing) is fine."}
             </p>
 
             <DocCapture
-              title="Address proof (optional)"
-              note="Only if your address proof is a different document from your ID."
+              title={t("Address proof (optional)")}
+              note={t("Only if your address proof is a different document from your ID.")}
               value={addrImage}
               onChange={setAddrImage}
               onFile={fileToDataUrl}
@@ -301,7 +307,7 @@ export default function PublicCheckin() {
             <label className="block">
               <span className="mb-1.5 block text-sm font-medium text-zinc-600">Address</span>
               <input className={inputCls} value={form.address_line}
-                placeholder="Street, area"
+                placeholder={t("Street, area")}
                 onChange={(e) => setForm({ ...form, address_line: e.target.value })} />
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -311,8 +317,8 @@ export default function PublicCheckin() {
                   onChange={(e) => setForm({ ...form, city: e.target.value })} />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-zinc-600">Arriving around</span>
-                <input className={inputCls} value={form.eta} placeholder="e.g. 14:30"
+                <span className="mb-1.5 block text-sm font-medium text-zinc-600">{t("Arriving around")}</span>
+                <input className={inputCls} value={form.eta} placeholder={t("e.g. 14:30")}
                   onChange={(e) => setForm({ ...form, eta: e.target.value })} />
               </label>
             </div>
@@ -324,7 +330,7 @@ export default function PublicCheckin() {
             {(p.house_rules || p.pets_policy || p.children_policy || p.extra_bed_policy) && (
               <details className="group rounded-lg border border-zinc-200 bg-zinc-50/50 p-3 text-xs">
                 <summary className="flex items-center justify-between font-medium text-zinc-700 cursor-pointer select-none [&::-webkit-details-marker]:hidden">
-                  <span>View Hotel House Rules & Policies</span>
+                  <span>{t("View Hotel House Rules & Policies")}</span>
                   <span className="transition group-open:rotate-180">
                     <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="16" className="size-3.5 text-zinc-500"><polyline points="6 9 12 15 18 9"></polyline></svg>
                   </span>
@@ -360,16 +366,14 @@ export default function PublicCheckin() {
 
             <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3">
               <span className="mb-1.5 block text-sm font-medium text-zinc-600">
-                Registration card - your signature
+                {t("Registration card - your signature")}
               </span>
               {/* One instrument, widened - not a second checkbox. The notice
                   has to cover the ID photo before it's collected, but adding
                   another gate to the form whose completion rate is the whole
                   point would cost more than it protects. */}
               <p className="mb-2 text-xs text-zinc-500">
-                I confirm the details above are correct, agree to the hotel's
-                registration terms and house rules, and consent to the hotel
-                holding a copy of my ID for this stay.
+                {t("I confirm the details above are correct, agree to the hotel's registration terms and house rules, and consent to the hotel holding a copy of my ID for this stay.")}
               </p>
               <SignaturePad onChange={setSignature} />
               <label className="mt-2 flex items-start gap-2 text-xs text-zinc-600">
@@ -379,7 +383,7 @@ export default function PublicCheckin() {
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
                 />
-                I accept the registration declaration.
+                {t("I accept the registration declaration.")}
               </label>
             </div>
             {error && (
@@ -388,18 +392,20 @@ export default function PublicCheckin() {
               </div>
             )}
             <Button
+              variant="gold"
               className="w-full justify-center py-2.5 text-base"
               disabled={busy || !form.id_number || !signature || !consent}
               onClick={submit}
             >
-              {busy ? "Saving…" : "Sign & complete check-in"}
+              {busy ? t("Saving…") : t("Sign & complete check-in")}
             </Button>
             <p className="text-center text-xs text-zinc-400">
-              Your details and signature form the guest register required by law.
+              {t("Your details and signature form the guest register required by law.")}
             </p>
           </div>
         )}
-      </div>
+      </main>
+      <PublicFooter />
     </div>
   )
 }

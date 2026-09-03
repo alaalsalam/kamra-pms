@@ -800,7 +800,7 @@ export default function BookingEngine() {
                     <span className="mb-1 block text-sm font-medium text-zinc-600">Meta Title</span>
                     <input
                       className={inputCls}
-                      placeholder="Grand Kamra Palace | Luxury Stay in Udaipur"
+                      placeholder="Grand Palm Hotel | Luxury Stay"
                       value={doc.meta_title ?? ""}
                       onChange={(e) => updateField("meta_title", e.target.value)}
                     />
@@ -811,7 +811,7 @@ export default function BookingEngine() {
                     <textarea
                       rows={3}
                       className={inputCls}
-                      placeholder="Book directly for best rates at Grand Kamra Palace, Udaipur. Located right on Lake Pichola with luxury amenities, rooftop pool, and five-star dine-in options."
+                      placeholder="Book directly for the best rates at Grand Palm Hotel, with luxury amenities, a rooftop pool and five-star dining."
                       value={doc.meta_description ?? ""}
                       onChange={(e) => updateField("meta_description", e.target.value)}
                     />
@@ -828,7 +828,7 @@ export default function BookingEngine() {
                       <span className="mb-1 block text-sm font-medium text-zinc-600">Page Slug Prefix</span>
                       <input
                         className={inputCls}
-                        placeholder="e.g. grand-kamra-palace"
+                        placeholder="e.g. grand-hotelpms-palace"
                         value={doc.page_slug ?? ""}
                         onChange={(e) => updateField("page_slug", e.target.value)}
                       />

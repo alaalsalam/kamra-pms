@@ -97,10 +97,10 @@ export function CommandPalette() {
     }
     const onOpen = () => setOpen(true)
     window.addEventListener("keydown", onKey)
-    window.addEventListener("kamra:open-palette", onOpen)
+    window.addEventListener("hotelpms:open-palette", onOpen)
     return () => {
       window.removeEventListener("keydown", onKey)
-      window.removeEventListener("kamra:open-palette", onOpen)
+      window.removeEventListener("hotelpms:open-palette", onOpen)
     }
   }, [open])
 
@@ -132,7 +132,7 @@ export function CommandPalette() {
       try {
         const [g, r, inv] = await Promise.all([
           call<{ name: string; full_name: string; phone?: string }[]>(
-            "kamra.api.guest_search",
+            "hotelpms.api.guest_search",
             { q: q.trim() },
           ).catch(() => []),
           call<{
@@ -142,7 +142,7 @@ export function CommandPalette() {
             check_in_date: string
             status: string
             room?: string | null
-          }[]>("kamra.api.find_reservations", {
+          }[]>("hotelpms.api.find_reservations", {
             property: getCurrentProperty(),
             query: q.trim(),
           }).catch(() => []),
@@ -154,7 +154,7 @@ export function CommandPalette() {
             guest_name?: string
             grand_total: number
             status: string
-          }[]>("kamra.api.find_invoices", {
+          }[]>("hotelpms.api.find_invoices", {
             property: getCurrentProperty(),
             query: q.trim(),
           }).catch(() => []),

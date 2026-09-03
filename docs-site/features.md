@@ -66,7 +66,7 @@ is open source; contributing your country is a single Python file.
 ## WhatsApp on your own number
 
 Connect your own Meta Cloud API number (no gateway, no markup — Meta
-bills you directly) and Kamra sends **booking confirmations and self
+bills you directly) and HotelPMS sends **booking confirmations and self
 check-in links automatically**, takes **payment requests** from the
 desk, and escalates housekeeping SLAs to managers. Guest replies land
 in a **conversations inbox** — threads per guest, chat bubbles,
@@ -200,7 +200,7 @@ pick **check-in and check-out** and tap **Check availability**.
 
 ## Short-term rentals
 
-Kamra runs villas the same way it runs hotels. Set the property kind to
+HotelPMS runs villas the same way it runs hotels. Set the property kind to
 **Short Term Rental** and the public site becomes a catalog of places —
 each villa at its own address, sold as private rooms or the whole house.
 Inventory is **sellable units** (room / whole-place / package) with

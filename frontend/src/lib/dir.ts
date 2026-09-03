@@ -5,10 +5,13 @@
 
 export type Lang = "en" | "ar"
 
-const KEY = "kamra-lang"
+const KEY = "hotelpms-lang"
 
-export const getLang = (): Lang =>
-  localStorage.getItem(KEY) === "ar" ? "ar" : "en"
+export const getLang = (): Lang => {
+  const stored = localStorage.getItem(KEY)
+  if (stored === "ar" || stored === "en") return stored
+  return navigator.language.toLowerCase().startsWith("ar") ? "ar" : "en"
+}
 
 export function applyLang(l: Lang) {
   const el = document.documentElement
@@ -20,7 +23,7 @@ export function setLang(l: Lang) {
   localStorage.setItem(KEY, l)
   applyLang(l)
   // let listeners (React trees) re-render with the new direction/strings
-  window.dispatchEvent(new Event("kamra:lang"))
+  window.dispatchEvent(new Event("hotelpms:lang"))
 }
 
 /** Call once at boot. */

@@ -44,4 +44,4 @@ jobs:
         with:
           python-version: "3.13"
       - name: Offline FC install checks
-        run: python kamra/scripts/marketplace_install_check.py
+        run: python hotelpms/scripts/marketplace_install_check.py

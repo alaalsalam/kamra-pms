@@ -17,10 +17,10 @@ ssh root@<server-ip>
 curl -fsSL https://get.docker.com | sh
 ```
 
-## 4. Install Kamra
+## 4. Install HotelPMS
 
 From here it's identical everywhere — follow the
-[Quickstart](/quickstart): build the image with Kamra in `apps.json`,
+[Quickstart](/quickstart): build the image with HotelPMS in `apps.json`,
 bring the compose stack up, create your site, enable the scheduler.
 
 ## 5. SSL
@@ -30,6 +30,6 @@ apt install -y certbot python3-certbot-nginx
 certbot --nginx -d pms.yourhotel.com
 ```
 
-Then sign in at `/kamra` as `Administrator` or `admin@example.com` with
+Then sign in at `/hotelpms` as `Administrator` or `admin@example.com` with
 the `--admin-password` from the Quickstart — there is no default — and
 work through the [production checklist](/self-hosting/#after-install-production-checklist).

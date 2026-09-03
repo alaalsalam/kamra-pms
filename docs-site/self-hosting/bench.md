@@ -14,13 +14,13 @@ For teams who prefer a classic Frappe bench over Docker.
 pip install frappe-bench
 bench init --frappe-branch v16.25.0 frappe-bench && cd frappe-bench
 bench get-app payments
-bench get-app kamra https://github.com/Kamra-PMS/kamra-pms --branch main
+bench get-app hotelpms https://github.com/YemenFrappe/hotelpms --branch main
 bench new-site pms.yourhotel.com --admin-password <strong-password>
-bench --site pms.yourhotel.com install-app kamra
+bench --site pms.yourhotel.com install-app hotelpms
 sudo bench setup production $(whoami)   # nginx + supervisor + SSL
 ```
 
-Kamra ships its built front-end, so the product UI is live at `/kamra`
+HotelPMS ships its built front-end, so the product UI is live at `/hotelpms`
 immediately — no Node server in production. Sign in as `Administrator` or
 `admin@example.com` with the `--admin-password` you just set.
 

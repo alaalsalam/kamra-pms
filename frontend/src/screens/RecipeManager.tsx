@@ -45,13 +45,13 @@ export default function RecipeManager({ onClose }: { onClose: () => void }) {
   const [saved, setSaved] = useState(false)
 
   const loadDishes = useCallback(() => {
-    call<Dish[]>("kamra.inventory.recipe_overview", { property: getCurrentProperty() })
+    call<Dish[]>("hotelpms.inventory.recipe_overview", { property: getCurrentProperty() })
       .then(setDishes).catch((e) => setErr(String(e)))
   }, [])
 
   useEffect(() => {
     loadDishes()
-    call<IngredientRow[]>("kamra.inventory.ingredients", { property: getCurrentProperty() })
+    call<IngredientRow[]>("hotelpms.inventory.ingredients", { property: getCurrentProperty() })
       .then(setIngs).catch(() => {})
   }, [loadDishes])
 
@@ -63,7 +63,7 @@ export default function RecipeManager({ onClose }: { onClose: () => void }) {
 
   const open = useCallback((d: Dish) => {
     setPicked(d); setSaved(false); setErr(null); setLines([])
-    call<{ recipe: RecipeLine[] }>("kamra.inventory.menu_recipe", { menu_item: d.name })
+    call<{ recipe: RecipeLine[] }>("hotelpms.inventory.menu_recipe", { menu_item: d.name })
       .then((r) => setLines(r.recipe)).catch((e) => setErr(String(e)))
   }, [])
 
@@ -71,7 +71,7 @@ export default function RecipeManager({ onClose }: { onClose: () => void }) {
     if (!picked) return
     setBusy(true); setErr(null)
     try {
-      await call("kamra.inventory.save_recipe", {
+      await call("hotelpms.inventory.save_recipe", {
         menu_item: picked.name,
         rows: lines
           .filter((l) => l.ingredient && Number(l.qty) > 0)

@@ -1,23 +1,23 @@
 name: Bug report
-description: Something in Kamra doesn't work as documented
+description: Something in HotelPMS doesn't work as documented
 labels: ["bug"]
 body:
   - type: input
     id: version
     attributes:
-      label: Kamra version
+      label: HotelPMS version
       description: From Desk → Help → About, or `bench version` (e.g. 2.0.0, or "nightly @ <sha>")
     validations:
       required: true
   - type: dropdown
     id: install
     attributes:
-      label: How is Kamra installed?
+      label: How is HotelPMS installed?
       options:
         - Frappe Cloud
         - Self-hosted (bench)
         - Self-hosted (Docker)
-        - demo/nightly.kamrapms.com
+        - demo/nightly.hotelpms.yemenfrappe.com
     validations:
       required: true
   - type: textarea

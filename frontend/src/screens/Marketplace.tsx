@@ -81,7 +81,7 @@ export default function Marketplace() {
   const property = getCurrentProperty()
 
   const load = useCallback(() => {
-    call<Category[]>("kamra.marketplace.registry", { property })
+    call<Category[]>("hotelpms.marketplace.registry", { property })
       .then(setCats)
       .catch((e) => setError(serverError(e)))
   }, [property])
@@ -92,7 +92,7 @@ export default function Marketplace() {
     setError(null)
     try {
       const r = await call<HeyKoalaResult>(
-        "kamra.marketplace.connect_heykoala",
+        "hotelpms.marketplace.connect_heykoala",
         { property, channel, phone_number: phone.trim() },
       )
       setResult(r)
@@ -178,7 +178,7 @@ export default function Marketplace() {
                         variant="outline"
                         className="mt-3"
                         onClick={() =>
-                          call("kamra.marketplace.enterprise_enquiry", {
+                          call("hotelpms.marketplace.enterprise_enquiry", {
                             property,
                             item: c.name,
                           }).then(() =>
@@ -220,7 +220,7 @@ export default function Marketplace() {
                       className="mt-3"
                       disabled={busy}
                       onClick={() =>
-                        call("kamra.marketplace.disconnect_channel", {
+                        call("hotelpms.marketplace.disconnect_channel", {
                           connection: c.connection,
                         }).then(load)
                       }

@@ -1,6 +1,6 @@
 # Go-live checklist
 
-Everything between "we chose Kamra" and "the front desk ran today on
+Everything between "we chose HotelPMS" and "the front desk ran today on
 it". Worked through top to bottom, a small property goes live in a
 day; with data migration and OTA sync, plan two to three. Each step
 links to the deeper guide.
@@ -16,10 +16,10 @@ links to the deeper guide.
   [Frappe Cloud](/self-hosting/frappe-cloud)
 - [ ] Install via [Docker quickstart](/quickstart), create your site,
   point your domain, get SSL (covered in each hosting guide)
-- [ ] **Log in** at `/kamra` as `Administrator` (or `admin@example.com`)
+- [ ] **Log in** at `/hotelpms` as `Administrator` (or `admin@example.com`)
   with the password from `--admin-password`, then change it if needed
 - [ ] Set up **daily backups** off the server (the hosting guides show
-  `bench backup` + object storage; on Kamra Cloud we do this for you)
+  `bench backup` + object storage; on HotelPMS Cloud we do this for you)
 
 ## 2 — Property setup
 
@@ -76,7 +76,7 @@ links to the deeper guide.
   send a **test booking from the OTA extranet** and watch it land as a
   reservation
 - [ ] Until the channel manager is live, set OTA inventories manually
-  and treat Kamra as the source of truth
+  and treat HotelPMS as the source of truth
 
 ## 6 — Guest communication
 
@@ -118,12 +118,12 @@ Run one fake stay end to end and check every artifact:
 - [ ] Point the channel manager live; retire the old system's OTA
   connections the same hour (two masters means double bookings)
 - [ ] Keep the old system read-only for reference; first **night
-  audit** on Kamra that night, first reconciliation next morning
+  audit** on HotelPMS that night, first reconciliation next morning
 
 ## Need hands?
 
 All of the above as a done-for-you package: fixed-fee
-[implementation with an annual support contract](https://kamrapms.com/implementation/),
-or [Kamra Cloud](https://kamrapms.com/#cloud) where the server side of
+[implementation with an annual support contract](https://hotelpms.yemenfrappe.com/implementation/),
+or [HotelPMS Cloud](https://hotelpms.yemenfrappe.com/#cloud) where the server side of
 this list disappears entirely. The software is identical either way —
 nothing on this page is gated.

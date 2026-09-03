@@ -190,7 +190,7 @@ export function ResourceScreen({
   const [search, setSearch] = useState("")
   // Frappe-style list settings: choose which columns this table shows,
   // remembered per user per doctype.
-  const colsKey = `kamra:cols:${config.doctype}`
+  const colsKey = `hotelpms:cols:${config.doctype}`
   const [hiddenCols, setHiddenCols] = useState<Set<string>>(() => {
     try {
       return new Set(JSON.parse(localStorage.getItem(colsKey) || "[]"))

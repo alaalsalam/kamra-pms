@@ -43,7 +43,7 @@ export default function CancelPanel({ row, reload }: { row: Row; reload: () => v
 
   useEffect(() => {
     if (open && !preview)
-      call<Preview>("kamra.api.cancellation_preview", {
+      call<Preview>("hotelpms.api.cancellation_preview", {
         reservation: row.name,
       })
         .then(setPreview)
@@ -140,7 +140,7 @@ export default function CancelPanel({ row, reload }: { row: Row; reload: () => v
                   const out = await call<{
                     cancellation_number: string
                     fee: number
-                  }>("kamra.api.cancel_reservation", {
+                  }>("hotelpms.api.cancel_reservation", {
                     reservation: row.name,
                     reason,
                     note: note || undefined,

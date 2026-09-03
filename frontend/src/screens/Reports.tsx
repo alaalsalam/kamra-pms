@@ -71,7 +71,7 @@ export default function Reports() {
   const [d, setD] = useState<Flash | null>(null)
 
   const load = useCallback(() => {
-    call<Flash>("kamra.reports.manager_flash", {
+    call<Flash>("hotelpms.reports.manager_flash", {
       property: getCurrentProperty(),
       date,
     }).then(setD)

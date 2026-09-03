@@ -7,6 +7,9 @@ const DIAL_BY_COUNTRY: Record<string, string> = {
   "united arab emirates": "971",
   uae: "971",
   ae: "971",
+  "saudi arabia": "966",
+  saudi: "966",
+  sa: "966",
   "united states": "1",
   usa: "1",
   us: "1",
@@ -29,6 +32,17 @@ function digitsOnly(raw: string): string {
   return raw.replace(/\D/g, "").replace(/^0+/, "")
 }
 
+function groupLocal(local: string): string {
+  // Saudi landline/mobile numbers are nine digits after +966.
+  if (local.length === 9) {
+    return `${local.slice(0, 2)} ${local.slice(2, 5)} ${local.slice(5)}`
+  }
+  if (local.length === 10) {
+    return `${local.slice(0, 5)} ${local.slice(5)}`
+  }
+  return local
+}
+
 /**
  * Display form, e.g. `+91 91488 69914`.
  * Leaves numbers that already start with `+` intact (normalized spacing).
@@ -42,13 +56,12 @@ export function formatPhoneDisplay(
   if (raw.startsWith("+")) {
     const rest = digitsOnly(raw.slice(1))
     if (!rest) return raw
-    // +91XXXXXXXXXX → +91 XXXXX XXXXX-ish grouping by country code length
-    if (rest.length > 10) {
-      const cc = rest.slice(0, rest.length - 10)
-      const local = rest.slice(-10)
-      return `+${cc} ${local.slice(0, 5)} ${local.slice(5)}`
-    }
-    return `+${rest}`
+    const expected = country ? dialForCountry(country) : ""
+    const known = [...new Set(Object.values(DIAL_BY_COUNTRY))]
+      .sort((a, b) => b.length - a.length)
+      .find((dial) => rest.startsWith(dial))
+    const dial = expected && rest.startsWith(expected) ? expected : known
+    return dial ? `+${dial} ${groupLocal(rest.slice(dial.length))}` : `+${rest}`
   }
   const dial = dialForCountry(country)
   let local = digitsOnly(raw)
@@ -59,9 +72,9 @@ export function formatPhoneDisplay(
     local = local.slice(dial.length)
   }
   if (local.length === 10) {
-    return `+${dial} ${local.slice(0, 5)} ${local.slice(5)}`
+    return `+${dial} ${groupLocal(local)}`
   }
-  return `+${dial} ${local}`
+  return `+${dial} ${groupLocal(local)}`
 }
 
 /** tel: href value, e.g. `+919148869914`. */

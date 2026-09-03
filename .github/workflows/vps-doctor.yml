@@ -45,14 +45,14 @@ jobs:
             docker inspect "$c" --format '{{.Name}} restarts={{.RestartCount}} oom={{.State.OOMKilled}} status={{.State.Status}}'
           done
           echo "===== bench log sizes inside backends ====="
-          for c in kamra-backend-1 kamra-nightly-backend-1; do
+          for c in hotelpms-backend-1 hotelpms-nightly-backend-1; do
             echo "--- $c"
             docker exec "$c" bash -c 'du -sh /home/frappe/frappe-bench/logs 2>/dev/null; ls -laSh /home/frappe/frappe-bench/logs 2>/dev/null | head -8; du -sh /home/frappe/frappe-bench/sites/*/logs 2>/dev/null | head -5' 2>/dev/null || echo "(exec failed)"
           done
           echo "===== biggest files on / (top 10) ====="
           find / -xdev -type f -size +1G -exec ls -lh {} \; 2>/dev/null | sort -k5 -h | tail -10
           echo "===== last nightly build log tail ====="
-          tail -25 ~/kamra-deploy/last-nightly-build.log 2>/dev/null
+          tail -25 ~/hotelpms-deploy/last-nightly-build.log 2>/dev/null
           echo "===== dmesg / journal tail ====="
           journalctl -p warning -n 20 --no-pager 2>/dev/null | tail -20
           echo "DOCTOR_DONE"

@@ -53,7 +53,7 @@ const STATIONS = ["Kitchen", "Tandoor", "Grill", "Fryer", "Bar"]
 // The kitchen's own thresholds, in minutes: fresh, working, needs eyes.
 const AMBER_AT = 5
 const LATE_AT = 10
-const CHIME_KEY = "kamra.kds.chime"
+const CHIME_KEY = "hotelpms.kds.chime"
 
 const STATION_ICON: Record<string, typeof Flame> = {
   Kitchen: ChefHat, Tandoor: Flame, Grill: Flame, Fryer: CookingPot, Bar: Martini,
@@ -492,12 +492,12 @@ export default function Kitchen() {
   const now = useNow()
 
   useEffect(() => {
-    call<{ name: string; outlet_name: string }[]>("kamra.pos.outlets", { property: getCurrentProperty() })
+    call<{ name: string; outlet_name: string }[]>("hotelpms.pos.outlets", { property: getCurrentProperty() })
       .then(setOutlets).catch(() => {})
   }, [])
 
   const load = useCallback(() => {
-    call<KotOrder[]>("kamra.pos.kitchen_queue", {
+    call<KotOrder[]>("hotelpms.pos.kitchen_queue", {
       property: getCurrentProperty(),
       outlet: outlet || null,
       station: station || null,
@@ -535,7 +535,7 @@ export default function Kitchen() {
   const act = useCallback(async (order: string, fn: string, params: Record<string, unknown>) => {
     setBusy(order + (params.item_row ?? params.course ?? ""))
     try {
-      await call(`kamra.pos.${fn}`, { order, ...params })
+      await call(`hotelpms.pos.${fn}`, { order, ...params })
       load()
     } finally {
       setBusy(null)

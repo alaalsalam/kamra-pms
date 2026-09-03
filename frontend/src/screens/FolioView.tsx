@@ -143,7 +143,7 @@ const CHARGE_TYPES = [
   "Food & Beverage", "Minibar", "Laundry", "Spa",
   "Early Check-in", "Late Checkout", "Discount", "Misc",
 ]
-const PAY_MODES = ["Cash", "Card", "UPI", "Bank Transfer", "Payment Link"]
+const PAY_MODES = ["Cash", "Card", "Mada", "Bank Transfer", "Payment Link"]
 
 const inputCls =
   "rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm " +
@@ -206,11 +206,11 @@ export default function FolioView() {
 
   const load = useCallback(() => {
     if (name)
-      call<InvoiceData>("kamra.api.folio_invoice", { folio: name })
+      call<InvoiceData>("hotelpms.api.folio_invoice", { folio: name })
         .then((d) => {
           setData(d)
           setPayment((p) => ({ ...p, amount: String(d.folio.balance || "") }))
-          return call<SiblingFolio[]>("kamra.api.reservation_folios", {
+          return call<SiblingFolio[]>("hotelpms.api.reservation_folios", {
             reservation: d.stay.reservation,
           })
         })
@@ -226,7 +226,7 @@ export default function FolioView() {
   }, [])
   useEffect(() => {
     call<{ required: boolean; has_pin: boolean }>(
-      "kamra.api.cashier_pin_status",
+      "hotelpms.api.cashier_pin_status",
       { property: getCurrentProperty() },
     )
       .then(setPinStatus)
@@ -252,7 +252,7 @@ export default function FolioView() {
 
   function removeFolio(target: SiblingFolio) {
     act(async () => {
-      await call("kamra.api.delete_folio", { folio: target.name })
+      await call("hotelpms.api.delete_folio", { folio: target.name })
       if (target.name === name) {
         const guest = siblings.find((s) => s.folio_type === "Guest")
         navigate(
@@ -341,7 +341,7 @@ export default function FolioView() {
               onClick={() =>
                 act(async () => {
                   const r = await call<{ url: string }>(
-                    "kamra.api.folio_payment_link",
+                    "hotelpms.api.folio_payment_link",
                     { folio: folio.name },
                   )
                   navigator.clipboard.writeText(r.url)
@@ -366,7 +366,7 @@ export default function FolioView() {
               disabled={busy}
               onClick={() =>
                 act(() =>
-                  call("kamra.api.split_folio", {
+                  call("hotelpms.api.split_folio", {
                     reservation: data.stay.reservation,
                     folio_type: siblings.some((s) => s.folio_type === "Company")
                       ? "Extra"
@@ -387,7 +387,7 @@ export default function FolioView() {
                 title="One consolidated company bill across every room of the group"
                 onClick={() =>
                   act(() =>
-                    call("kamra.api.group_master_folio", {
+                    call("hotelpms.api.group_master_folio", {
                       group_booking: data.stay.group_booking,
                     }),
                   )
@@ -410,7 +410,7 @@ export default function FolioView() {
                 onClick={() =>
                   act(async () => {
                     const r = await call<{ new_folio: string }>(
-                      "kamra.api.part_settle_folio",
+                      "hotelpms.api.part_settle_folio",
                       withPin({ folio: folio.name }),
                     )
                     navigate(`/billing/${encodeURIComponent(r.new_folio)}`)
@@ -433,7 +433,7 @@ export default function FolioView() {
             <Button
               disabled={busy}
               onClick={() =>
-                act(() => call("kamra.api.close_folio", withPin({ folio: folio.name })))
+                act(() => call("hotelpms.api.close_folio", withPin({ folio: folio.name })))
               }
             >
               Close & generate invoice
@@ -459,7 +459,7 @@ export default function FolioView() {
             disabled={busy || !cancelReason.trim()}
             onClick={() =>
               act(async () => {
-                await call("kamra.api.cancel_invoice", withPin({
+                await call("hotelpms.api.cancel_invoice", withPin({
                   folio: folio.name,
                   reason: cancelReason.trim(),
                 }))
@@ -496,7 +496,7 @@ export default function FolioView() {
             disabled={busy || newPin.trim().length < 4}
             onClick={() =>
               act(async () => {
-                await call("kamra.api.set_cashier_pin", { pin: newPin.trim() })
+                await call("hotelpms.api.set_cashier_pin", { pin: newPin.trim() })
                 setNewPin("")
                 setPinStatus((s) => (s ? { ...s, has_pin: true } : s))
               })
@@ -565,7 +565,7 @@ export default function FolioView() {
                 <p className="text-sm text-zinc-500">
                   {property.gstin && (
                     <>
-                      GSTIN: <span className="font-medium">{property.gstin}</span>{" "}
+                      {taxLabel() === "VAT" ? "VAT Registration No." : "GSTIN"}: <span className="font-medium">{property.gstin}</span>{" "}
                       ·{" "}
                     </>
                   )}
@@ -600,7 +600,7 @@ export default function FolioView() {
               <span className="text-zinc-500">Bill to: </span>
               <span className="font-medium">{data.bill_to.name}</span>
               {data.bill_to.gstin && (
-                <span className="text-zinc-500"> · GSTIN {data.bill_to.gstin}</span>
+                <span className="text-zinc-500"> · {taxLabel() === "VAT" ? "VAT Registration No." : "GSTIN"} {data.bill_to.gstin}</span>
               )}
             </div>
           )}
@@ -697,7 +697,7 @@ export default function FolioView() {
                   const moveTo = (to: string) =>
                     act(async () => {
                       if (one && partOk) {
-                        await call("kamra.api.split_folio_charge", {
+                        await call("hotelpms.api.split_folio_charge", {
                           from_folio: folio.name,
                           charge_row: one.name,
                           to_folio: to,
@@ -705,7 +705,7 @@ export default function FolioView() {
                           amount: isPct ? null : num,
                         })
                       } else {
-                        await call("kamra.api.transfer_folio_charges", {
+                        await call("hotelpms.api.transfer_folio_charges", {
                           from_folio: folio.name,
                           charge_rows: [...selected],
                           to_folio: to,
@@ -717,11 +717,11 @@ export default function FolioView() {
                   const moveToNew = (type: "Extra" | "Company") =>
                     act(async () => {
                       const r = await call<{ folio: string }>(
-                        "kamra.api.split_folio",
+                        "hotelpms.api.split_folio",
                         { reservation: data.stay.reservation, folio_type: type },
                       )
                       if (one && partOk) {
-                        await call("kamra.api.split_folio_charge", {
+                        await call("hotelpms.api.split_folio_charge", {
                           from_folio: folio.name,
                           charge_row: one.name,
                           to_folio: r.folio,
@@ -729,7 +729,7 @@ export default function FolioView() {
                           amount: isPct ? null : num,
                         })
                       } else {
-                        await call("kamra.api.transfer_folio_charges", {
+                        await call("hotelpms.api.transfer_folio_charges", {
                           from_folio: folio.name,
                           charge_rows: [...selected],
                           to_folio: r.folio,
@@ -750,13 +750,13 @@ export default function FolioView() {
                             <span>· move only</span>
                             <input
                               className="w-24 rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs"
-                              aria-label={`Part to move (percent, or ${cur()} before GST)`}
+                              aria-label={`Part to move (percent, or ${cur()} before ${taxLabel()})`}
                               placeholder="30% or 1500"
                               value={partVal}
                               onChange={(e) => setPartVal(e.target.value)}
                             />
                             <span className="text-zinc-400">
-                              ({cur()} = before GST)
+                              ({cur()} = before {taxLabel()})
                             </span>
                           </span>
                         )}
@@ -773,7 +773,7 @@ export default function FolioView() {
                       {partBad && (
                         <p className="mt-1.5 text-xs text-rose-600">
                           Enter 1–99%, or a {cur()} amount under the line's {cur()}
-                          {inr(one!.amount)} (before GST).
+                          {inr(one!.amount)} (before {taxLabel()}).
                         </p>
                       )}
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -885,7 +885,7 @@ export default function FolioView() {
                                       disabled={busy}
                                       onClick={() =>
                                         act(async () => {
-                                          await call("kamra.api.void_folio_charge",
+                                          await call("hotelpms.api.void_folio_charge",
                                             withPin({ folio: folio.name, charge_row: c.name }))
                                           setVoidFor(null)
                                         })
@@ -974,10 +974,12 @@ export default function FolioView() {
                 <tbody className="divide-y divide-zinc-100">
                   {(taxRows.length ? taxRows : gst_summary.map((g) => ({
                     rate: g.rate, taxable: g.taxable, total_tax: g.total_tax,
-                    parts: [
-                      { label: "CGST", rate: g.rate / 2, amount: g.cgst },
-                      { label: "SGST", rate: g.rate / 2, amount: g.sgst },
-                    ],
+                    parts: taxLabel() === "VAT"
+                      ? [{ label: "VAT", rate: g.rate, amount: g.total_tax }]
+                      : [
+                          { label: "CGST", rate: g.rate / 2, amount: g.cgst },
+                          { label: "SGST", rate: g.rate / 2, amount: g.sgst },
+                        ],
                   }))).map((r) => (
                     <tr key={r.rate}>
                       <td className="py-1.5 pr-3">{r.rate}%</td>
@@ -999,7 +1001,7 @@ export default function FolioView() {
                 Charges: <span className="text-zinc-900">{cur()}{inr(folio.charges_total)}</span>
               </p>
               <p className="text-zinc-500">
-                GST: <span className="text-zinc-900">{cur()}{inr(folio.tax_total)}</span>
+                {taxLabel()}: <span className="text-zinc-900">{cur()}{inr(folio.tax_total)}</span>
               </p>
               <p className="text-lg font-semibold">
                 Grand total: {cur()}{inr(folio.grand_total)}
@@ -1062,7 +1064,7 @@ export default function FolioView() {
                     value={refund.reason} onChange={(e) => setRefund({ ...refund, reason: e.target.value })} />
                   <Button variant="outline" className="text-rose-600" disabled={busy || !refund.amount || !refund.reason.trim()}
                     onClick={() => act(async () => {
-                      await call("kamra.api.refund_folio_payment", withPin({
+                      await call("hotelpms.api.refund_folio_payment", withPin({
                         folio: folio.name, amount: Number(refund.amount),
                         mode: refund.mode, reason: refund.reason,
                       }))
@@ -1084,10 +1086,7 @@ export default function FolioView() {
           {folio.invoice_number && (
             <div className="mt-8 flex items-end justify-between border-t border-zinc-200 pt-4 text-xs text-zinc-500">
               <p className="max-w-md">
-                This is a computer-generated tax invoice under the GST Act.
-                {property.gstin
-                  ? " Amounts are inclusive of GST at the rates shown."
-                  : ""}
+                {doc?.footer || "This is a computer-generated tax invoice."}
               </p>
               <div className="text-center">
                 <div className="mb-1 h-8 w-40 border-b border-zinc-300" />
@@ -1142,7 +1141,7 @@ export default function FolioView() {
               >
                 {rates.map((n) => String(n)).map((r) => (
                   <option key={r} value={r}>
-                    GST {r}%
+                    {taxLabel()} {r}%
                   </option>
                 ))}
               </select>
@@ -1161,7 +1160,7 @@ export default function FolioView() {
                 disabled={busy || !charge.amount}
                 onClick={() =>
                   act(() =>
-                    call("kamra.api.add_folio_charge", {
+                    call("hotelpms.api.add_folio_charge", {
                       folio: folio.name,
                       ...charge,
                       amount: Number(charge.amount),
@@ -1199,7 +1198,7 @@ export default function FolioView() {
                   >
                     {rates.map((n) => String(n)).map((r) => (
                       <option key={r} value={r}>
-                        GST {r}%
+                        {taxLabel()} {r}%
                       </option>
                     ))}
                   </select>
@@ -1216,7 +1215,7 @@ export default function FolioView() {
                     disabled={busy || !allowance.amount || !allowance.reason.trim()}
                     onClick={() =>
                       act(async () => {
-                        await call("kamra.api.post_allowance", withPin({
+                        await call("hotelpms.api.post_allowance", withPin({
                           folio: folio.name,
                           amount: Number(allowance.amount),
                           reason: allowance.reason.trim(),
@@ -1278,7 +1277,7 @@ export default function FolioView() {
                 disabled={busy || !payment.amount}
                 onClick={() =>
                   act(() =>
-                    call("kamra.api.add_folio_payment", withPin({
+                    call("hotelpms.api.add_folio_payment", withPin({
                       folio: folio.name,
                       mode: payment.mode,
                       kind: payment.kind,

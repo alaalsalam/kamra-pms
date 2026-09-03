@@ -1,7 +1,7 @@
-# Frappe Cloud Marketplace listing — Kamra
+# Frappe Cloud Marketplace listing — HotelPMS
 
 Paste-ready copy for the Frappe Cloud publisher form
-(frappecloud.com → Marketplace → Kamra). Keep this file in sync with the
+(frappecloud.com → Marketplace → HotelPMS). Keep this file in sync with the
 README when the feature set changes.
 
 Copy follows the [marketplace guidelines](https://docs.frappe.io/cloud/marketplace/marketplace-guidelines)
@@ -9,20 +9,20 @@ and [app authoring guidelines](https://docs.frappe.io/cloud/marketplace/app-auth
 short description 40–80 characters, no install steps, no persuasion away
 from Frappe Cloud.
 
-- **Repo / branch to build from:** `Kamra-PMS/kamra-pms`, branch `main`
+- **Repo / branch to build from:** `YemenFrappe/hotelpms`, branch `main`
 - **Frappe version:** v16
 - **Pricing:** Free
 - **License:** AGPL-3.0
 - **Category:** Hospitality (use **Other** if Hospitality is absent — do
   **not** leave it on E-Commerce)
-- **Public listing (currently Not Available):** https://frappecloud.com/marketplace/apps/kamra
+- **Public listing (currently Not Available):** https://frappecloud.com/marketplace/apps/hotelpms
 
 ---
 
 ## Title
 
 ```
-Kamra — Hotel & Short-Term Rental PMS
+HotelPMS — Hotel & Short-Term Rental PMS
 ```
 
 ## Short description (one line / summary field)
@@ -51,7 +51,7 @@ per-module rent.
 
 Most hotel software was built twenty years ago: click-heavy screens, add-on
 fees for night audit and reports, and guest history locked in a vendor
-cloud. Kamra treats every operation as a governed, audited action, so your
+cloud. HotelPMS treats every operation as a governed, audited action, so your
 team (and the AI you trust) can actually run the property.
 
 Install it on your Frappe Cloud site from this listing. The `payments` app
@@ -124,9 +124,9 @@ is pulled in automatically.
 
 ### After install
 
-The product UI is at `/kamra`. Sign in as Administrator (or
+The product UI is at `/hotelpms`. Sign in as Administrator (or
 admin@example.com) with the site password and open
-`/kamra/setup` to create the first property. Put the live demo and catalog
+`/hotelpms/setup` to create the first property. Put the live demo and catalog
 on the Website / Documentation fields — Frappe Cloud fails the listing
 audit if the long description contains any other links.
 ```
@@ -155,7 +155,7 @@ Lead with the most legible, "what is this product" shots first.
 
 ## Logo / icon
 
-- **App logo:** `branding/png/kamra-mark-512.png` (square, no wordmark —
+- **App logo:** `branding/png/hotelpms-mark-512.png` (square, no wordmark —
   Frappe crops logos into a circle)
 - Desk/app-switcher icon is already wired via `app_logo_url` in `hooks.py`.
 
@@ -163,32 +163,32 @@ Lead with the most legible, "what is this product" shots first.
 
 | Field | Value |
 |---|---|
-| Support URL | https://kamrapms.com/support |
-| Privacy Policy URL | https://kamrapms.com/privacy |
-| Website | https://kamrapms.com |
-| Documentation | https://kamrapms.com/docs/ |
-| Source | https://github.com/Kamra-PMS/kamra-pms |
-| Terms | https://kamrapms.com/terms |
-| Live demo | https://demo.kamrapms.com |
-| Support email | hello@kamrapms.com |
+| Support URL | https://hotelpms.yemenfrappe.com/support |
+| Privacy Policy URL | https://hotelpms.yemenfrappe.com/privacy |
+| Website | https://hotelpms.yemenfrappe.com |
+| Documentation | https://hotelpms.yemenfrappe.com/docs/ |
+| Source | https://github.com/YemenFrappe/hotelpms |
+| Terms | https://hotelpms.yemenfrappe.com/terms |
+| Live demo | https://demo.hotelpms.yemenfrappe.com |
+| Support email | hello@hotelpms.yemenfrappe.com |
 
 ## Publisher profile
 
 - **Publisher display name:** HeyKoala (or Mohammed Azzan — match the
   Frappe Cloud team)
-- **Contact:** hello@kamrapms.com
-- **Website:** https://kamrapms.com
+- **Contact:** hello@hotelpms.yemenfrappe.com
+- **Website:** https://hotelpms.yemenfrappe.com
 
 ## Demo video (reviewers ask for this)
 
 Record a 2–4 minute silent or narrated walkthrough and attach it to the
 Frappe Cloud review / support ticket:
 
-1. Open https://demo.kamrapms.com and show the printed role logins.
+1. Open https://demo.hotelpms.yemenfrappe.com and show the printed role logins.
 2. Sign in as Front Desk → Today → tape chart → new booking → folio.
 3. Open `/book` and run Check availability.
-4. Optional: https://ewa.kamrapms.com/kamra/book for the villa catalog.
-5. Open `/kamra/setup` only if you want to show first-run (skip if it
+4. Optional: https://ewa.hotelpms.yemenfrappe.com/hotelpms/book for the villa catalog.
+5. Open `/hotelpms/setup` only if you want to show first-run (skip if it
    would mutate the shared demo).
 
 Upload to YouTube (unlisted) or Loom and paste the URL into the listing
@@ -199,21 +199,21 @@ and the support ticket.
 ## Dashboard checklist (unhalt the listing)
 
 The public page already exists at
-https://frappecloud.com/marketplace/apps/kamra and shows **Not Available**
+https://frappecloud.com/marketplace/apps/hotelpms and shows **Not Available**
 until a reviewer publishes. Automated Submission Gate
-`AUD-kamra-00003` is **22 passed / 1 minor warning** (no blocking Fail).
+`AUD-hotelpms-00003` is **22 passed / 1 minor warning** (no blocking Fail).
 
 Before publishing a new SHA:
 
 ```bash
-python kamra/scripts/marketplace_install_check.py
+python hotelpms/scripts/marketplace_install_check.py
 ```
 
-In https://frappecloud.com/dashboard → **Marketplace** → **Kamra**:
+In https://frappecloud.com/dashboard → **Marketplace** → **HotelPMS**:
 
 1. **Overview** — paste Title, Short description, Long description above.
 2. **Category** — Hospitality or Other (currently E-Commerce).
-3. **Logo** — `branding/png/kamra-mark-512.png`.
+3. **Logo** — `branding/png/hotelpms-mark-512.png`.
 4. **Screenshots** — the 13 files above, in that order, with captions.
 5. **Links** — Support + Privacy are mandatory; fill the rest too.
 6. **Releases** — create / select the `main` release at **v2.5.0**
@@ -226,26 +226,26 @@ In https://frappecloud.com/dashboard → **Marketplace** → **Kamra**:
 ### Support ticket (paste)
 
 ```
-Subject: Marketplace listing for Kamra (kamra) — request to complete review
+Subject: Marketplace listing for HotelPMS (hotelpms) — request to complete review
 
 Hi Frappe Cloud team,
 
-The Kamra marketplace app is at https://frappecloud.com/marketplace/apps/kamra
+The HotelPMS marketplace app is at https://frappecloud.com/marketplace/apps/hotelpms
 and still shows "Not Available" (Draft / no approved public release).
 
 We submitted earlier; Semgrep findings from that review were fixed in
-https://github.com/Kamra-PMS/kamra-pms/pull/16 and are on main. Stable
+https://github.com/YemenFrappe/hotelpms/pull/16 and are on main. Stable
 release is v2.5.0 (Frappe v16, AGPL-3.0, required_apps = payments).
 
 Please re-scan main and approve the latest release.
 
-Repo: https://github.com/Kamra-PMS/kamra-pms
+Repo: https://github.com/YemenFrappe/hotelpms
 Branch / tag: main / v2.5.0
-Demo: https://demo.kamrapms.com
-Docs: https://kamrapms.com/docs/
-Support: https://kamrapms.com/support
-Privacy: https://kamrapms.com/privacy
-Publisher contact: hello@kamrapms.com
+Demo: https://demo.hotelpms.yemenfrappe.com
+Docs: https://hotelpms.yemenfrappe.com/docs/
+Support: https://hotelpms.yemenfrappe.com/support
+Privacy: https://hotelpms.yemenfrappe.com/privacy
+Publisher contact: hello@hotelpms.yemenfrappe.com
 
 Happy to join a short review call or share a demo video.
 
@@ -257,17 +257,17 @@ HeyKoala
 ### discuss.frappe.io announcement (after it goes live)
 
 ```
-Title: Kamra PMS — open-source hotel & short-term rental PMS on Frappe v16
+Title: HotelPMS — open-source hotel & short-term rental PMS on Frappe v16
 
-Kamra is an AGPL property management system for hotels and short-term
+HotelPMS is an AGPL property management system for hotels and short-term
 rentals, built on Frappe v16. Front desk, direct booking, villa catalogs,
 POS, housekeeping, folios and tax billing — install from the Frappe Cloud
 Marketplace onto your site.
 
-- Marketplace: https://frappecloud.com/marketplace/apps/kamra
-- Release: https://github.com/Kamra-PMS/kamra-pms/releases/tag/v2.5.0
-- Live demo: https://demo.kamrapms.com
-- Villa catalog: https://ewa.kamrapms.com/kamra/book
-- Docs: https://kamrapms.com/docs/
-- Source: https://github.com/Kamra-PMS/kamra-pms
+- Marketplace: https://frappecloud.com/marketplace/apps/hotelpms
+- Release: https://github.com/YemenFrappe/hotelpms/releases/tag/v2.5.0
+- Live demo: https://demo.hotelpms.yemenfrappe.com
+- Villa catalog: https://ewa.hotelpms.yemenfrappe.com/hotelpms/book
+- Docs: https://hotelpms.yemenfrappe.com/docs/
+- Source: https://github.com/YemenFrappe/hotelpms
 ```

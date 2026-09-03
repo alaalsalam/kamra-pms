@@ -1,6 +1,6 @@
 # Connect your AI (MCP)
 
-Kamra is agent-native: everything staff can do through a governed tool,
+HotelPMS is agent-native: everything staff can do through a governed tool,
 an agent can do — through the same layer. Prices come from the pricing
 engine, guardrails and policies apply, and every action lands in the
 activity ledger with who / what / why.
@@ -10,7 +10,7 @@ There are two ways to put an AI to work, and they can run side by side.
 ## How it works
 
 ```
-Claude  →  HTTPS /mcp (OAuth as you)  →  Kamra tools  →  pricing engine,
+Claude  →  HTTPS /mcp (OAuth as you)  →  HotelPMS tools  →  pricing engine,
            RBAC, folio rules, night audit, Activity Log
 ```
 
@@ -24,15 +24,15 @@ check in; it cannot change rates or run finance. Unattended jobs
 
 ## 1. Connect Claude (the usual path)
 
-Your Kamra site must be **public HTTPS** — Claude talks to it from
+Your HotelPMS site must be **public HTTPS** — Claude talks to it from
 Anthropic's cloud, not from the laptop.
 
-1. In Kamra open **Kamra Agent → Connect your AI**.
+1. In HotelPMS open **HotelPMS Agent → Connect your AI**.
 2. Click **Connect Claude**. Claude opens with this hotel's MCP URL
    filled in.
-3. Confirm **Add**, then sign in to Kamra if asked, pick the property,
+3. Confirm **Add**, then sign in to HotelPMS if asked, pick the property,
    **Allow**.
-4. In a Claude chat, open the **+** menu → Connectors and enable Kamra.
+4. In a Claude chat, open the **+** menu → Connectors and enable HotelPMS.
 
 Then talk in hotel language: *"Book Mr. Rao a deluxe Fri–Sun with
 breakfast, company Acme pays the stay"* — it quotes, books, routes
@@ -41,7 +41,7 @@ billing by the company's rules, and logs everything.
 **Claude Code** (same OAuth, from a terminal):
 
 ```bash
-claude mcp add --transport http kamra https://pms.yourhotel.com/mcp
+claude mcp add --transport http hotelpms https://pms.yourhotel.com/mcp
 ```
 
 Then `/mcp` in the session and complete the browser sign-in.
@@ -53,7 +53,7 @@ must sign in again.
 
 If the origin is `http://` or `*.localhost`, Connect Claude is disabled:
 Anthropic cannot reach you. Use Claude Code against the same `/mcp`
-URL on that machine, or the stdio sidecar in `mcp/kamra_mcp.py` with a
+URL on that machine, or the stdio sidecar in `mcp/hotelpms_mcp.py` with a
 personal API key from Developers.
 
 ### Cloudflare / WAF
@@ -74,14 +74,14 @@ provider's API key, save.
   local Ollama/vLLM. Set base URL and model to taste.
 - **Your key, your data.** No markup, no proxying — requests go from
   your server to your provider.
-- **Governed:** the model only calls Kamra's tools; it cannot invent a
+- **Governed:** the model only calls HotelPMS's tools; it cannot invent a
   price or skip a cancellation fee — the tools refuse.
 - **Role-scoped:** the copilot only sees the tools the signed-in user's
   roles allow.
 
 ## What work it can do
 
-Kamra currently ships **52 governed tools** (see the
+HotelPMS currently ships **52 governed tools** (see the
 [tool reference](/mcp-tools)). Roughly, by job:
 
 | Job | Tools |
@@ -114,7 +114,7 @@ the window, closing a folio) in the chat before the tool runs.
 
 - Enable the connector **per conversation** in Claude's + menu. It does
   not stay sticky across every chat unless you pin it.
-- Check **Activity** in Kamra — every MCP call is a row with your name.
+- Check **Activity** in HotelPMS — every MCP call is a row with your name.
 - Rotate access with **Disconnect** on the Connect panel, not by
   rotating a Frappe API key.
 - The in-app copilot is still there for a desk terminal that should not
@@ -134,7 +134,7 @@ Be honest with the model, and with buyers:
   tools** on MCP.
 - **Tickets** can be created and listed, not started or resolved.
 - **Claude must reach the site.** NAT / private bench → stdio fallback.
-- **Custom connector confirm.** Until Kamra is in Anthropic's directory,
+- **Custom connector confirm.** Until HotelPMS is in Anthropic's directory,
   Claude shows "this URL came from an external link" — click through it.
 - **Front Desk cannot change rates.** Revenue Manager (or admin) can,
   inside guardrails.
@@ -166,7 +166,7 @@ required to Connect Claude today.
 - Waitlist chase — poll `waitlist_ready` and reach out
 - Guest WhatsApp thread that posts to the folio
 - Public `/try-the-agent` playground with a tool trace
-- Submit Kamra to Anthropic's Connectors Directory
+- Submit HotelPMS to Anthropic's Connectors Directory
 
 **Tool holes**
 
@@ -175,6 +175,6 @@ required to Connect Claude today.
 
 **Housekeeping**
 
-- `agent@kamra.local` created on install (today: `seed_rbac_v2` only)
+- `agent@hotelpms.local` created on install (today: `seed_rbac_v2` only)
 - Tear down dormant autonomy / approvals UI
 - STR-shaped MCP (cleaning fee, deposits, access instructions)

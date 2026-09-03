@@ -13,7 +13,7 @@ decisions in **Open decisions** are resolved.
 
 ## Current foundation
 
-Kamra already supports several relevant primitives:
+HotelPMS already supports several relevant primitives:
 
 - `Room Type.room_category` supports `Villa`, `Private`, and `Shared`.
 - `Reservation.validate_villa_lockout()` blocks overlapping whole-property
@@ -226,9 +226,9 @@ Keep existing occupancy, ADR, RevPAR, and folio reporting. Add later:
 |---|---|
 | `Property` DocType + schema patches | Add `property_kind`; add any explicitly approved STR policy fields |
 | `frontend/src/screens/Setup.tsx` | Add property-kind chooser, STR branching, presets, and review |
-| `kamra.api.setup_property()` | Atomically persist the chosen kind, inventory topology, defaults, and enabled modules |
+| `hotelpms.api.setup_property()` | Atomically persist the chosen kind, inventory topology, defaults, and enabled modules |
 | `Reservation` validation | Enforce minimum stay; preserve the existing Villa lockout |
-| `kamra/pricing.py` and folio logic | Add per-stay cleaning fees, LOS adjustments, and deposit lifecycle only after the data model is agreed |
+| `hotelpms/pricing.py` and folio logic | Add per-stay cleaning fees, LOS adjustments, and deposit lifecycle only after the data model is agreed |
 | Public API and `PublicBooking.tsx` | Return and render STR-specific listing / policy / pricing information |
 | Housekeeping | Create whole-property turnover tasks and optional readiness buffer |
 | Channel manager | Correct hybrid ARI availability before live OTA sync |
@@ -379,7 +379,7 @@ module defaults, terminology, overbooking defaults, and initial policies. It
 must not carry inventory topology, pricing logic, or reservation-state
 semantics.
 
-Before building the wizard, Kamra needs explicit answers for:
+Before building the wizard, HotelPMS needs explicit answers for:
 
 - what is marketed as a listing
 - what is independently sellable

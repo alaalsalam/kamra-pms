@@ -1,6 +1,6 @@
 # Channel manager (OTA sync)
 
-Kamra syncs availability and rates to the OTAs — and receives their
+HotelPMS syncs availability and rates to the OTAs — and receives their
 bookings — through a channel manager. The integration is a provider
 seam: adapters ship for **Channex.io** (usable today, self-serve),
 **STAAH** and **AioSell** (ready; they activate with the credentials
@@ -14,13 +14,13 @@ to them, certified with Booking.com, Agoda, Expedia, Airbnb and more.
 
 1. Create a Channex account, add your property and rooms, connect your
    OTA channels in their dashboard.
-2. In Kamra: *Revenue → Channel Manager → New*: provider **Channex**,
+2. In HotelPMS: *Revenue → Channel Manager → New*: provider **Channex**,
    your Channex **user API key**, the Channex **property id**, and a
    **webhook secret** you invent. Tick Active.
 3. *Revenue → OTA Room Mappings*: one row per room type — your room
    type against the Channex `room_type_id` and `rate_plan_id`.
 4. In Channex, register a **booking webhook** pointing at
-   `https://YOUR-SITE/api/method/kamra.channel_manager.webhook?connection=CMC-XXXXX`
+   `https://YOUR-SITE/api/method/hotelpms.channel_manager.webhook?connection=CMC-XXXXX`
    (the exact URL shows on the connection row), sending your secret in
    the `X-Webhook-Secret` header.
 
@@ -52,5 +52,5 @@ certification.
 ## Is any of this gated?
 
 No. The integrations are open source like everything else. You pay the
-channel manager directly for their service; on Kamra Cloud we can
+channel manager directly for their service; on HotelPMS Cloud we can
 bundle and manage it for you as a connected service.

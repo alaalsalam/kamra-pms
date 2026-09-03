@@ -83,6 +83,6 @@ export function serverError(e: unknown): string {
   if (status && status >= 500)
     return "Something went wrong on the server. Try again in a moment."
   if (status) return "That didn't go through. Please try again."
-  console.warn("[kamra] unexpected error", e)
+  console.warn("[hotelpms] unexpected error", e)
   return "Something unexpected went wrong. Try again — if it keeps happening, let your admin know."
 }

@@ -1,23 +1,23 @@
-# Kamra brand assets
+# HotelPMS brand assets
 
-The mark: a door opening into a **K** — kamra means *room*.
+The mark: a door opening into a **K** — hotelpms means *room*.
 
 ## Palette
 
 | Token | Hex | Use |
 |---|---|---|
-| Kamra Green | `#1E7B4F` | mark, accents, PMS tag |
+| HotelPMS Green | `#1E7B4F` | mark, accents, PMS tag |
 | Mint | `#56C589` | the door dot |
 | Ink | `#1C3F38` | wordmark |
 
 ## Files
 
-- `kamra-mark.svg` — square icon (favicons, app icons, avatars)
-- `kamra-square.svg` — stacked lockup (social profiles, print)
-- `kamra-horizontal.svg` — mark + wordmark (site headers, docs, decks)
+- `hotelpms-mark.svg` — square icon (favicons, app icons, avatars)
+- `hotelpms-square.svg` — stacked lockup (social profiles, print)
+- `hotelpms-horizontal.svg` — mark + wordmark (site headers, docs, decks)
 - `png/` — rendered exports (mark 512/1024, square 1024, horizontal
   1560×480, favicon-32, apple-touch-180)
-- `source/kamra-pms-original.png` — original raster reference
+- `source/hotelpms-pms-original.png` — original raster reference
 
 ## Notes
 

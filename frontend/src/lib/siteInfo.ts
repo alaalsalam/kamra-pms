@@ -14,7 +14,7 @@ let cached: Promise<SiteInfo> | null = null
 
 export function getSiteInfo(): Promise<SiteInfo> {
   if (!cached) {
-    cached = call<SiteInfo>("kamra.public_api.site_info").catch(() => ({
+    cached = call<SiteInfo>("hotelpms.public_api.site_info").catch(() => ({
       demo_mode: false,
     }))
   }

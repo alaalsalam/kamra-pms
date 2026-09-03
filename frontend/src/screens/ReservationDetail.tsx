@@ -145,7 +145,7 @@ function IdentityCard({ d, reload }: { d: Detail; reload: () => void }) {
             No ID document on file — capture it at the counter.
           </div>
           <IdDocumentField
-            method="kamra.api.upload_id_document"
+            method="hotelpms.api.upload_id_document"
             params={{ reservation: d.name }}
             uploaded={false}
             onUploaded={reload}

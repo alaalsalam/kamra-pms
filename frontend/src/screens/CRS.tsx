@@ -70,7 +70,7 @@ export default function CRS() {
     setBusy(true)
     setError(null)
     try {
-      const r = await call<Results>("kamra.crs.crs_search", {
+      const r = await call<Results>("hotelpms.crs.crs_search", {
         check_in_date: checkIn,
         check_out_date: checkOut,
         adults,
@@ -89,7 +89,7 @@ export default function CRS() {
     setBusy(true)
     setError(null)
     try {
-      const r = await call<{ reservation: string }>("kamra.api.create_booking", {
+      const r = await call<{ reservation: string }>("hotelpms.api.create_booking", {
         property: booking.property,
         room_type: booking.rt.room_type,
         check_in_date: checkIn,
@@ -238,7 +238,8 @@ export default function CRS() {
             </label>
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-zinc-600">Phone</span>
-              <input className={inputCls} value={guest.phone} placeholder="+91 …"
+              <input className={inputCls} type="tel" dir="ltr" value={guest.phone}
+                placeholder="+966 5X XXX XXXX"
                 onChange={(e) => setGuest({ ...guest, phone: e.target.value })} />
             </label>
           </div>

@@ -1,10 +1,10 @@
-/*  The Kamra app suite. One PMS, several apps - like a workspace suite:
+/*  The HotelPMS app suite. One PMS, several apps - like a workspace suite:
     Front Desk is where the day happens; Housekeeping, Operations, Events,
     Revenue, Finance and Admin are their own rooms. The switcher in the top
     bar and the /apps launcher move between them; Search (Ctrl/Cmd+K) jumps
     anywhere and the sidebar follows.
 
-    Every app is open and included - Kamra is fully open source. */
+    Every app is open and included - HotelPMS is fully open source. */
 
 import {
   BadgePercent,
@@ -24,7 +24,6 @@ import {
   ExternalLink,
   FileSpreadsheet,
   Home,
-  IndianRupee,
   Landmark,
   LayoutGrid,
   ListChecks,
@@ -94,13 +93,13 @@ export const APPS: AppDef[] = [
     items: [
       { to: "/", label: "Today", icon: Home },
       { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/assistant", label: "Kamra Agent", icon: Sparkles },
       { to: "/reservations", label: "Reservations", icon: ClipboardList },
-      { to: "/crs", label: "Central Reservations", icon: Search },
       { to: "/tape", label: "Tape Chart", icon: LayoutGrid },
       { to: "/calendar", label: "Calendar", icon: CalendarDays },
+      { to: "/crs", label: "Central Reservations", icon: Search },
       { to: "/guests", label: "Guests", icon: Users },
       { to: "/room-blocks", label: "Room Blocks", icon: Lock },
+      { to: "/assistant", label: "HotelPMS Assistant", icon: Sparkles },
     ],
     extraPrefixes: ["/grc", "/cancelled", "/agents"],
   },
@@ -110,12 +109,12 @@ export const APPS: AppDef[] = [
     icon: ClipboardCheck,
     tint: APP_TILE,
     description: "Room status board, lost & found, and the phone app.",
-    roles: ["Housekeeping", "Front Desk", "Hotel Admin", "System Manager", "Administrator"],
+    roles: ["Housekeeping", "Hotel Admin", "System Manager", "Administrator"],
     items: [
       { to: "/housekeeping", label: "Room Board", icon: ListChecks },
       { to: "/laundry", label: "Laundry", icon: Shirt },
       { to: "/lost-found", label: "Lost & Found", icon: PackageSearch },
-      { href: "/kamra/hk", label: "Phone App", icon: Smartphone },
+      { href: "/hotelpms/hk", label: "Phone App", icon: Smartphone },
     ],
   },
   {
@@ -128,7 +127,7 @@ export const APPS: AppDef[] = [
     items: [
       { to: "/tickets", label: "Guest Requests", icon: Ticket },
       { to: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
-      { to: "/channels", label: "Channels", icon: PhoneCall,
+      { to: "/channels", label: "Voice & Messaging", icon: PhoneCall,
         roles: ["Hotel Admin", "System Manager", "Administrator"] },
       { to: "/ops-sla", label: "SLA Report", icon: AlarmClock },
       { to: "/shifts", label: "Shifts", icon: Clock },
@@ -140,13 +139,20 @@ export const APPS: AppDef[] = [
     icon: UtensilsCrossed,
     tint: APP_TILE,
     description: "Restaurant POS, kitchen display, the menu and kitchen stock.",
-    roles: ["Front Desk", "Finance", "Hotel Admin", "System Manager", "Administrator"],
+    roles: ["Restaurant POS", "Kitchen", "Front Desk", "Finance", "Hotel Admin", "System Manager", "Administrator"],
     items: [
-      { to: "/pos", label: "Restaurant POS", icon: UtensilsCrossed },
-      { to: "/kitchen", label: "Kitchen Display", icon: ConciergeBell },
-      { to: "/menu-items", label: "Menu", icon: ClipboardList },
-      { to: "/inventory", label: "Kitchen Inventory", icon: PackageSearch },
-      { to: "/outlets", label: "Outlets", icon: Store },
+      { to: "/pos", label: "Restaurant POS", icon: UtensilsCrossed,
+        roles: ["Restaurant POS", "Front Desk", "Finance", "Hotel Admin", "System Manager", "Administrator"] },
+      { to: "/kitchen", label: "Kitchen Display", icon: ConciergeBell,
+        roles: ["Kitchen", "Restaurant POS", "Hotel Admin", "System Manager", "Administrator"] },
+      { to: "/inventory", label: "Kitchen Inventory", icon: PackageSearch,
+        roles: ["Finance", "Hotel Admin", "System Manager", "Administrator"] },
+      // Menu & Outlets are managed via the resource layer (Finance / admin
+      // DocPerm); Front Desk runs POS but doesn't edit the menu or outlets.
+      { to: "/menu-items", label: "Menu", icon: ClipboardList,
+        roles: ["Finance", "Hotel Admin", "System Manager", "Administrator"] },
+      { to: "/outlets", label: "Outlets", icon: Store,
+        roles: ["Finance", "Hotel Admin", "System Manager", "Administrator"] },
     ],
   },
   {
@@ -156,7 +162,7 @@ export const APPS: AppDef[] = [
     tint: APP_TILE,
     description:
       "Function prospecting, quotations and event orders - plus room blocks and pickup.",
-    roles: ["Front Desk", "Revenue Manager", "Hotel Admin", "System Manager", "Administrator"],
+    roles: ["Revenue Manager", "Hotel Admin", "System Manager", "Administrator"],
     items: [
       { to: "/banquet", label: "Banquets", icon: CalendarRange },
       { to: "/banquet-month", label: "Month Availability", icon: CalendarRange },
@@ -164,7 +170,7 @@ export const APPS: AppDef[] = [
       { to: "/banquet-registers", label: "Registers", icon: ScrollText },
       { to: "/banquet-catalogue", label: "Menus & Services", icon: UtensilsCrossed },
       { to: "/events", label: "All Functions", icon: ListChecks },
-      { to: "/groups", label: "Groups & Blocks", icon: Users },
+      { to: "/groups", label: "Groups", icon: Users },
       { to: "/venues", label: "Halls & Venues", icon: Landmark },
     ],
     extraPrefixes: ["/banquet"],
@@ -198,9 +204,8 @@ export const APPS: AppDef[] = [
     roles: ["Finance", "Hotel Admin", "System Manager", "Administrator"],
     items: [
       { to: "/billing", label: "Billing", icon: Receipt },
-      { to: "/reports", label: "Reports", icon: IndianRupee },
+      { to: "/reports", label: "Reports", icon: BarChart3 },
       { to: "/accounting-export", label: "Accounting Export", icon: FileSpreadsheet },
-      { to: "/laundry", label: "Laundry", icon: Shirt },
     ],
     extraPrefixes: ["/billing/"],
   },
@@ -265,6 +270,12 @@ export const APPS: AppDef[] = [
 
 /** Which app owns a path? Longest matching item route wins; "/" only exact. */
 export function appForPath(pathname: string): AppDef {
+  return matchingAppForPath(pathname) ?? APPS[0]
+}
+
+/** Owning app for a real product route. Undefined means a shared route such
+ * as /apps, which every authenticated user may open. */
+export function matchingAppForPath(pathname: string): AppDef | undefined {
   let best: { app: AppDef; len: number } | null = null
   for (const app of APPS) {
     const prefixes = [
@@ -272,19 +283,53 @@ export function appForPath(pathname: string): AppDef {
       ...(app.extraPrefixes ?? []),
     ]
     for (const p of prefixes) {
-      const hit =
-        p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p)
+      const hit = p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(p + "/")
       if (hit && (!best || p.length > best.len))
         best = { app, len: p.length }
     }
   }
-  return best?.app ?? APPS[0]
+  return best?.app
 }
 
-/** The apps this user can reach: their roles must allow it AND the
- *  property must actually run it. Roles alone were never enough - Front
- *  Desk unlocks both F&B and Banquets, so a serviced-apartment operator
- *  had no way to not see them. */
+/** Route-level RBAC. Item-specific roles are narrower than their app gate. */
+export function canAccessPath(pathname: string, roles: string[]): boolean {
+  // The index contains no operational data; RoleHome immediately sends each
+  // persona to its own approved workspace.
+  if (pathname === "/") return true
+  const app = matchingAppForPath(pathname)
+  if (!app) return ["/apps", "/marketplace", "/activity"].includes(pathname)
+  if (!app.roles.some((r) => roles.includes(r))) return false
+  const item = app.items
+    .filter((i) => i.to && (pathname === i.to || pathname.startsWith(i.to + "/")))
+    .sort((a, b) => (b.to?.length ?? 0) - (a.to?.length ?? 0))[0]
+  return !item?.roles || item.roles.some((r) => roles.includes(r))
+}
+
+export function firstAccessiblePath(roles: string[]): string {
+  const preferred: [string, string][] = [
+    ["Front Desk", "/"],
+    ["Revenue Manager", "/revenue-reports"],
+    ["Finance", "/billing"],
+    ["Housekeeping", "/housekeeping"],
+    ["Restaurant POS", "/pos"],
+    ["Kitchen", "/kitchen"],
+  ]
+  const home = preferred.find(([role, path]) => roles.includes(role) && canAccessPath(path, roles))
+  if (home) return home[1]
+  for (const app of APPS) {
+    if (!app.roles.some((r) => roles.includes(r))) continue
+    const item = app.items.find((i) => i.to && canAccessPath(i.to, roles))
+    if (item?.to) return item.to
+  }
+  return "/apps"
+}
+
+/** The apps this user can reach: their roles must allow it AND the property
+ *  must actually run it. Each tab is owned by ONE operational role (Front Desk
+ *  → front-desk + operations; Housekeeping → housekeeping; Finance → F&B +
+ *  finance; Revenue Manager → revenue + events + booking-engine); Hotel Admin /
+ *  System Manager see everything. Module gating hides tabs a property doesn't
+ *  run. */
 export function visibleApps(roles: string[], modules?: string[]): AppDef[] {
   return APPS.filter(
     (a) =>

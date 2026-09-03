@@ -11,6 +11,7 @@ import {
 import AppShell, { type ShellContext } from "./AppShell"
 const Login = lazy(() => import("./screens/Login"))
 import { useAuth } from "./lib/auth"
+import { canAccessPath, firstAccessiblePath } from "./lib/apps"
 import { toFullPath } from "./lib/routing"
 import { CalendarView } from "./components/CalendarView"
 import { ResourceScreen } from "./components/ResourceScreen"
@@ -79,6 +80,7 @@ import {
   vouchersConfig,
 } from "./screens/configs"
 import ConnectionBanner from "./components/ConnectionBanner"
+import LanguageToggle from "./components/LanguageToggle"
 
 class ErrorBoundary extends Component<
   { children: ReactNode },
@@ -134,6 +136,15 @@ function RequireAuth() {
   return <Outlet />
 }
 
+/** The sidebar is presentation; this guard is enforcement. A bookmarked or
+ * manually typed route can never render a screen outside the signed-in role. */
+function RequireRouteAccess() {
+  const { roles } = useAuth()
+  const location = useLocation()
+  if (canAccessPath(location.pathname, roles)) return <Outlet />
+  return <Navigate to={firstAccessiblePath(roles)} replace />
+}
+
 /** The /login route. Already signed in → bounce to where you came from.
  *  On success, a full-page nav re-boots with the authenticated session's CSRF
  *  token (login rotates it); dev soft-navigates. */
@@ -168,10 +179,33 @@ function CalendarScreen() {
   )
 }
 
+/** The index route ("/") is role-aware so every role opens on its OWN home
+ *  with its OWN sidebar — not the Front Desk board wrapped in the wrong app.
+ *  Front Desk + admins keep the operational day board (Today); every other
+ *  role redirects to a landing page inside a tab they can actually see. */
+function RoleHome() {
+  const { roles } = useAuth()
+  const has = (r: string) => roles.includes(r)
+  if (
+    has("Front Desk") ||
+    has("Hotel Admin") ||
+    has("System Manager") ||
+    has("Administrator")
+  )
+    return <Today />
+  if (has("Revenue Manager")) return <Navigate to="/revenue-reports" replace />
+  if (has("Finance")) return <Navigate to="/billing" replace />
+  if (has("Housekeeping")) return <Navigate to="/housekeeping" replace />
+  if (has("Restaurant POS")) return <Navigate to="/pos" replace />
+  if (has("Kitchen")) return <Navigate to="/kitchen" replace />
+  return <Navigate to="/apps" replace />
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
       <ConnectionBanner />
+      <LanguageToggle />
       <Suspense
         fallback={
           <div className="p-10 text-center text-sm text-zinc-400">Loading…</div>
@@ -199,8 +233,9 @@ export default function App() {
         {/* dedicated login route so signing out changes the URL */}
         <Route path="login" element={<LoginPage />} />
         <Route element={<RequireAuth />}>
+          <Route element={<RequireRouteAccess />}>
           <Route element={<AppShell />}>
-          <Route index element={<Today />} />
+          <Route index element={<RoleHome />} />
           <Route path="apps" element={<AppLauncher />} />
           <Route path="marketplace" element={<Marketplace />} />
           <Route path="agents" element={<Agents />} />
@@ -336,6 +371,7 @@ export default function App() {
               </p>
             }
           />
+          </Route>
           </Route>
         </Route>
       </Routes>

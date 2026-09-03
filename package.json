@@ -1,7 +1,7 @@
 {
-  "name": "kamra",
+  "name": "hotelpms",
   "private": true,
-  "description": "Build entrypoint for the Kamra front-end SPA. Frappe Cloud runs `yarn build` here on deploy; the built assets are also committed under kamra/public/frontend so a plain `bench get-app` install serves the UI with no node build.",
+  "description": "Build entrypoint for the HotelPMS front-end SPA. Frappe Cloud runs `yarn build` here on deploy; the built assets are also committed under hotelpms/public/frontend so a plain `bench get-app` install serves the UI with no node build.",
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
     "dev": "cd frontend && npm run dev"

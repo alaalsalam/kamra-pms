@@ -10,7 +10,8 @@ import { serverError } from "../lib/resource"
 import { printThermal, kotHtml, billHtml, type BillData, type KotLine } from "../lib/thermal"
 import { useFloorFullscreen } from "../lib/kiosk"
 import { Button } from "../components/ui/button"
-import { cur, moneyLocale } from "../lib/money"
+import { cur, moneyLocale, taxLabel } from "../lib/money"
+import { useT } from "../lib/i18n"
 
 const inr = (n: unknown) =>
   Number(n ?? 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
@@ -24,6 +25,7 @@ interface MenuItem {
   price: number
   is_veg: number
   image: string | null
+  description?: string | null
 }
 interface Outlet { name: string; outlet_name: string; gst_rate: number }
 interface OpenOrder {
@@ -154,6 +156,7 @@ function ago(ts?: string) {
 }
 
 export default function POS() {
+  const { t } = useT()
   const rootRef = useRef<HTMLDivElement>(null)
   const [outlets, setOutlets] = useState<Outlet[]>([])
   const [outlet, setOutlet] = useState("")
@@ -202,11 +205,11 @@ export default function POS() {
   const { floorOn, browserFs, toggleBrowserFs } = useFloorFullscreen(rootRef)
 
   useEffect(() => {
-    call<Outlet[]>("kamra.pos.outlets", { property: getCurrentProperty() })
+    call<Outlet[]>("hotelpms.pos.outlets", { property: getCurrentProperty() })
       .then((o) => { setOutlets(o); if (o[0]) setOutlet(o[0].name) })
       .catch((e) => setError(serverError(e)))
-    call<{ rooms: { name: string; room_number: string }[] }>("kamra.api.hk_queue", { property: getCurrentProperty() })
-      .then((d) => setRooms(d.rooms || []))
+    call<{ room: string; room_number: string }[]>("hotelpms.pos.in_house_rooms", { property: getCurrentProperty() })
+      .then((d) => setRooms(d.map((r) => ({ name: r.room, room_number: r.room_number }))))
       .catch(() => {})
   }, [])
 
@@ -214,7 +217,7 @@ export default function POS() {
 
   const loadMenu = useCallback(() => {
     if (!outlet) return
-    call<{ categories: { category: string; items: MenuItem[] }[] }>("kamra.pos.pos_menu", { outlet })
+    call<{ categories: { category: string; items: MenuItem[] }[] }>("hotelpms.pos.pos_menu", { outlet })
       .then((m) => { setCats(m.categories); setCat("All") })
       .catch((e) => setError(serverError(e)))
   }, [outlet])
@@ -222,10 +225,10 @@ export default function POS() {
 
   const loadOpen = useCallback(() => {
     if (!outlet) return
-    call<OpenOrder[]>("kamra.pos.open_orders", { outlet }).then(setOpen).catch(() => {})
-    call<{ tables: TableTile[] }>("kamra.pos.table_map", { outlet })
+    call<OpenOrder[]>("hotelpms.pos.open_orders", { outlet }).then(setOpen).catch(() => {})
+    call<{ tables: TableTile[] }>("hotelpms.pos.table_map", { outlet })
       .then((d) => setTables(d.tables)).catch(() => {})
-    call<RecentOrder[]>("kamra.pos.recent_orders", { outlet }).then(setRecent).catch(() => {})
+    call<RecentOrder[]>("hotelpms.pos.recent_orders", { outlet }).then(setRecent).catch(() => {})
   }, [outlet])
   useEffect(() => {
     loadOpen()
@@ -249,12 +252,12 @@ export default function POS() {
   }
   async function openTab(name: string) {
     setSelected(name); resetPanel()
-    const d = await call<Detail>("kamra.pos.order_detail", { order: name })
+    const d = await call<Detail>("hotelpms.pos.order_detail", { order: name })
     setDetail(d)
   }
   async function reloadDetail() {
     if (!selected) return
-    const d = await call<Detail>("kamra.pos.order_detail", { order: selected })
+    const d = await call<Detail>("hotelpms.pos.order_detail", { order: selected })
     setDetail(d)
   }
   /** Cycle open bills (F3); from "new bill" it enters at the first tab. */
@@ -350,12 +353,12 @@ export default function POS() {
 
   /** Create the bill (optionally firing the KOT). Returns the order id. */
   async function createBill(fire: boolean) {
-    const r = await call<{ order: string }>("kamra.pos.create_order", newBillArgs())
-    if (disc > 0) await call("kamra.pos.apply_discount", { order: r.order, amount: disc, reason: "" })
-    await call("kamra.pos.confirm_order", { order: r.order })
+    const r = await call<{ order: string }>("hotelpms.pos.create_order", newBillArgs())
+    if (disc > 0) await call("hotelpms.pos.apply_discount", { order: r.order, amount: disc, reason: "" })
+    await call("hotelpms.pos.confirm_order", { order: r.order })
     if (fire) {
       const kot = await call<{ kot_no: number | null; fired_items: { item_name: string; qty: number; instructions?: string | null }[]; ticket?: KotTicket }>(
-        "kamra.pos.fire_kot", { order: r.order })
+        "hotelpms.pos.fire_kot", { order: r.order })
       maybePrintKot(kot, newBillLabel(), orderType,
         custName || null, orderType === "Delivery" ? custAddr || null : null)
     }
@@ -366,12 +369,12 @@ export default function POS() {
     if (selected) {
       if (cart.length === 0) return
       await act(async () => {
-        await call("kamra.pos.add_items", {
+        await call("hotelpms.pos.add_items", {
           order: selected,
           items: cart.map((l) => ({ menu_item: l.menu_item, qty: l.qty, instructions: l.instructions })),
         })
         const kot = await call<{ kot_no: number | null; nc?: boolean; ticket?: KotTicket; fired_items: { item_name: string; qty: number; instructions?: string | null }[] }>(
-          "kamra.pos.fire_kot", { order: selected })
+          "hotelpms.pos.fire_kot", { order: selected })
         if (detail) maybePrintKot(kot, orderLabel(detail), detail.order_type,
           detail.customer_name, detail.delivery_address, detail.nc_authorized_by)
         await reloadDetail(); setCart([])
@@ -387,7 +390,7 @@ export default function POS() {
   }
   async function proceedToPay() { // F4
     if (selected && detail) {
-      if (detail.room || detail.nc) await act(async () => { await call("kamra.pos.deliver_order", { order: selected }); newOrder() })
+      if (detail.room || detail.nc) await act(async () => { await call("hotelpms.pos.deliver_order", { order: selected }); newOrder() })
       else setSettling(true)
     } else if (cart.length > 0) {
       await act(async () => {
@@ -397,19 +400,19 @@ export default function POS() {
       })
     }
   }
-  async function settle(mode: "Cash" | "Card" | "UPI") {
+  async function settle(mode: "Cash" | "Card" | "Mada" | "Digital Wallet") {
     if (!selected) return
     const order = selected
     await act(async () => {
-      await call("kamra.pos.pay_order", { order, mode })
-      const bill = await call<BillData>("kamra.pos.bill_data", { order })
+      await call("hotelpms.pos.pay_order", { order, mode })
+      const bill = await call<BillData>("hotelpms.pos.bill_data", { order })
       printThermal(`Bill ${order}`, billHtml(bill))
       newOrder()
     })
   }
   async function printBill() {
     if (!selected) return
-    const bill = await call<BillData>("kamra.pos.bill_data", { order: selected })
+    const bill = await call<BillData>("hotelpms.pos.bill_data", { order: selected })
     printThermal(`Bill ${selected}`, billHtml(bill))
   }
   function reprintKot() {
@@ -433,7 +436,7 @@ export default function POS() {
   async function saveNc(undo = false) {
     if (!selected) return
     await act(async () => {
-      await call("kamra.pos.mark_nc", {
+      await call("hotelpms.pos.mark_nc", {
         order: selected, authorized_by: ncBy, note: ncNote, undo: undo ? 1 : 0,
       })
       setNcOpen(false)
@@ -443,7 +446,7 @@ export default function POS() {
   async function applyDiscount() {
     if (!selected) { setDiscOpen(false); return } // new bill: applied at create
     await act(async () => {
-      await call("kamra.pos.apply_discount", { order: selected, amount: Number(discount) || 0, reason: "" })
+      await call("hotelpms.pos.apply_discount", { order: selected, amount: Number(discount) || 0, reason: "" })
       setDiscOpen(false)
       await reloadDetail()
     })
@@ -451,7 +454,7 @@ export default function POS() {
   async function confirmVoid() {
     if (!selected || !voiding || !voidReason.trim()) return
     await act(async () => {
-      await call("kamra.pos.void_item", { order: selected, item_row: voiding.row, reason: voidReason })
+      await call("hotelpms.pos.void_item", { order: selected, item_row: voiding.row, reason: voidReason })
       setVoiding(null); setVoidReason("")
       await reloadDetail()
     })
@@ -459,7 +462,7 @@ export default function POS() {
   async function confirmCancel() {
     if (!selected || !cancelReason.trim()) return
     await act(async () => {
-      await call("kamra.pos.cancel_order", { order: selected, reason: cancelReason })
+      await call("hotelpms.pos.cancel_order", { order: selected, reason: cancelReason })
       newOrder()
     })
   }
@@ -474,7 +477,7 @@ export default function POS() {
     if (!selected || splitSel.size === 0) return
     const order = selected
     await act(async () => {
-      const r = await call<{ new_order: string }>("kamra.pos.split_order", {
+      const r = await call<{ new_order: string }>("hotelpms.pos.split_order", {
         order, item_rows: [...splitSel],
       })
       await openTab(r.new_order) // land on the party's new bill
@@ -484,7 +487,7 @@ export default function POS() {
     const f = resForm
     if (!f.table || !f.guest.trim() || !f.at) return
     await act(async () => {
-      await call("kamra.pos.reserve_table", {
+      await call("hotelpms.pos.reserve_table", {
         outlet, table_no: f.table, guest_name: f.guest, phone: f.phone || null,
         party_size: f.party || null, reserved_at: f.at.replace("T", " "),
       })
@@ -495,7 +498,7 @@ export default function POS() {
   async function seatReservation(t: TableTile) {
     if (!t.reservation) return
     await act(async () => {
-      await call("kamra.pos.set_reservation", { reservation: t.reservation, status: "Seated" })
+      await call("hotelpms.pos.set_reservation", { reservation: t.reservation, status: "Seated" })
       newOrder(t.table)
       if (t.res_party) setGuests(String(t.res_party))
     })
@@ -503,13 +506,13 @@ export default function POS() {
   async function closeReservation(t: TableTile, status: "Cancelled" | "No Show") {
     if (!t.reservation) return
     await act(async () => {
-      await call("kamra.pos.set_reservation", { reservation: t.reservation, status })
+      await call("hotelpms.pos.set_reservation", { reservation: t.reservation, status })
       setResTile(null)
     })
   }
   async function cleanTable(t: TableTile) {
     await act(async () => {
-      await call("kamra.pos.mark_table_clean", { outlet, table_no: t.table })
+      await call("hotelpms.pos.mark_table_clean", { outlet, table_no: t.table })
       newOrder(t.table)
     })
   }
@@ -558,41 +561,61 @@ export default function POS() {
   return (
     <div ref={rootRef} className={floorOn ? "h-full overflow-y-auto bg-zinc-50 p-3" : ""}>
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="flex items-center gap-2 text-xl font-bold text-zinc-800">
-            <UtensilsCrossed className="size-5 text-brand-600" />Restaurant POS
-            <select className={inputCls + " !w-auto font-normal"} value={outlet} onChange={(e) => { setOutlet(e.target.value); newOrder() }}>
-              {outlets.map((o) => <option key={o.name} value={o.name}>{o.outlet_name}</option>)}
-            </select>
-          </h1>
-          <div className="flex rounded-xl border border-zinc-200 bg-white p-1 shadow-sm">
-            {ORDER_TYPES.map((t) => (
-              <button key={t} onClick={() => { setOrderType(t); if (selected) newOrder(); }}
-                className={"rounded-lg px-3 py-1.5 text-sm transition " +
-                  ((selected && detail ? detail.order_type : orderType) === t
-                    ? "bg-brand-600 font-semibold text-white"
-                    : "text-zinc-600 hover:bg-zinc-50")}>
-                {t}
+        <section className="overflow-hidden rounded-2xl bg-navy-900 text-white shadow-lg shadow-navy-950/10 ring-1 ring-white/10">
+          <div className="flex flex-wrap items-center gap-4 px-4 py-3.5">
+            <div className="flex min-w-[15rem] flex-1 items-center gap-3">
+              <span className="flex size-11 items-center justify-center rounded-xl bg-gold-500 text-navy-950 shadow-inner">
+                <UtensilsCrossed className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold tracking-tight">{t("Restaurant POS")}</h1>
+                <select
+                  aria-label={t("Outlet")}
+                  className="mt-0.5 max-w-full border-0 bg-transparent p-0 text-xs text-navy-100 outline-none"
+                  value={outlet}
+                  onChange={(e) => { setOutlet(e.target.value); newOrder() }}
+                >
+                  {outlets.map((o) => <option className="text-zinc-900" key={o.name} value={o.name}>{o.outlet_name}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 divide-x divide-white/10 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+              <div className="px-3 py-1.5 text-center"><strong className="block text-base text-gold-300">{availableCount}</strong><span className="text-[10px] text-navy-100">{t("Available tables")}</span></div>
+              <div className="px-3 py-1.5 text-center"><strong className="block text-base">{open.length}</strong><span className="text-[10px] text-navy-100">{t("Open bills")}</span></div>
+              <div className="px-3 py-1.5 text-center"><strong className="block text-base text-amber-300">{kitchenBills.length}</strong><span className="text-[10px] text-navy-100">{t("In kitchen")}</span></div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => setPrintKot((v) => !v)}
+                className={"inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-2 text-xs font-semibold transition " +
+                  (printKot ? "border-gold-400/50 bg-gold-500/10 text-gold-300" : "border-white/15 bg-white/5 text-navy-100")}>
+                <Printer className="size-3.5" />{printKot ? t("KOT printer on") : t("KOT printer off")}
+              </button>
+              <button onClick={toggleBrowserFs}
+                className="rounded-lg border border-white/15 bg-white/5 p-2 text-white transition hover:bg-white/10"
+                title={browserFs ? t("Exit full screen (Esc)") : t("Full screen till")}>
+                {browserFs ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+              </button>
+              <Button variant="gold" className="py-2" onClick={() => newOrder()}>
+                <Plus className="size-4" />{t("New Bill")}
+                <kbd className="rounded bg-navy-950/10 px-1 text-[10px]">F2</kbd>
+              </Button>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 border-t border-white/10 bg-navy-950/35 px-4 py-2">
+            <span className="me-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gold-300">{t("Order type")}</span>
+            {ORDER_TYPES.map((type) => (
+              <button key={type} onClick={() => { setOrderType(type); if (selected) newOrder(); }}
+                className={"rounded-lg px-3 py-1.5 text-xs font-medium transition " +
+                  ((selected && detail ? detail.order_type : orderType) === type
+                    ? "bg-white text-navy-950 shadow-sm"
+                    : "text-navy-100 hover:bg-white/10 hover:text-white")}>
+                {t(type)}
               </button>
             ))}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={() => setPrintKot((v) => !v)}
-              className={"inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold " +
-                (printKot ? "border-brand-600 bg-brand-50 text-brand-800" : "border-zinc-300 bg-white text-zinc-500")}>
-              <Printer className="size-3.5" />{printKot ? "KOT printer on" : "KOT printer off"}
-            </button>
-            <button onClick={toggleBrowserFs}
-              className="rounded-lg border border-zinc-300 bg-white p-2 text-zinc-600 hover:bg-zinc-50"
-              title={browserFs ? "Exit full screen (Esc)" : "Full screen till"}>
-              {browserFs ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
-            </button>
-            <Button onClick={() => newOrder()}>
-              <Plus className="size-4" />New Bill
-              <kbd className="rounded bg-white/20 px-1 text-[10px]">F2</kbd>
-            </Button>
-          </div>
-        </div>
+        </section>
         {error && <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>}
         {printNote && (
           <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
@@ -602,16 +625,16 @@ export default function POS() {
         )}
         <RunningStrip open={open} selected={selected} onOpen={openTab} />
 
-        <div className="grid gap-4 lg:grid-cols-12">
+        <div className="grid gap-3 lg:grid-cols-12">
           {/* ── left: tables + recent ── */}
           <div className="flex min-h-0 flex-col gap-2 overflow-y-auto lg:col-span-3">
             <div className="shrink-0 rounded-xl border border-zinc-200 bg-white p-3">
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wide text-zinc-500">Running tables</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-zinc-500">{t("Running tables")}</h3>
                 {tables.length > 0 && (
                   <button onClick={() => setReserveOpen((v) => !v)}
                     className="rounded-lg border border-zinc-200 px-2 py-0.5 text-[11px] font-medium text-zinc-600 hover:border-violet-400 hover:text-violet-700">
-                    + Reserve
+                    + {t("Reserve")}
                   </button>
                 )}
               </div>
@@ -620,23 +643,23 @@ export default function POS() {
                   <div className="grid grid-cols-2 gap-1.5">
                     <select className={inputCls + " !py-1 text-xs"} value={resForm.table}
                       onChange={(e) => setResForm({ ...resForm, table: e.target.value })}>
-                      <option value="">Table…</option>
+                      <option value="">{t("Table…")}</option>
                       {tables.filter((t) => !t.temp).map((t) => <option key={t.table} value={t.table}>{t.table}</option>)}
                     </select>
                     <input className={inputCls + " !py-1 text-xs"} type="datetime-local" value={resForm.at}
                       onChange={(e) => setResForm({ ...resForm, at: e.target.value })} />
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
-                    <input className={inputCls + " !py-1 text-xs"} placeholder="Guest name" value={resForm.guest}
+                    <input className={inputCls + " !py-1 text-xs"} placeholder={t("Guest name")} value={resForm.guest}
                       onChange={(e) => setResForm({ ...resForm, guest: e.target.value })} />
-                    <input className={inputCls + " !py-1 text-xs"} placeholder="Phone" value={resForm.phone}
+                    <input className={inputCls + " !py-1 text-xs"} placeholder={t("Phone")} value={resForm.phone}
                       onChange={(e) => setResForm({ ...resForm, phone: e.target.value })} />
                   </div>
                   <div className="flex gap-1.5">
-                    <input className={inputCls + " !w-20 !py-1 text-xs"} placeholder="Party" inputMode="numeric" value={resForm.party}
+                    <input className={inputCls + " !w-20 !py-1 text-xs"} placeholder={t("Party")} inputMode="numeric" value={resForm.party}
                       onChange={(e) => setResForm({ ...resForm, party: e.target.value.replace(/\D/g, "") })} />
                     <Button className="flex-1 !py-1 text-xs" disabled={busy || !resForm.table || !resForm.guest.trim() || !resForm.at}
-                      onClick={saveReservation}>Reserve</Button>
+                      onClick={saveReservation}>{t("Reserve")}</Button>
                     <Button variant="ghost" className="!px-2 !py-1 text-xs" onClick={() => setReserveOpen(false)}>✕</Button>
                   </div>
                 </div>
@@ -645,12 +668,12 @@ export default function POS() {
                 <>
                   <div className="relative mb-2">
                     <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
-                    <input className={inputCls + " !py-1 pl-8 text-xs"} placeholder="Search table…"
+                    <input className={inputCls + " !py-1 pl-8 text-xs"} placeholder={t("Search table…")}
                       value={tableQuery} onChange={(e) => setTableQuery(e.target.value)} />
                   </div>
                   <div className="mb-1 flex flex-wrap gap-1">
-                    {([["all", `All (${tables.length})`], ["available", `Available (${availableCount})`],
-                       ["occupied", `Occupied (${tables.length - availableCount})`]] as const).map(([k, l]) => (
+                    {([["all", `${t("All")} (${tables.length})`], ["available", `${t("Available")} (${availableCount})`],
+                       ["occupied", `${t("Occupied")} (${tables.length - availableCount})`]] as const).map(([k, l]) => (
                       <button key={k} onClick={() => setTableFilter(k)}
                         className={"rounded-full px-2 py-0.5 text-[11px] font-medium " +
                           (tableFilter === k ? "bg-brand-600 text-white" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200")}>
@@ -707,7 +730,7 @@ export default function POS() {
                           </button>
                         ))}
                         {groupName === null && visibleTables.length === 0 && (
-                          <p className="col-span-3 py-3 text-center text-xs text-zinc-400">No tables match.</p>
+                          <p className="col-span-3 py-3 text-center text-xs text-zinc-400">{t("No tables match.")}</p>
                         )}
                       </div>
                     </div>
@@ -735,7 +758,7 @@ export default function POS() {
                   })()}
                   <button onClick={() => { newOrder(); setOrderType("Dine In"); setCustomTable(true) }}
                     className="w-full rounded-xl border border-dashed border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition hover:border-brand-500 hover:text-brand-700">
-                    <Plus className="mr-0.5 inline size-3.5" />Temp table
+                    <Plus className="mr-0.5 inline size-3.5" />{t("Temp table")}
                   </button>
                   {chooser && (() => {
                     const t = tables.find((x) => x.table === chooser)
@@ -784,10 +807,10 @@ export default function POS() {
 
             {(runningBills.length > 0 || kitchenBills.length > 0) && (
               <div className="shrink-0 rounded-xl border border-zinc-200 bg-white p-3">
-                <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500">Open bills</h3>
+                <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500">{t("Open bills")}</h3>
                 {runningBills.length > 0 && (
                   <div className="mb-2">
-                    <p className="mb-1 text-[10px] font-semibold uppercase text-amber-700">Not sent to kitchen</p>
+                    <p className="mb-1 text-[10px] font-semibold uppercase text-amber-700">{t("Not sent to kitchen")}</p>
                     <ul className="space-y-1">
                       {runningBills.map((o) => (
                         <li key={o.name}>
@@ -804,7 +827,7 @@ export default function POS() {
                 )}
                 {kitchenBills.length > 0 && (
                   <div>
-                    <p className="mb-1 text-[10px] font-semibold uppercase text-sky-700">In kitchen / not settled</p>
+                    <p className="mb-1 text-[10px] font-semibold uppercase text-sky-700">{t("In kitchen / not settled")}</p>
                     <ul className="space-y-1">
                       {kitchenBills.map((o) => (
                         <li key={o.name}>
@@ -825,7 +848,7 @@ export default function POS() {
             )}
 
             <div className="shrink-0 rounded-xl border border-zinc-200 bg-white p-3">
-              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500">Recent</h3>
+              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500">{t("Recent")}</h3>
               <ul className="space-y-1">
                 {recent.map((r) => (
                   <li key={r.name}>
@@ -847,35 +870,41 @@ export default function POS() {
                     </button>
                   </li>
                 ))}
-                {recent.length === 0 && <p className="py-2 text-center text-xs text-zinc-400">No orders yet today.</p>}
+                {recent.length === 0 && <p className="py-2 text-center text-xs text-zinc-400">{t("No orders yet today.")}</p>}
               </ul>
             </div>
           </div>
 
           {/* ── centre: menu ── */}
-          <div className="min-h-0 overflow-y-auto lg:col-span-5">
+          <div className="min-h-0 overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm lg:col-span-5">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="font-bold text-navy-900">{t("Menu")}</h2>
+                <p className="text-xs text-zinc-400">{allItems.length} {t("available items")}</p>
+              </div>
+            </div>
             <div className="relative mb-2">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
-              <input className={inputCls + " pl-9"} placeholder="Search menu items…" value={query} onChange={(e) => setQuery(e.target.value)} />
+              <input className={inputCls + " pl-9"} placeholder={t("Search menu items…")} value={query} onChange={(e) => setQuery(e.target.value)} />
             </div>
             <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
               {["All", ...cats.map((c) => c.category)].map((c) => (
                 <button key={c} onClick={() => { setCat(c); setQuery("") }}
                   className={"shrink-0 rounded-full px-3 py-1 text-sm font-medium transition " +
                     (cat === c && !query.trim() ? "bg-brand-600 text-white" : "bg-white text-zinc-600 ring-1 ring-zinc-200 hover:ring-brand-400")}>
-                  {c}
+                  {t(c)}
                 </button>
               ))}
             </div>
             {shownItems ? (
               <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
                 {shownItems.map((it) => <MenuCard key={it.name} it={it} onAdd={() => addToCart(it)} />)}
-                {shownItems.length === 0 && <p className="col-span-full py-6 text-center text-sm text-zinc-400">No matches.</p>}
+                {shownItems.length === 0 && <p className="col-span-full py-6 text-center text-sm text-zinc-400">{t("No matches.")}</p>}
               </div>
             ) : (
               cats.map((c) => (
                 <div key={c.category} className="mb-4">
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">{c.category}</h3>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">{t(c.category)}</h3>
                   <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
                     {c.items.map((it) => <MenuCard key={it.name} it={it} onAdd={() => addToCart(it)} />)}
                   </div>
@@ -885,7 +914,7 @@ export default function POS() {
           </div>
 
           {/* ── right: the bill ── */}
-          <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white lg:col-span-4">
+          <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm lg:sticky lg:top-3 lg:col-span-4 lg:max-h-[calc(100dvh-7rem)]">
             <div className="min-h-0 flex-1 overflow-y-auto p-3">
             {/* who / where */}
             {selected && detail ? (
@@ -1073,8 +1102,14 @@ export default function POS() {
                 )}
               </div>
               <div className="flex justify-between text-zinc-500"><span>Subtotal</span><span className="tabular-nums">{cur()}{inr2(taxable)}</span></div>
-              <div className="flex justify-between text-xs text-zinc-400"><span>CGST ({gstRate / 2}%)</span><span className="tabular-nums">{cur()}{inr2(gstAmt / 2)}</span></div>
-              <div className="flex justify-between text-xs text-zinc-400"><span>SGST ({gstRate / 2}%)</span><span className="tabular-nums">{cur()}{inr2(gstAmt / 2)}</span></div>
+              {taxLabel() === "VAT" ? (
+                <div className="flex justify-between text-xs text-zinc-400"><span>VAT ({gstRate}%)</span><span className="tabular-nums">{cur()}{inr2(gstAmt)}</span></div>
+              ) : (
+                <>
+                  <div className="flex justify-between text-xs text-zinc-400"><span>CGST ({gstRate / 2}%)</span><span className="tabular-nums">{cur()}{inr2(gstAmt / 2)}</span></div>
+                  <div className="flex justify-between text-xs text-zinc-400"><span>SGST ({gstRate / 2}%)</span><span className="tabular-nums">{cur()}{inr2(gstAmt / 2)}</span></div>
+                </>
+              )}
               <div className="flex justify-between text-base font-bold"><span>Total</span><span className="tabular-nums">{cur()}{inr2(grand)}</span></div>
             </div>
 
@@ -1153,7 +1188,7 @@ export default function POS() {
               </Button>
               {settling ? (
                 <div className="grid grid-cols-3 gap-1.5">
-                  {(["Cash", "Card", "UPI"] as const).map((m) => (
+                  {(["Cash", "Card", "Mada", "Digital Wallet"] as const).map((m) => (
                     <Button key={m} disabled={busy} onClick={() => settle(m)}>{m}</Button>
                   ))}
                 </div>
@@ -1223,18 +1258,39 @@ function RunningStrip({
 }
 
 function MenuCard({ it, onAdd }: { it: MenuItem; onAdd: () => void }) {
+  const { t } = useT()
+  const parts = it.item_name.split("|").map((part) => part.trim()).filter(Boolean)
+  const arabic = document.documentElement.dir === "rtl"
+  const primary = arabic ? parts[0] : (parts[1] || parts[0])
+  const secondary = arabic ? parts[1] : parts.length > 1 ? parts[0] : ""
   return (
     <button onClick={onAdd}
-      className="overflow-hidden rounded-xl border border-zinc-200 bg-white text-left transition hover:border-brand-400 hover:shadow-sm">
-      {it.image && <img src={it.image} alt="" className="h-20 w-full object-cover" />}
+      className="group overflow-hidden rounded-xl border border-zinc-200 bg-white text-start transition duration-200 hover:-translate-y-0.5 hover:border-gold-400 hover:shadow-md focus-visible:outline-2 focus-visible:outline-gold-500">
+      <div className="relative h-28 overflow-hidden bg-navy-50">
+        {it.image ? (
+          <img src={it.image} alt={primary} loading="lazy" className="size-full object-cover transition duration-300 group-hover:scale-105" />
+        ) : (
+          <div className="flex size-full items-center justify-center bg-gradient-to-br from-navy-50 to-gold-50 text-navy-300">
+            <UtensilsCrossed className="size-8" />
+          </div>
+        )}
+        <span className="absolute bottom-2 end-2 rounded-lg bg-navy-950/90 px-2 py-1 text-xs font-bold text-white shadow-sm backdrop-blur">
+          {cur()}{inr(it.price)}
+        </span>
+      </div>
       <div className="p-2.5">
-        <div className="flex items-center gap-1">
-          <Leaf className={"size-3 " + (it.is_veg ? "text-emerald-600" : "text-rose-500")} />
-          <span className="truncate text-sm font-medium">{it.item_name}</span>
+        <div className="flex items-start gap-1.5">
+          <Leaf className={"mt-0.5 size-3.5 shrink-0 " + (it.is_veg ? "text-emerald-600" : "text-rose-500")} />
+          <span className="min-w-0 flex-1">
+            <span dir="auto" className="block text-sm font-semibold leading-snug text-navy-900">{primary}</span>
+            {secondary && <span dir="auto" className="mt-0.5 block truncate text-[10px] text-zinc-400">{secondary}</span>}
+          </span>
         </div>
-        <div className="mt-0.5 flex items-center justify-between">
-          <span className="text-sm font-semibold text-zinc-700">{cur()}{inr(it.price)}</span>
-          <Plus className="size-4 text-brand-600" />
+        <div className="mt-2 flex items-center justify-between border-t border-zinc-100 pt-2">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-400">{t("Add to order")}</span>
+          <span className="flex size-6 items-center justify-center rounded-full bg-gold-100 text-gold-700 transition group-hover:bg-gold-500 group-hover:text-navy-950">
+            <Plus className="size-3.5" />
+          </span>
         </div>
       </div>
     </button>

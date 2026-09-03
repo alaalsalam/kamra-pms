@@ -52,7 +52,7 @@ export default function LinkedRecords({
   const navigate = useNavigate()
 
   useEffect(() => {
-    call<Links>("kamra.api.linked_records", { doctype, name })
+    call<Links>("hotelpms.api.linked_records", { doctype, name })
       .then(setLinks)
       .catch(() => setLinks(null))
   }, [doctype, name])

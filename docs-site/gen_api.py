@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Generate the REST API reference + Postman collection from the source.
 
-Walks the whitelisted functions in kamra's API modules (pure ast - no
+Walks the whitelisted functions in hotelpms's API modules (pure ast - no
 frappe import needed) and emits:
 
   - api-reference.md                      the docs page
-  - public/kamra.postman_collection.json  Postman v2.1, with {{base_url}},
+  - public/hotelpms.postman_collection.json  Postman v2.1, with {{base_url}},
                                           {{api_key}}, {{api_secret}} vars
 
 Run from docs-site/:  python3 gen_api.py
@@ -19,7 +19,7 @@ import os
 import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP = os.path.join(HERE, "..", "kamra")
+APP = os.path.join(HERE, "..", "hotelpms")
 
 # module -> (Postman folder, note)
 MODULES = [
@@ -175,16 +175,16 @@ the UI and the AI use. **{total} endpoints**, generated from the source
 ## Calling convention
 
 ```
-POST https://<your-kamra>/api/method/kamra.<module>.<function>
+POST https://<your-hotelpms>/api/method/hotelpms.<module>.<function>
 Authorization: token <api_key>:<api_secret>
 Content-Type: application/json
 ```
 
-- Get keys from **Kamra Agent → Connect your AI** (Claude OAuth, role-scoped) or the
+- Get keys from **HotelPMS Agent → Connect your AI** (Claude OAuth, role-scoped) or the
   dedicated agent user for services.
 - Responses: `{{"message": <return value>}}`. Errors are HTTP 4xx with a
   readable reason.
-- **Try it in Postman:** [download the collection](/kamra.postman_collection.json),
+- **Try it in Postman:** [download the collection](/hotelpms.postman_collection.json),
   set `base_url`, `api_key` and `api_secret` collection variables, go.
 - Endpoints marked **public** are `allow_guest` (no token; rate-limited).
 """]
@@ -194,7 +194,7 @@ Content-Type: application/json
             out.append(f"> {m['note']}\n")
         for e in m["endpoints"]:
             badge = " <Badge type='tip' text='public' />" if e["guest"] else ""
-            out.append(f"### `kamra.{e['module']}.{e['name']}`{badge}\n")
+            out.append(f"### `hotelpms.{e['module']}.{e['name']}`{badge}\n")
             meta = [f"**{e['method']}**"]
             if e["roles"]:
                 meta.append("roles: " + ", ".join(f"`{r}`" for r in e["roles"]))
@@ -230,11 +230,11 @@ def write_postman(modules):
                         {"key": "Authorization",
                          "value": "token {{api_key}}:{{api_secret}}"}]),
                     "url": {
-                        "raw": "{{base_url}}/api/method/kamra."
+                        "raw": "{{base_url}}/api/method/hotelpms."
                                f"{e['module']}.{e['name']}",
                         "host": ["{{base_url}}"],
                         "path": ["api", "method",
-                                 f"kamra.{e['module']}.{e['name']}"],
+                                 f"hotelpms.{e['module']}.{e['name']}"],
                     },
                     "description": e["doc"],
                 },
@@ -250,12 +250,12 @@ def write_postman(modules):
 
     collection = {
         "info": {
-            "name": "Kamra PMS API",
+            "name": "HotelPMS API",
             "description":
-                "The full Kamra REST surface. Set base_url (e.g. "
+                "The full HotelPMS REST surface. Set base_url (e.g. "
                 "https://pms.yourhotel.com), api_key and api_secret in the "
                 "collection variables, then call away. Docs: "
-                "https://kamrapms.com/docs/api-reference",
+                "https://hotelpms.yemenfrappe.com/docs/api-reference",
             "schema": "https://schema.getpostman.com/json/collection/"
                       "v2.1.0/collection.json",
         },
@@ -266,7 +266,7 @@ def write_postman(modules):
         ],
         "item": items,
     }
-    path = os.path.join(HERE, "public", "kamra.postman_collection.json")
+    path = os.path.join(HERE, "public", "hotelpms.postman_collection.json")
     with open(path, "w") as collection_file:  # nosemgrep: frappe-security-file-traversal -- path is derived from the app source tree, not from user input
         collection_file.write(json.dumps(collection, indent=1))
 
@@ -275,5 +275,5 @@ if __name__ == "__main__":
     modules = collect()
     n = write_markdown(modules)
     write_postman(modules)
-    print(f"generated api-reference.md + kamra.postman_collection.json "
+    print(f"generated api-reference.md + hotelpms.postman_collection.json "
           f"({n} endpoints)")

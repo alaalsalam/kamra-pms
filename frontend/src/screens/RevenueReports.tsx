@@ -61,7 +61,7 @@ function BudgetVsActual() {
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    call<Bva>("kamra.reports.budget_vs_actual", { property, period })
+    call<Bva>("hotelpms.reports.budget_vs_actual", { property, period })
       .then((d) => {
         setData(d)
         const dr: Record<string, string> = {}
@@ -74,7 +74,7 @@ function BudgetVsActual() {
 
   const save = () =>
     act(() =>
-      call("kamra.reports.save_budget", {
+      call("hotelpms.reports.save_budget", {
         property,
         period,
         room_revenue_target: Number(draft.room_revenue) || 0,
@@ -227,7 +227,7 @@ function Contribution() {
   const [data, setData] = useState<Contrib | null>(null)
 
   const load = useCallback(() => {
-    call<Contrib>("kamra.reports.contribution", {
+    call<Contrib>("hotelpms.reports.contribution", {
       property,
       from_date: from,
       to_date: to,

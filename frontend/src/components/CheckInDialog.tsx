@@ -79,7 +79,7 @@ export default function CheckInDialog(props: {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    call<Context>("kamra.api.checkin_context", { reservation: props.reservation })
+    call<Context>("hotelpms.api.checkin_context", { reservation: props.reservation })
       .then((c) => {
         setCtx(c)
         setRoom(c.room_assigned?.name || c.suggestion?.room || "")
@@ -91,7 +91,7 @@ export default function CheckInDialog(props: {
     setBusy(true)
     setError(null)
     try {
-      await call("kamra.api.check_in", {
+      await call("hotelpms.api.check_in", {
         reservation: props.reservation,
         room: ctx?.room_assigned ? undefined : room,
       })

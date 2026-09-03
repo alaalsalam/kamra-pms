@@ -6,7 +6,7 @@
  * the body is 72mm, the common printable width).
  */
 
-import { cur, moneyLocale } from "./money"
+import { cur, moneyLocale, taxLabel } from "./money"
 
 const CSS = `
   @page { size: 80mm auto; margin: 0 }
@@ -37,9 +37,9 @@ const inr = (n: unknown) =>
 
 /** Print without a popup. Popups get blocked on a till; an iframe does not. */
 export function printThermal(title: string, body: string): boolean {
-  document.querySelectorAll("iframe[data-kamra-print]").forEach((n) => n.remove())
+  document.querySelectorAll("iframe[data-hotelpms-print]").forEach((n) => n.remove())
   const iframe = document.createElement("iframe")
-  iframe.setAttribute("data-kamra-print", "1")
+  iframe.setAttribute("data-hotelpms-print", "1")
   iframe.setAttribute("title", title)
   iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0"
   document.body.appendChild(iframe)
@@ -193,8 +193,10 @@ export function billHtml(b: BillData) {
     <div class="rule"></div>
     ${money("Subtotal", b.subtotal)}
     ${b.discount_amount ? money("Discount", -b.discount_amount) : ""}
-    ${money(`CGST @ ${b.gst_rate / 2}%`, b.cgst, "sm")}
-    ${money(`SGST @ ${b.gst_rate / 2}%`, b.sgst, "sm")}
+    ${taxLabel() === "VAT"
+      ? money(`VAT @ ${b.gst_rate}%`, b.cgst + b.sgst, "sm")
+      : money(`CGST @ ${b.gst_rate / 2}%`, b.cgst, "sm") +
+        money(`SGST @ ${b.gst_rate / 2}%`, b.sgst, "sm")}
     <div class="rule"></div>
     ${money("TOTAL", b.grand_total, "b lg")}
     ${b.nc ? `<div class="c b" style="margin-top:4px">COMPLIMENTARY - NO CHARGE</div>` +

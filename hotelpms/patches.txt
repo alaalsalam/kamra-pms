@@ -1,0 +1,15 @@
+[pre_model_sync]
+# Patches added in this section will be executed before doctypes are migrated
+# Read docs to understand patches: https://frappeframework.com/docs/v14/user/en/database-migrations
+
+[post_model_sync]
+# Patches added in this section will be executed after doctypes are migrated
+hotelpms.patches.v23.backfill_action_log_approval_status
+hotelpms.patches.v24.split_actor_from_agent_name
+hotelpms.patches.v25.backfill_property_country
+hotelpms.patches.v26.set_site_favicon
+hotelpms.patches.v27.backfill_sellable_units
+hotelpms.patches.v28.backfill_property_kind
+hotelpms.patches.v29.backfill_booking_mode
+hotelpms.patches.v30.ensure_turnover_profiles
+hotelpms.patches.v31.backfill_listing_slugs

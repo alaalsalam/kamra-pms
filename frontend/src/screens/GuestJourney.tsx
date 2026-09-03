@@ -226,7 +226,7 @@ function MergePanel(props: {
             setBusy(true)
             setError(null)
             try {
-              await call("kamra.api.merge_guests", {
+              await call("hotelpms.api.merge_guests", {
                 source: picked.name,
                 target: props.survivor,
               })
@@ -273,7 +273,7 @@ export default function GuestJourney() {
 
   const load = useCallback(() => {
     if (name)
-      call<Journey>("kamra.api.guest_journey", { guest: name }).then((d) => {
+      call<Journey>("hotelpms.api.guest_journey", { guest: name }).then((d) => {
         setData(d)
         setNotes(d.guest.notes ?? "")
       })
@@ -580,7 +580,7 @@ export default function GuestJourney() {
                     }
                     setBusy(true)
                     try {
-                      await call("kamra.api.anonymize_guest", {
+                      await call("hotelpms.api.anonymize_guest", {
                         guest: guest.name,
                       })
                       navigate("/guests")

@@ -25,7 +25,7 @@ export default function EventLinks({
 
   useEffect(() => {
     call<{ group_booking: string | null; folios: { name: string }[] }>(
-      "kamra.api.linked_records",
+      "hotelpms.api.linked_records",
       { doctype: "Venue Booking", name },
     )
       .then((l) => {
@@ -58,7 +58,7 @@ export default function EventLinks({
             setError(null)
             try {
               const r = await call<{ folio: string }>(
-                "kamra.api.group_master_folio",
+                "hotelpms.api.group_master_folio",
                 { group_booking: group },
               )
               navigate(`/billing/${encodeURIComponent(r.folio)}`)

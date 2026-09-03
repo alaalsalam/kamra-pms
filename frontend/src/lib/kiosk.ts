@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 
-const EVENT = "kamra:kiosk"
+const EVENT = "hotelpms:kiosk"
 
 export function setKiosk(on: boolean) {
   if (on) document.documentElement.dataset.kiosk = "1"

@@ -593,7 +593,7 @@ function DetailTab({
             </Field>
             <Field
               label="Place of supply"
-              hint="Decides CGST+SGST vs IGST"
+              hint="Customer tax registration number"
             >
               <input
                 className={inputCls}

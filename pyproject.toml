@@ -1,7 +1,7 @@
 [project]
-name = "kamra"
+name = "hotelpms"
 authors = [
-    { name = "HeyKoala", email = "azzaxp@users.noreply.github.com"}
+    { name = "YemenFrappe", email = "product@hotelpms.sa"}
 ]
 description = "Open-source, AI-native hotel PMS"
 requires-python = ">=3.10"

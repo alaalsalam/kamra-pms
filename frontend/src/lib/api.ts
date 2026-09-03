@@ -1,9 +1,9 @@
-// Thin client for Kamra's whitelisted API. Session-cookie auth via
+// Thin client for HotelPMS's whitelisted API. Session-cookie auth via
 // Frappe's /api/method/login; unauthenticated calls surface as 401/403
 // and the shell shows the login screen.
 
 // The served boot page injects the session's CSRF token as window.csrf_token
-// (see kamra/www/kamra.py). Frappe enforces it on POSTs from a logged-in
+// (see hotelpms/www/hotelpms.py). Frappe enforces it on POSTs from a logged-in
 // session; guests and the dev server (ignore_csrf) don't need it.
 function csrfToken(): string | undefined {
   const t = (window as unknown as { csrf_token?: string }).csrf_token
@@ -38,15 +38,15 @@ async function doFetch(path: string, init?: RequestInit) {
     try {
       res = await request()
     } catch (err) {
-      console.warn(`[kamra] network failure calling ${path}`, err)
-      window.dispatchEvent(new Event("kamra:offline"))
+      console.warn(`[hotelpms] network failure calling ${path}`, err)
+      window.dispatchEvent(new Event("hotelpms:offline"))
       throw Object.assign(
-        new Error("Can't reach Kamra right now. Check your connection — we'll reconnect automatically."),
+        new Error("Can't reach HotelPMS right now. Check your connection — we'll reconnect automatically."),
         { network: true },
       )
     }
   }
-  window.dispatchEvent(new Event("kamra:online"))
+  window.dispatchEvent(new Event("hotelpms:online"))
   if (!res.ok) {
     const body = await res.text()
     // A 401/403 on anything other than the auth endpoints means the session may
@@ -57,7 +57,7 @@ async function doFetch(path: string, init?: RequestInit) {
       (res.status === 401 || res.status === 403) &&
       !path.includes("/api/method/login")
     ) {
-      window.dispatchEvent(new Event("kamra:auth-error"))
+      window.dispatchEvent(new Event("hotelpms:auth-error"))
     }
     throw Object.assign(new Error(`${path} failed (${res.status})`), {
       status: res.status,
@@ -147,16 +147,16 @@ export interface WhoAmI {
   roles: string[]
 }
 
-export const whoami = () => call<WhoAmI>("kamra.api.whoami")
+export const whoami = () => call<WhoAmI>("hotelpms.api.whoami")
 
-/** Which parts of Kamra this property runs. Empty on the server means
+/** Which parts of HotelPMS this property runs. Empty on the server means
  *  "all of them", so an existing property is untouched. */
 export const enabledModules = () =>
-  call<string[]>("kamra.api.enabled_modules", {
+  call<string[]>("hotelpms.api.enabled_modules", {
     property: getCurrentProperty(),
   })
 export const setEnabledModules = (modules: string[]) =>
-  call<{ ok: boolean; modules: string[] }>("kamra.api.set_enabled_modules", {
+  call<{ ok: boolean; modules: string[] }>("hotelpms.api.set_enabled_modules", {
     property: getCurrentProperty(),
     modules,
   })
@@ -271,17 +271,17 @@ export interface Quote {
   amount_after_tax: number
 }
 
-export const DEMO_PROPERTY = "Kamra Demo Palace"
+export const DEMO_PROPERTY = "فندق نُزُل الرياض | Nuzul Riyadh Hotel"
 
-// Every Kamra site hosts exactly one Property. The public booking engine
+// Every HotelPMS site hosts exactly one Property. The public booking engine
 // (/book) has no logged-in session to read a chosen property from, so it
 // asks the site which one to show instead of assuming the demo property.
 export const getDefaultProperty = () =>
-  call<string>("kamra.public_api.default_property")
+  call<string>("hotelpms.public_api.default_property")
 
 // Active property - set by the header switcher, read at call time.
 let currentProperty =
-  localStorage.getItem("kamra_property") || DEMO_PROPERTY
+  localStorage.getItem("hotelpms_property") || DEMO_PROPERTY
 
 export function getCurrentProperty() {
   return currentProperty
@@ -289,7 +289,7 @@ export function getCurrentProperty() {
 
 export function setCurrentProperty(p: string) {
   currentProperty = p
-  localStorage.setItem("kamra_property", p)
+  localStorage.setItem("hotelpms_property", p)
 }
 
 export interface PropertyRow {
@@ -299,22 +299,22 @@ export interface PropertyRow {
 }
 
 export const myProperties = () =>
-  call<PropertyRow[]>("kamra.api.my_properties")
+  call<PropertyRow[]>("hotelpms.api.my_properties")
 
 export const getSnapshot = () =>
-  call<Snapshot>("kamra.api.front_desk_snapshot", {
+  call<Snapshot>("hotelpms.api.front_desk_snapshot", {
     property: getCurrentProperty(),
   })
 
 export const getCalendar = (days = 14, startDate?: string) =>
-  call<CalendarData>("kamra.api.availability_calendar", {
+  call<CalendarData>("hotelpms.api.availability_calendar", {
     property: getCurrentProperty(),
     days,
     start_date: startDate ?? null,
   })
 
 export const getBookingOptions = () =>
-  call<BookingOptions>("kamra.api.booking_options", {
+  call<BookingOptions>("hotelpms.api.booking_options", {
     property: getCurrentProperty(),
   })
 
@@ -329,7 +329,7 @@ export interface QuoteParams {
 }
 
 export const getQuote = (params: QuoteParams) =>
-  call<Quote>("kamra.api.get_quote", { property: getCurrentProperty(), ...params })
+  call<Quote>("hotelpms.api.get_quote", { property: getCurrentProperty(), ...params })
 
 export interface GuestHit {
   name: string
@@ -343,7 +343,7 @@ export interface GuestHit {
 }
 
 export const guestSearch = (q: string) =>
-  call<GuestHit[]>("kamra.api.guest_search", { q })
+  call<GuestHit[]>("hotelpms.api.guest_search", { q })
 
 export const createBooking = (
   params: QuoteParams & {
@@ -369,11 +369,11 @@ export const createBooking = (
     room: string | null
     amount_after_tax: number
     status?: string
-  }>("kamra.api.create_booking", { property: getCurrentProperty(), ...params })
+  }>("hotelpms.api.create_booking", { property: getCurrentProperty(), ...params })
 
 export const promoteWaitlist = (reservation: string) =>
   call<{ ok: boolean; reservation: string; room: string }>(
-    "kamra.api.promote_waitlist",
+    "hotelpms.api.promote_waitlist",
     { reservation },
   )
 
@@ -403,7 +403,7 @@ export interface VenueCalendarData {
   }[]
 }
 export const venueCalendar = (days = 14, startDate?: string) =>
-  call<VenueCalendarData>("kamra.api.venue_calendar", {
+  call<VenueCalendarData>("hotelpms.api.venue_calendar", {
     property: getCurrentProperty(),
     days,
     start_date: startDate ?? null,
@@ -1143,7 +1143,7 @@ export interface CustomerProfile {
 }
 
 const banquetCall = <T,>(method: string, params: Record<string, unknown> = {}) =>
-  call<T>(`kamra.banquet.${method}`, {
+  call<T>(`hotelpms.banquet.${method}`, {
     property: getCurrentProperty(),
     ...params,
   })
@@ -1153,11 +1153,11 @@ export const banquet = {
   saveMenu: (params: Record<string, unknown>) =>
     banquetCall<{ ok: boolean; name: string }>("save_banquet_menu", params),
   deleteMenu: (name: string) =>
-    call<{ ok: boolean }>("kamra.banquet.delete_banquet_menu", { name }),
+    call<{ ok: boolean }>("hotelpms.banquet.delete_banquet_menu", { name }),
   saveService: (params: Record<string, unknown>) =>
     banquetCall<{ ok: boolean; name: string }>("save_service_item", params),
   deleteService: (name: string) =>
-    call<{ ok: boolean }>("kamra.banquet.delete_service_item", { name }),
+    call<{ ok: boolean }>("hotelpms.banquet.delete_service_item", { name }),
 
   createEnquiry: (params: Record<string, unknown>) =>
     banquetCall<{ ok: boolean; function: string; grand_total: number }>(
@@ -1165,30 +1165,30 @@ export const banquet = {
       params,
     ),
   sheet: (fn: string) =>
-    call<FunctionSheet>("kamra.banquet.function_sheet", { function: fn }),
+    call<FunctionSheet>("hotelpms.banquet.function_sheet", { function: fn }),
   update: (fn: string, fields: Record<string, unknown>) =>
     call<{ ok: boolean; grand_total: number; balance_due: number }>(
-      "kamra.banquet.update_function",
+      "hotelpms.banquet.update_function",
       { function: fn, fields },
     ),
   setStatus: (fn: string, status: FunctionStatus, reason?: string) =>
     call<{ ok: boolean; status: FunctionStatus; from: string }>(
-      "kamra.banquet.set_status",
+      "hotelpms.banquet.set_status",
       { function: fn, status, reason: reason ?? null },
     ),
 
   addMenu: (fn: string, menu: string, opts: Record<string, unknown> = {}) =>
-    call("kamra.banquet.add_menu", { function: fn, menu, ...opts }),
+    call("hotelpms.banquet.add_menu", { function: fn, menu, ...opts }),
   addService: (fn: string, service: string, opts: Record<string, unknown> = {}) =>
-    call("kamra.banquet.add_service", {
+    call("hotelpms.banquet.add_service", {
       function: fn,
       service_item: service,
       ...opts,
     }),
   saveItems: (fn: string, items: Partial<FunctionItem>[]) =>
-    call("kamra.banquet.save_items", { function: fn, items }),
+    call("hotelpms.banquet.save_items", { function: fn, items }),
   removeItem: (fn: string, row: string) =>
-    call("kamra.banquet.remove_item", { function: fn, row }),
+    call("hotelpms.banquet.remove_item", { function: fn, row }),
 
   negotiate: (fn: string, params: Record<string, unknown>) =>
     call<{
@@ -1197,24 +1197,24 @@ export const banquet = {
       now: number
       moved_by: number
       changes: string[]
-    }>("kamra.banquet.negotiate", { function: fn, ...params }),
+    }>("hotelpms.banquet.negotiate", { function: fn, ...params }),
   saveOpenItems: (fn: string, rows: Partial<OpenItem>[]) =>
-    call("kamra.banquet.save_open_items", { function: fn, rows }),
+    call("hotelpms.banquet.save_open_items", { function: fn, rows }),
   setPaymentTerms: (fn: string, terms: Partial<PaymentTerm>[], note?: string) =>
-    call("kamra.banquet.set_payment_terms", {
+    call("hotelpms.banquet.set_payment_terms", {
       function: fn,
       terms,
       note: note ?? null,
     }),
   defaultPaymentTerms: (fn: string) =>
-    call("kamra.banquet.default_payment_terms", { function: fn }),
+    call("hotelpms.banquet.default_payment_terms", { function: fn }),
   recordReceipt: (fn: string, params: Record<string, unknown>) =>
     call<{ ok: boolean; received: number; balance_due: number }>(
-      "kamra.banquet.record_receipt",
+      "hotelpms.banquet.record_receipt",
       { function: fn, ...params },
     ),
   assignGreenRoom: (fn: string, params: Record<string, unknown>) =>
-    call("kamra.banquet.assign_green_room", { function: fn, ...params }),
+    call("hotelpms.banquet.assign_green_room", { function: fn, ...params }),
 
   availability: (params: Record<string, unknown>) =>
     banquetCall<{ venues: AvailabilityVenue[] }>("venue_availability", params),
@@ -1242,15 +1242,15 @@ export const banquet = {
       params,
     ),
   deleteDish: (name: string) =>
-    call<{ ok: boolean }>("kamra.banquet.delete_dish", { name }),
+    call<{ ok: boolean }>("hotelpms.banquet.delete_dish", { name }),
   recostDishes: () =>
     banquetCall<{ ok: boolean; recosted: number }>("recost_dishes"),
   menuCost: (menu: string, pax?: number) =>
-    call<MenuCost>("kamra.banquet.menu_cost", { menu, pax: pax ?? 0 }),
+    call<MenuCost>("hotelpms.banquet.menu_cost", { menu, pax: pax ?? 0 }),
 
   // what the customer chose
   menuChoices: (fn: string, menu: string) =>
-    call<MenuChoices>("kamra.banquet.menu_choices", { function: fn, menu }),
+    call<MenuChoices>("hotelpms.banquet.menu_choices", { function: fn, menu }),
   composeMenu: (fn: string, menu: string, picks: Record<string, unknown>[]) =>
     call<{
       ok: boolean
@@ -1259,13 +1259,13 @@ export const banquet = {
       supplement_per_pax: number
       grand_total: number
       margin_percent: number
-    }>("kamra.banquet.compose_menu", { function: fn, menu, picks }),
+    }>("hotelpms.banquet.compose_menu", { function: fn, menu, picks }),
 
   // the kitchen, and the night itself
   indent: (fn: string) =>
-    call<KitchenIndent>("kamra.banquet.kitchen_indent", { function: fn }),
+    call<KitchenIndent>("hotelpms.banquet.kitchen_indent", { function: fn }),
   issueIndent: (fn: string, outlet: string) =>
-    call<{ ok: boolean; issued: number }>("kamra.banquet.issue_indent", {
+    call<{ ok: boolean; issued: number }>("hotelpms.banquet.issue_indent", {
       function: fn,
       outlet,
     }),
@@ -1275,23 +1275,23 @@ export const banquet = {
     paxActual?: number,
   ) =>
     call<{ ok: boolean; grand_total: number; changes: string[] }>(
-      "kamra.banquet.record_consumption",
+      "hotelpms.banquet.record_consumption",
       { function: fn, rows, pax_actual: paxActual ?? null },
     ),
   addSupplementary: (fn: string, params: Record<string, unknown>) =>
     call<{ ok: boolean; grand_total: number; supplementary_total: number }>(
-      "kamra.banquet.add_supplementary",
+      "hotelpms.banquet.add_supplementary",
       { function: fn, ...params },
     ),
   economics: (fn: string) =>
-    call<FunctionEconomics>("kamra.banquet.function_economics", {
+    call<FunctionEconomics>("hotelpms.banquet.function_economics", {
       function: fn,
     }),
 
   // the customer as a person, not a string
   linkCustomer: (fn: string, guest?: string) =>
     call<{ ok: boolean; customer: string; customer_name: string }>(
-      "kamra.banquet.link_customer",
+      "hotelpms.banquet.link_customer",
       { function: fn, guest: guest ?? null },
     ),
   customerProfile: (params: { guest?: string; phone?: string }) =>
@@ -1308,14 +1308,14 @@ export const banquet = {
       refunded: number
       deposit_held: number
       balance_due: number
-    }>("kamra.banquet.close_out", { function: fn, ...params }),
+    }>("hotelpms.banquet.close_out", { function: fn, ...params }),
   receiptDocument: (fn: string, receipt: string) =>
-    call<ReceiptDocument>("kamra.banquet.receipt_document", {
+    call<ReceiptDocument>("hotelpms.banquet.receipt_document", {
       function: fn,
       receipt,
     }),
   menuCard: (fn: string) =>
-    call<MenuCard>("kamra.banquet.menu_card", { function: fn }),
+    call<MenuCard>("hotelpms.banquet.menu_card", { function: fn }),
   monthAvailability: (month?: string) =>
     banquetCall<MonthAvailability>("month_availability", {
       month: month ?? null,
@@ -1328,20 +1328,20 @@ export const banquet = {
     }),
 
   document: (fn: string, kind: DocumentKind) =>
-    call<BanquetDocument>("kamra.banquet.banquet_document", {
+    call<BanquetDocument>("hotelpms.banquet.banquet_document", {
       function: fn,
       kind,
     }),
   generateQuote: (fn: string, validDays = 15, note?: string) =>
-    call<BanquetDocument>("kamra.banquet.generate_quote", {
+    call<BanquetDocument>("hotelpms.banquet.generate_quote", {
       function: fn,
       valid_days: validDays,
       note: note ?? null,
     }),
   generateBeo: (fn: string) =>
-    call<BanquetDocument>("kamra.banquet.generate_beo", { function: fn }),
+    call<BanquetDocument>("hotelpms.banquet.generate_beo", { function: fn }),
   generateInvoice: (fn: string) =>
-    call<BanquetDocument>("kamra.banquet.generate_invoice", { function: fn }),
+    call<BanquetDocument>("hotelpms.banquet.generate_invoice", { function: fn }),
   postToFolio: (fn: string, folio?: string) =>
     call<{
       ok: boolean
@@ -1349,7 +1349,7 @@ export const banquet = {
       posted: { item_name: string; amount: number }[]
       settle_separately: { item_name: string; amount: number }[]
       note: string | null
-    }>("kamra.banquet.post_to_folio", { function: fn, folio: folio ?? null }),
+    }>("hotelpms.banquet.post_to_folio", { function: fn, folio: folio ?? null }),
 }
 
 // --- Assistant conversations (full-page module) ---
@@ -1364,16 +1364,16 @@ export interface ConversationSummary {
   modified: string
 }
 export const listConversations = () =>
-  call<ConversationSummary[]>("kamra.assistant.list_conversations", {
+  call<ConversationSummary[]>("hotelpms.assistant.list_conversations", {
     property: getCurrentProperty(),
   })
 export const getConversation = (name: string) =>
   call<{ name: string; title: string; messages: ChatMsg[] }>(
-    "kamra.assistant.get_conversation",
+    "hotelpms.assistant.get_conversation",
     { name },
   )
 export const createConversation = (title?: string) =>
-  call<{ name: string; title: string }>("kamra.assistant.create_conversation", {
+  call<{ name: string; title: string }>("hotelpms.assistant.create_conversation", {
     property: getCurrentProperty(),
     title: title ?? "New chat",
   })
@@ -1382,24 +1382,24 @@ export const saveConversation = (
   messages: ChatMsg[],
   title?: string,
 ) =>
-  call<{ ok: boolean }>("kamra.assistant.save_conversation", {
+  call<{ ok: boolean }>("hotelpms.assistant.save_conversation", {
     name,
     messages,
     title: title ?? null,
   })
 export const deleteConversation = (name: string) =>
-  call<{ ok: boolean }>("kamra.assistant.delete_conversation", { name })
+  call<{ ok: boolean }>("hotelpms.assistant.delete_conversation", { name })
 export const renameConversation = (name: string, title: string) =>
-  call<{ ok: boolean }>("kamra.assistant.rename_conversation", { name, title })
+  call<{ ok: boolean }>("hotelpms.assistant.rename_conversation", { name, title })
 
 export const checkIn = (reservation: string) =>
-  call("kamra.api.check_in", { reservation })
+  call("hotelpms.api.check_in", { reservation })
 
 export const checkOut = (reservation: string) =>
-  call("kamra.api.check_out", { reservation })
+  call("hotelpms.api.check_out", { reservation })
 
 export const setHousekeepingStatus = (room: string, status: string) =>
-  call("kamra.api.set_housekeeping_status", { room, status })
+  call("hotelpms.api.set_housekeeping_status", { room, status })
 
 export interface ReservationDetail {
   name: string
@@ -1473,31 +1473,31 @@ export interface ReservationDetail {
 }
 
 export const reservationDetail = (name: string) =>
-  call<ReservationDetail>("kamra.api.reservation_detail", { reservation: name })
+  call<ReservationDetail>("hotelpms.api.reservation_detail", { reservation: name })
 
 /** The ID scan as a data URL. Served through a role-gated endpoint rather than
  *  its /private/files/ URL: Frappe would authorise that via the Reservation's
  *  doctype perms, which this site's Custom DocPerm rows deny to Front Desk. */
 export const idDocumentImage = (reservation: string) =>
-  call<{ data: string; captured_on: string }>("kamra.api.id_document_image", { reservation })
+  call<{ data: string; captured_on: string }>("hotelpms.api.id_document_image", { reservation })
 
 export const verifyPrecheckin = (reservation: string) =>
-  call<{ ok: boolean; status: string }>("kamra.api.verify_precheckin", { reservation })
+  call<{ ok: boolean; status: string }>("hotelpms.api.verify_precheckin", { reservation })
 
 export const developerInfo = () =>
   call<{ user: string; has_key: boolean; base_url: string }>(
-    "kamra.api.developer_info",
+    "hotelpms.api.developer_info",
   )
 
 export const generateApiKey = () =>
-  call<{ api_key: string; api_secret: string }>("kamra.api.generate_api_key")
+  call<{ api_key: string; api_secret: string }>("hotelpms.api.generate_api_key")
 
 export const amendStay = (
   reservation: string,
   check_in_date: string,
   check_out_date: string,
 ) =>
-  call<{ nights: number; amount_after_tax: number }>("kamra.api.amend_stay", {
+  call<{ nights: number; amount_after_tax: number }>("hotelpms.api.amend_stay", {
     reservation,
     check_in_date,
     check_out_date,

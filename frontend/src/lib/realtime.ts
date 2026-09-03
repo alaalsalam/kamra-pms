@@ -30,7 +30,7 @@ export function subscribeRealtime(onChange: () => void): () => void {
     reconnectionAttempts: 2,
     timeout: 4000,
   })
-  socket.on("kamra_changed", fire)
+  socket.on("hotelpms_changed", fire)
   socket.on("connect_error", startPolling)
   socket.on("connect", () => {
     if (timer) {

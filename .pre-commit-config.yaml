@@ -8,7 +8,7 @@ repos:
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
-        files: "kamra.*"
+        files: "hotelpms.*"
         exclude: ".*json$|.*txt$|.*csv|.*md|.*svg"
       - id: check-merge-conflict
       - id: check-ast
@@ -38,11 +38,11 @@ repos:
         # Ignore any files that might contain jinja / bundles
         exclude: |
             (?x)^(
-                kamra/public/dist/.*|
+                hotelpms/public/dist/.*|
                 .*node_modules.*|
                 .*boilerplate.*|
-                kamra/templates/includes/.*|
-                kamra/public/js/lib/.*
+                hotelpms/templates/includes/.*|
+                hotelpms/public/js/lib/.*
             )$
 
 
@@ -55,12 +55,12 @@ repos:
         # Ignore any files that might contain jinja / bundles
         exclude: |
             (?x)^(
-                kamra/public/dist/.*|
+                hotelpms/public/dist/.*|
                 cypress/.*|
                 .*node_modules.*|
                 .*boilerplate.*|
-                kamra/templates/includes/.*|
-                kamra/public/js/lib/.*
+                hotelpms/templates/includes/.*|
+                hotelpms/public/js/lib/.*
             )$
 
 ci:

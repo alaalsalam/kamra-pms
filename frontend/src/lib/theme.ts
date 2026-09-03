@@ -1,6 +1,6 @@
 export type Theme = "light" | "dark" | "system"
 
-const KEY = "kamra-theme"
+const KEY = "hotelpms-theme"
 
 export const getTheme = (): Theme => {
   const t = localStorage.getItem(KEY)

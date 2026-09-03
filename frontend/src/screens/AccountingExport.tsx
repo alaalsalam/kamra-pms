@@ -96,7 +96,7 @@ export default function AccountingExport() {
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    call<ExportData>("kamra.accounting.export_invoices", {
+    call<ExportData>("hotelpms.accounting.export_invoices", {
       property,
       from_date: from,
       to_date: to,

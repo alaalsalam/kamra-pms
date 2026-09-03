@@ -5,7 +5,7 @@ import { call, getCurrentProperty } from "../lib/api"
 import { listResource, serverError, type Row } from "../lib/resource"
 import { Badge } from "../components/ui/badge"
 import { Button } from "../components/ui/button"
-import { cur, moneyLocale } from "../lib/money"
+import { cur, moneyLocale, taxLabel } from "../lib/money"
 import {
   Card,
   CardContent,
@@ -65,7 +65,7 @@ export default function Billing() {
       filters: [["property", "=", getCurrentProperty()]],
       orderBy: "modified desc",
     }).then(setFolios)
-    call<CashSummary>("kamra.api.cash_summary", {
+    call<CashSummary>("hotelpms.api.cash_summary", {
       property: getCurrentProperty(),
     }).then(setCash)
     listResource("Night Audit Run", {
@@ -88,7 +88,7 @@ export default function Billing() {
     setAuditErr(null)
     setAudit(null)
     try {
-      const res = await call<AuditResult>("kamra.api.run_night_audit", {
+      const res = await call<AuditResult>("hotelpms.api.run_night_audit", {
         property: getCurrentProperty(),
       })
       setAudit(res)
@@ -202,7 +202,7 @@ export default function Billing() {
         <CardHeader>
           <CardTitle>Folios</CardTitle>
           <span className="text-xs text-zinc-400">
-            Click a folio to post charges, settle and print the GST invoice
+            Click a folio to post charges, settle and print the {taxLabel()} invoice
           </span>
         </CardHeader>
         <CardContent>

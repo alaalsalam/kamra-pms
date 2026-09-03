@@ -11,23 +11,23 @@ the UI and the AI use. **230 endpoints**, generated from the source
 ## Calling convention
 
 ```
-POST https://<your-kamra>/api/method/kamra.<module>.<function>
+POST https://<your-hotelpms>/api/method/hotelpms.<module>.<function>
 Authorization: token <api_key>:<api_secret>
 Content-Type: application/json
 ```
 
-- Get keys from **Kamra Agent → Connect your AI** (Claude OAuth, role-scoped) or the
+- Get keys from **HotelPMS Agent → Connect your AI** (Claude OAuth, role-scoped) or the
   dedicated agent user for services.
 - Responses: `{"message": <return value>}`. Errors are HTTP 4xx with a
   readable reason.
-- **Try it in Postman:** [download the collection](/kamra.postman_collection.json),
+- **Try it in Postman:** [download the collection](/hotelpms.postman_collection.json),
   set `base_url`, `api_key` and `api_secret` collection variables, go.
 - Endpoints marked **public** are `allow_guest` (no token; rate-limited).
 
 
 ## Core (front desk, folios, guests, rooms)
 
-### `kamra.api.whoami` <Badge type='tip' text='public' />
+### `hotelpms.api.whoami` <Badge type='tip' text='public' />
 
 **GET/POST**
 
@@ -36,7 +36,7 @@ Current user + roles - drives which modules the UI shows.
 allow_guest so the SPA's initial "am I logged in?" probe returns
 {user: "Guest"} cleanly instead of a 403 in the console.
 
-### `kamra.api.developer_info`
+### `hotelpms.api.developer_info`
 
 **GET/POST** · roles: `System Manager`, `Administrator`
 
@@ -45,7 +45,7 @@ REST base URL + whether the current user already has an API key.
 Drives the on-site Developers page. The secret itself is never returned
 here - Frappe stores it hashed; it's only shown once, at generation time.
 
-### `kamra.api.generate_api_key`
+### `hotelpms.api.generate_api_key`
 
 **POST** · roles: `System Manager`, `Administrator`
 
@@ -55,9 +55,9 @@ Self-service: acts only on the signed-in user, so any authenticated staff
 member can mint a key scoped to their own roles. The secret is returned
 once here and stored hashed thereafter.
 
-### `kamra.api.set_room_rate`
+### `hotelpms.api.set_room_rate`
 
-**GET/POST** · roles: `Revenue Manager`, `Kamra Agent`
+**GET/POST** · roles: `Revenue Manager`, `HotelPMS Agent`
 
 Set the nightly rate for a room type over a date range - bounded by
 the owner's Rate Guardrails (PRD FR-30). This is the Revenue Agent's
@@ -75,7 +75,7 @@ Guardrails still clamp the rate; the change is recorded in the action log.
 | `reason` | no | `''` |
 | `agent` | no | `None` |
 
-### `kamra.api.owner_briefing`
+### `hotelpms.api.owner_briefing`
 
 **GET/POST**
 
@@ -87,7 +87,7 @@ An LLM turns this into prose; it never invents the figures.
 | `property` | yes |  |
 | `date` | no | `None` |
 
-### `kamra.api.setup_property`
+### `hotelpms.api.setup_property`
 
 **GET/POST**
 
@@ -101,7 +101,7 @@ numbers:["101","102"]}], meal_plans:[{code,label?,price_per_adult}]}
 | --- | --- | --- |
 | `payload` | yes |  |
 
-### `kamra.api.import_bookings`
+### `hotelpms.api.import_bookings`
 
 **GET/POST**
 
@@ -115,9 +115,9 @@ it (auto_price off); others are priced by the engine.
 | `property` | yes |  |
 | `bookings` | yes |  |
 
-### `kamra.api.registration_card`
+### `hotelpms.api.registration_card`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Everything the printed GRC (guest registration card) needs.
 
@@ -125,9 +125,9 @@ Everything the printed GRC (guest registration card) needs.
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.cash_summary`
+### `hotelpms.api.cash_summary`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Cashier reconciliation: what the system says was collected today,
 per payment mode - the number the drawer must match at shift close.
@@ -137,9 +137,9 @@ per payment mode - the number the drawer must match at shift close.
 | `property` | yes |  |
 | `date` | no | `None` |
 
-### `kamra.api.record_advance`
+### `hotelpms.api.record_advance`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Advance/deposit against a Confirmed booking - opens the folio early
 so the money sits on the stay from day one (GM gap: deposits arrive at
@@ -152,17 +152,17 @@ booking, not at check-in).
 | `mode` | no | `'UPI'` |
 | `reference` | no | `None` |
 
-### `kamra.api.folio_payment_link`
+### `hotelpms.api.folio_payment_link`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `folio` | yes |  |
 
-### `kamra.api.hk_queue`
+### `hotelpms.api.hk_queue`
 
-**GET/POST** · roles: `Housekeeping`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Housekeeping`, `Front Desk`, `HotelPMS Agent`
 
 The housekeeper's phone view: prioritized task queue + room board.
 Checkout cleans for rooms with an arrival today jump the queue.
@@ -171,9 +171,9 @@ Checkout cleans for rooms with an arrival today jump the queue.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.api.hk_update_task`
+### `hotelpms.api.hk_update_task`
 
-**GET/POST** · roles: `Housekeeping`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Housekeeping`, `Front Desk`, `HotelPMS Agent`
 
 Start or complete a housekeeping task from the phone.
 
@@ -182,9 +182,9 @@ Start or complete a housekeeping task from the phone.
 | `task` | yes |  |
 | `status` | yes |  |
 
-### `kamra.api.hk_assign_task`
+### `hotelpms.api.hk_assign_task`
 
-**POST** · roles: `Front Desk`, `Housekeeping`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `Housekeeping`, `HotelPMS Agent`
 
 A supervisor hands a task to a specific housekeeper (awaits accept).
 
@@ -193,9 +193,9 @@ A supervisor hands a task to a specific housekeeper (awaits accept).
 | `task` | yes |  |
 | `user` | yes |  |
 
-### `kamra.api.hk_claim_task`
+### `hotelpms.api.hk_claim_task`
 
-**POST** · roles: `Housekeeping`, `Front Desk`, `Kamra Agent`
+**POST** · roles: `Housekeeping`, `Front Desk`, `HotelPMS Agent`
 
 A housekeeper takes an unassigned task from the pool for themselves.
 
@@ -203,9 +203,9 @@ A housekeeper takes an unassigned task from the pool for themselves.
 | --- | --- | --- |
 | `task` | yes |  |
 
-### `kamra.api.hk_accept_task`
+### `hotelpms.api.hk_accept_task`
 
-**POST** · roles: `Housekeeping`, `Front Desk`, `Kamra Agent`
+**POST** · roles: `Housekeeping`, `Front Desk`, `HotelPMS Agent`
 
 The assigned housekeeper accepts the task handed to them.
 
@@ -213,9 +213,9 @@ The assigned housekeeper accepts the task handed to them.
 | --- | --- | --- |
 | `task` | yes |  |
 
-### `kamra.api.hk_reject_task`
+### `hotelpms.api.hk_reject_task`
 
-**POST** · roles: `Housekeeping`, `Front Desk`, `Kamra Agent`
+**POST** · roles: `Housekeeping`, `Front Desk`, `HotelPMS Agent`
 
 Decline a task - it drops back into the pool for someone else,
 keeping the reason on record.
@@ -225,9 +225,9 @@ keeping the reason on record.
 | `task` | yes |  |
 | `reason` | no | `''` |
 
-### `kamra.api.hk_log_item`
+### `hotelpms.api.hk_log_item`
 
-**POST** · roles: `Housekeeping`, `Front Desk`, `Kamra Agent`
+**POST** · roles: `Housekeeping`, `Front Desk`, `HotelPMS Agent`
 
 A floor housekeeper logs a lost/found/missing/damaged item from the
 phone. Lands in the Lost & Found register for the desk to reconcile.
@@ -239,9 +239,9 @@ phone. Lands in the Lost & Found register for the desk to reconcile.
 | `condition` | no | `'Found'` |
 | `room` | no | `None` |
 
-### `kamra.api.hk_post_consumable`
+### `hotelpms.api.hk_post_consumable`
 
-**POST** · roles: `Housekeeping`, `Front Desk`, `Kamra Agent`
+**POST** · roles: `Housekeeping`, `Front Desk`, `HotelPMS Agent`
 
 Housekeeping posts what they find in the room - minibar consumption or
 laundry - onto the in-house guest's folio. Scoped to those two types so
@@ -254,9 +254,9 @@ the floor can't touch discounts, allowances or room charges.
 | `description` | yes |  |
 | `amount` | yes |  |
 
-### `kamra.api.create_ticket`
+### `hotelpms.api.create_ticket`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Create a guest-request ticket. This is also the agent tool for
 'guest wants towels / AC is broken' - PRD FR-42.
@@ -273,18 +273,18 @@ Create a guest-request ticket. This is also the agent tool for
 | `description` | no | `None` |
 | `source` | no | `'Manual'` |
 
-### `kamra.api.tickets_list`
+### `hotelpms.api.tickets_list`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `property` | yes |  |
 | `show_closed` | no | `0` |
 
-### `kamra.api.advance_ticket`
+### `hotelpms.api.advance_ticket`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
@@ -292,9 +292,9 @@ Create a guest-request ticket. This is also the agent tool for
 | `status` | yes |  |
 | `resolution_note` | no | `None` |
 
-### `kamra.api.get_folio`
+### `hotelpms.api.get_folio`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Folio for a reservation - opens one if the guest is checked in.
 
@@ -302,9 +302,9 @@ Folio for a reservation - opens one if the guest is checked in.
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.add_folio_charge`
+### `hotelpms.api.add_folio_charge`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
@@ -317,9 +317,9 @@ Folio for a reservation - opens one if the guest is checked in.
 | `is_alcohol` | no | `0` |
 | `reservation` | no | `None` |
 
-### `kamra.api.add_folio_payment`
+### `hotelpms.api.add_folio_payment`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Record money received on the stay ledger. kind labels WHY it came
 in - Payment (against the bill), Advance (collected before/at
@@ -335,9 +335,9 @@ refund_folio_payment so they can never be entered by accident.
 | `pin` | no | `None` |
 | `kind` | no | `'Payment'` |
 
-### `kamra.api.refund_folio_payment`
+### `hotelpms.api.refund_folio_payment`
 
-**POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Give money back on an open folio - a held security deposit at
 checkout, or an over-collected advance. Stored as a negative ledger
@@ -351,9 +351,9 @@ row so every balance still sums exactly; a reason is mandatory.
 | `reason` | yes |  |
 | `pin` | no | `None` |
 
-### `kamra.api.set_actual_times`
+### `hotelpms.api.set_actual_times`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Correct the recorded arrival/departure moments - early check-ins
 and late checkouts should show what actually happened, not just when
@@ -365,9 +365,9 @@ the button was pressed. Early/late charges stay explicit folio lines.
 | `actual_check_in` | no | `None` |
 | `actual_check_out` | no | `None` |
 
-### `kamra.api.void_folio_charge`
+### `hotelpms.api.void_folio_charge`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Remove a wrong charge line from an open folio (the bill-correction
 path). PIN-guarded like other money actions for humans; agents are
@@ -380,9 +380,9 @@ accountable through the action log.
 | `reason` | no | `''` |
 | `pin` | no | `None` |
 
-### `kamra.api.post_stay_charge`
+### `hotelpms.api.post_stay_charge`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Post a charge to a stay letting the billing rules pick the folio -
 corporate room/meals land on the Company folio, alcohol and anything
@@ -397,9 +397,9 @@ unruled lands on the guest. The agent-facing way to post charges.
 | `gst_rate` | no | `0` |
 | `is_alcohol` | no | `0` |
 
-### `kamra.api.set_billing_rules`
+### `hotelpms.api.set_billing_rules`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Replace a company's billing rules. rules = [{charge_type, pay_by}].
 
@@ -408,17 +408,17 @@ Replace a company's billing rules. rules = [{charge_type, pay_by}].
 | `company` | yes |  |
 | `rules` | yes |  |
 
-### `kamra.api.get_billing_rules`
+### `hotelpms.api.get_billing_rules`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `company` | yes |  |
 
-### `kamra.api.update_occupants`
+### `hotelpms.api.update_occupants`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Replace the stay's occupant register.
 occupants = [{full_name, age, gender, nationality, id_type, id_number, phone}]
@@ -428,18 +428,18 @@ occupants = [{full_name, age, gender, nationality, id_type, id_number, phone}]
 | `reservation` | yes |  |
 | `occupants` | yes |  |
 
-### `kamra.api.split_folio`
+### `hotelpms.api.split_folio`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `reservation` | yes |  |
 | `folio_type` | no | `'Extra'` |
 
-### `kamra.api.delete_folio`
+### `hotelpms.api.delete_folio`
 
-**POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Remove an empty split/extra folio created by mistake.
 
@@ -450,9 +450,9 @@ charges and no payments - money is never dropped this way.
 | --- | --- | --- |
 | `folio` | yes |  |
 
-### `kamra.api.transfer_folio_charge`
+### `hotelpms.api.transfer_folio_charge`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
@@ -460,9 +460,9 @@ charges and no payments - money is never dropped this way.
 | `charge_row` | yes |  |
 | `to_folio` | yes |  |
 
-### `kamra.api.transfer_folio_charges`
+### `hotelpms.api.transfer_folio_charges`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Bulk move: several charge lines to another folio of the stay.
 
@@ -472,9 +472,9 @@ Bulk move: several charge lines to another folio of the stay.
 | `charge_rows` | yes |  |
 | `to_folio` | yes |  |
 
-### `kamra.api.split_folio_charge`
+### `hotelpms.api.split_folio_charge`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Split one charge line between two folios - by percent or amount.
 
@@ -486,9 +486,9 @@ Split one charge line between two folios - by percent or amount.
 | `percent` | no | `None` |
 | `amount` | no | `None` |
 
-### `kamra.api.reservation_folios`
+### `hotelpms.api.reservation_folios`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 All folios of a stay (guest + splits) with balances - plus the
 group master folio when the stay belongs to a group, so charges can
@@ -498,9 +498,9 @@ be moved between a guest's bill and the company's consolidated one.
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.group_master_folio`
+### `hotelpms.api.group_master_folio`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Get-or-create the group's consolidated company folio.
 
@@ -508,9 +508,9 @@ Get-or-create the group's consolidated company folio.
 | --- | --- | --- |
 | `group_booking` | yes |  |
 
-### `kamra.api.group_folios`
+### `hotelpms.api.group_folios`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 The whole group's billing picture: the master folio plus every
 member reservation's folios, with balances.
@@ -519,18 +519,18 @@ member reservation's folios, with balances.
 | --- | --- | --- |
 | `group_booking` | yes |  |
 
-### `kamra.api.close_folio`
+### `hotelpms.api.close_folio`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `folio` | yes |  |
 | `pin` | no | `None` |
 
-### `kamra.api.post_allowance`
+### `hotelpms.api.post_allowance`
 
-**POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Write off part of a bill against a specific folio, with a reason.
 
@@ -542,9 +542,9 @@ Write off part of a bill against a specific folio, with a reason.
 | `gst_rate` | no | `0` |
 | `pin` | no | `None` |
 
-### `kamra.api.part_settle_folio`
+### `hotelpms.api.part_settle_folio`
 
-**POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Interim invoice mid-stay: freeze the paid folio, open a fresh one.
 
@@ -553,9 +553,9 @@ Interim invoice mid-stay: freeze the paid folio, open a fresh one.
 | `folio` | yes |  |
 | `pin` | no | `None` |
 
-### `kamra.api.cancel_invoice`
+### `hotelpms.api.cancel_invoice`
 
-**POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Void an invoice into the register and reopen the folio for correction.
 
@@ -565,9 +565,9 @@ Void an invoice into the register and reopen the folio for correction.
 | `reason` | yes |  |
 | `pin` | no | `None` |
 
-### `kamra.api.folio_invoice`
+### `hotelpms.api.folio_invoice`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 Everything the bill needs to print itself.
 
@@ -583,16 +583,16 @@ prints a bill - the folio screen, a PDF, an email - agrees.
 | --- | --- | --- |
 | `folio` | yes |  |
 
-### `kamra.api.run_night_audit`
+### `hotelpms.api.run_night_audit`
 
-**GET/POST** · roles: `Front Desk`, `Finance`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Finance`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `property` | yes |  |
 | `business_date` | no | `None` |
 
-### `kamra.api.gstr1_rows`
+### `hotelpms.api.gstr1_rows`
 
 **GET/POST**
 
@@ -605,9 +605,9 @@ Filter by property - each GSTIN files its own return.
 | `to_date` | yes |  |
 | `property` | no | `None` |
 
-### `kamra.api.guests_with_stats`
+### `hotelpms.api.guests_with_stats`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Guest list with stay stats - the CRM index.
 
@@ -615,9 +615,9 @@ Guest list with stay stats - the CRM index.
 | --- | --- | --- |
 | `search` | no | `None` |
 
-### `kamra.api.guest_search`
+### `hotelpms.api.guest_search`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Typeahead for attaching a booking to an existing profile.
 
@@ -625,7 +625,7 @@ Typeahead for attaching a booking to an existing profile.
 | --- | --- | --- |
 | `q` | yes |  |
 
-### `kamra.api.merge_guests`
+### `hotelpms.api.merge_guests`
 
 **GET/POST**
 
@@ -639,7 +639,7 @@ lines and totals.
 | `source` | yes |  |
 | `target` | yes |  |
 
-### `kamra.api.anonymize_guest`
+### `hotelpms.api.anonymize_guest`
 
 **GET/POST**
 
@@ -650,9 +650,9 @@ keeping stays and bills intact for the books. Irreversible.
 | --- | --- | --- |
 | `guest` | yes |  |
 
-### `kamra.api.guest_journey`
+### `hotelpms.api.guest_journey`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 One guest's full story: profile, stats, chronological timeline.
 This is the CRM detail view - and the context an AI concierge loads
@@ -662,16 +662,16 @@ before speaking to a returning guest.
 | --- | --- | --- |
 | `guest` | yes |  |
 
-### `kamra.api.my_properties`
+### `hotelpms.api.my_properties`
 
 **GET/POST**
 
 Properties the current user may work with. frappe.get_list applies
 User Permissions, so a property-restricted user sees only theirs.
 
-### `kamra.api.front_desk_snapshot`
+### `hotelpms.api.front_desk_snapshot`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Everything the front desk needs for one day, in one call.
 
@@ -680,9 +680,9 @@ Everything the front desk needs for one day, in one call.
 | `property` | no | `None` |
 | `date` | no | `None` |
 
-### `kamra.api.find_reservations`
+### `hotelpms.api.find_reservations`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`, `Finance`, `Revenue Manager`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`, `Finance`, `Revenue Manager`
 
 Search reservations by guest name, room number, or reference - optionally
 filtered by status. The way to resolve a room number or a name to an actual
@@ -695,9 +695,9 @@ reservation before acting on it.
 | `status` | no | `None` |
 | `limit` | no | `20` |
 
-### `kamra.api.find_invoices`
+### `hotelpms.api.find_invoices`
 
-**GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `HotelPMS Agent`
 
 Resolve an invoice number (or partial) to its folio and stay, so the
 command palette can jump straight from 'INV-KDP-26-00042' to the bill.
@@ -708,9 +708,9 @@ command palette can jump straight from 'INV-KDP-26-00042' to the bill.
 | `query` | no | `None` |
 | `limit` | no | `8` |
 
-### `kamra.api.reservation_detail`
+### `hotelpms.api.reservation_detail`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`, `Finance`, `Revenue Manager`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`, `Finance`, `Revenue Manager`
 
 Everything about one booking in a single call - stay, money, guest,
 booker and the actions currently available. Powers the reservation drawer.
@@ -719,9 +719,9 @@ booker and the actions currently available. Powers the reservation drawer.
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.upload_id_document`
+### `hotelpms.api.upload_id_document`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Capture the guest's ID at the counter, when they never uploaded one.
 
@@ -735,9 +735,9 @@ fixes it in the same breath instead of turning the guest away.
 | `reservation` | yes |  |
 | `data` | yes |  |
 
-### `kamra.api.id_document_image`
+### `hotelpms.api.id_document_image`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 The ID scan as a data URL, for the desk to eyeball.
 
@@ -746,7 +746,7 @@ authorise that through File.has_permission -> the Reservation's own
 doctype permissions. On a site whose Custom DocPerm rows omit Front Desk
 (as ours do - any custom perm on a doctype REPLACES all its standard
 perms), that check says no, and the desk gets a broken image while a
-Hotel Admin sees it. Kamra's authorization has always lived on the
+Hotel Admin sees it. HotelPMS's authorization has always lived on the
 endpoint rather than the doctype (see authz.py), so the image is served
 the same way as everything else here: one gate, one rule, works for
 every role the app actually grants.
@@ -755,9 +755,9 @@ every role the app actually grants.
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.verify_precheckin`
+### `hotelpms.api.verify_precheckin`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 The desk has held the document against the human and agrees.
 
@@ -771,9 +771,9 @@ moment this lands; that guard was clearly written for this.
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.checkin_context`
+### `hotelpms.api.checkin_context`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Everything the check-in flow needs in one round trip: how complete
 the guest's registration is, the assigned room - or the allocator's
@@ -783,18 +783,18 @@ suggestion plus every room the desk may hand over instead.
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.check_in`
+### `hotelpms.api.check_in`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `reservation` | yes |  |
 | `room` | no | `None` |
 
-### `kamra.api.upload_occupant_id`
+### `hotelpms.api.upload_occupant_id`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 ID document for one occupant on the stay register. Same security
 pipeline as every ID image: decoded, re-encoded through PIL (the
@@ -807,9 +807,9 @@ so checkout retention rules find it.
 | `row` | yes |  |
 | `image` | yes |  |
 
-### `kamra.api.upload_guest_document`
+### `hotelpms.api.upload_guest_document`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 The desk captures or replaces a guest's document while preparing
 the GRC - walk-ins, or a newer copy over last visit's. kind is 'id'
@@ -821,9 +821,9 @@ or 'address'; stored privately, one current copy per slot.
 | `kind` | yes |  |
 | `image` | yes |  |
 
-### `kamra.api.cancellation_preview`
+### `hotelpms.api.cancellation_preview`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 What cancelling right now would cost - shown before confirming.
 
@@ -831,9 +831,9 @@ What cancelling right now would cost - shown before confirming.
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.cancel_reservation`
+### `hotelpms.api.cancel_reservation`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Cancel a booking, applying the property's cancellation policy:
 free outside the window, else the configured fee lands on the folio.
@@ -850,9 +850,9 @@ The cancellation is recorded in the action log.
 | `waive_fee` | no | `0` |
 | `agent` | no | `None` |
 
-### `kamra.api.cancellation_letter`
+### `hotelpms.api.cancellation_letter`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Everything the printable cancellation confirmation needs.
 
@@ -860,26 +860,26 @@ Everything the printable cancellation confirmation needs.
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.check_out`
+### `hotelpms.api.check_out`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.set_housekeeping_status`
+### `hotelpms.api.set_housekeeping_status`
 
-**GET/POST** · roles: `Housekeeping`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Housekeeping`, `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `room` | yes |  |
 | `status` | yes |  |
 
-### `kamra.api.availability_calendar`
+### `hotelpms.api.availability_calendar`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Per room-type, per date: rooms available and the 2-adult rate.
 Powers the calendar view and, later, the agent's availability tool.
@@ -890,9 +890,9 @@ Powers the calendar view and, later, the agent's availability tool.
 | `start_date` | no | `None` |
 | `days` | no | `14` |
 
-### `kamra.api.tape_chart`
+### `hotelpms.api.tape_chart`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Rooms × dates grid with reservation bars - the front desk's home.
 
@@ -902,9 +902,9 @@ Rooms × dates grid with reservation bars - the front desk's home.
 | `start_date` | no | `None` |
 | `days` | no | `14` |
 
-### `kamra.api.send_precheckin_link`
+### `hotelpms.api.send_precheckin_link`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Send the guest their self check-in link (mints a token if needed). Sends
 over a connected channel when there is one; otherwise returns the link for
@@ -915,9 +915,9 @@ the desk to share. Marks when it went out so the arrivals board can show it.
 | `reservation` | yes |  |
 | `channel` | no | `'WhatsApp'` |
 
-### `kamra.api.set_stay_times`
+### `hotelpms.api.set_stay_times`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Set the planned arrival (ETA) and departure (ETD) times for any stay.
 These drive the hotel-position view on the tape chart: back-to-back
@@ -930,9 +930,9 @@ leaves, and the day's arrival flow is planned around them.
 | `eta` | no | `None` |
 | `etd` | no | `None` |
 
-### `kamra.api.set_day_use_times`
+### `hotelpms.api.set_day_use_times`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Set planned check-in/out times for a day-use booking (drives the hourly
 tape view).
@@ -943,11 +943,11 @@ tape view).
 | `from_time` | yes |  |
 | `to_time` | yes |  |
 
-### `kamra.api.position_briefing`
+### `hotelpms.api.position_briefing`
 
-**GET/POST** · roles: `Front Desk`, `Finance`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Finance`, `HotelPMS Agent`
 
-The GM / front-desk position briefing - what Kamra Agent reads out
+The GM / front-desk position briefing - what HotelPMS Agent reads out
 at the morning meeting: today's occupancy against the overbooking
 ceiling, arrivals with ETAs, departures with ETDs and balances,
 back-to-back conflicts, the demand tier pricing is applying, and a
@@ -958,9 +958,9 @@ back-to-back conflicts, the demand tier pricing is applying, and a
 | `property` | yes |  |
 | `date` | no | `None` |
 
-### `kamra.api.hurdle_rates`
+### `hotelpms.api.hurdle_rates`
 
-**GET/POST** · roles: `Front Desk`, `Finance`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Finance`, `HotelPMS Agent`
 
 The demand tiers: at each occupancy threshold, the premium applied
 and the minimum sell rate enforced.
@@ -969,9 +969,9 @@ and the minimum sell rate enforced.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.api.save_hurdle_rate`
+### `hotelpms.api.save_hurdle_rate`
 
-**POST** · roles: `Front Desk`, `Finance`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `Finance`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
@@ -982,17 +982,17 @@ and the minimum sell rate enforced.
 | `room_type` | no | `None` |
 | `name` | no | `None` |
 
-### `kamra.api.delete_hurdle_rate`
+### `hotelpms.api.delete_hurdle_rate`
 
-**POST** · roles: `Front Desk`, `Finance`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `Finance`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `name` | yes |  |
 
-### `kamra.api.tape_chart_hourly`
+### `hotelpms.api.tape_chart_hourly`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Single-day, rooms x hours. Day-use bookings sit at their planned times;
 an overnight stay covering this day shows as a full-width occupied band.
@@ -1002,9 +1002,9 @@ an overnight stay covering this day shows as a full-width occupied band.
 | `property` | yes |  |
 | `date` | no | `None` |
 
-### `kamra.api.venue_calendar`
+### `hotelpms.api.venue_calendar`
 
-**GET/POST** · roles: `Front Desk`, `Revenue Manager`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Revenue Manager`, `HotelPMS Agent`
 
 Venues × dates with their bookings - the banquet/function diary. Shows
 each venue's schedule so you can see availability and spot conflicts.
@@ -1015,9 +1015,9 @@ each venue's schedule so you can see availability and spot conflicts.
 | `start_date` | no | `None` |
 | `days` | no | `14` |
 
-### `kamra.api.move_reservation`
+### `hotelpms.api.move_reservation`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Room move - mid-stay or before arrival. Overlap guard re-runs.
 
@@ -1026,9 +1026,9 @@ Room move - mid-stay or before arrival. Overlap guard re-runs.
 | `reservation` | yes |  |
 | `new_room` | yes |  |
 
-### `kamra.api.amend_stay`
+### `hotelpms.api.amend_stay`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Extend / shorten a stay. Re-prices when auto_price is on; the
 overlap guard validates the new window.
@@ -1039,9 +1039,9 @@ overlap guard validates the new window.
 | `check_in_date` | yes |  |
 | `check_out_date` | yes |  |
 
-### `kamra.api.booking_options`
+### `hotelpms.api.booking_options`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Everything the booking form needs to render its dropdowns.
 
@@ -1049,9 +1049,9 @@ Everything the booking form needs to render its dropdowns.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.api.get_quote`
+### `hotelpms.api.get_quote`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 | Param | Required | Default |
 | --- | --- | --- |
@@ -1065,9 +1065,9 @@ Everything the booking form needs to render its dropdowns.
 | `rate_plan` | no | `None` |
 | `voucher_code` | no | `None` |
 
-### `kamra.api.create_booking`
+### `hotelpms.api.create_booking`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 One-call booking: attach to an existing guest profile when given,
 else dedup by phone / create one. Optional auto room assignment,
@@ -1106,9 +1106,9 @@ that are sold out or restricted; promote it later when a room frees.
 | `stay_details` | no | `None` |
 | `instructions` | no | `None` |
 
-### `kamra.api.waitlist`
+### `hotelpms.api.waitlist`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`, `Revenue Manager`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`, `Revenue Manager`
 
 All waitlisted stays for the property, by arrival date.
 
@@ -1116,9 +1116,9 @@ All waitlisted stays for the property, by arrival date.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.api.promote_waitlist`
+### `hotelpms.api.promote_waitlist`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Promote a waitlisted stay to Confirmed when a room is free for its
 dates. Assigns the first free room; the overlap guard validates it.
@@ -1127,9 +1127,9 @@ dates. Assigns the first free room; the overlap guard validates it.
 | --- | --- | --- |
 | `reservation` | yes |  |
 
-### `kamra.api.waitlist_ready`
+### `hotelpms.api.waitlist_ready`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Waitlisted stays that CAN now be accommodated - a room is free for
 their dates. This is the signal the voice/WhatsApp agent watches so it
@@ -1139,9 +1139,9 @@ can proactively reach the guest the moment a room opens.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.api.create_group_booking`
+### `hotelpms.api.create_group_booking`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Create a Group Booking plus one reservation per requested room.
 `rooms` = [{"room_type": &lt;name>, "count": 2}, ...] (JSON string ok).
@@ -1159,9 +1159,9 @@ Create a Group Booking plus one reservation per requested room.
 | `meal_plan` | no | `None` |
 | `rate_plan` | no | `None` |
 
-### `kamra.api.available_rooms`
+### `hotelpms.api.available_rooms`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Rooms of a type with no overlapping live reservation - the same
 logic the double-booking guard enforces, exposed as a query. Confirmed
@@ -1176,9 +1176,9 @@ group to book against its own block.
 | `check_out_date` | yes |  |
 | `group_booking` | no | `None` |
 
-### `kamra.api.room_blocks`
+### `hotelpms.api.room_blocks`
 
-**GET/POST** · roles: `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Rooms held out of sale (house use, VIP, maintenance).
 
@@ -1187,9 +1187,9 @@ Rooms held out of sale (house use, VIP, maintenance).
 | `property` | yes |  |
 | `active_only` | no | `1` |
 
-### `kamra.api.create_room_block`
+### `hotelpms.api.create_room_block`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Hold a room out of sale for a date range. Refused if the room is
 already booked in that window (move the guest first).
@@ -1203,9 +1203,9 @@ already booked in that window (move the guest first).
 | `reason` | no | `'House Use'` |
 | `note` | no | `None` |
 
-### `kamra.api.release_room_block`
+### `hotelpms.api.release_room_block`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Free a held room before its end date (the room returns to sale).
 
@@ -1213,7 +1213,7 @@ Free a held room before its end date (the room returns to sale).
 | --- | --- | --- |
 | `name` | yes |  |
 
-### `kamra.api.cashier_pin_status`
+### `hotelpms.api.cashier_pin_status`
 
 **GET/POST** · roles: `Finance`, `Front Desk`, `Revenue Manager`, `Housekeeping`
 
@@ -1224,7 +1224,7 @@ signed-in user have one set yet?
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.api.set_cashier_pin`
+### `hotelpms.api.set_cashier_pin`
 
 **POST** · roles: `Finance`, `Front Desk`, `Revenue Manager`, `Housekeeping`
 
@@ -1236,9 +1236,9 @@ PIN needs the current one.
 | `pin` | yes |  |
 | `current_pin` | no | `None` |
 
-### `kamra.api.group_detail`
+### `hotelpms.api.group_detail`
 
-**GET/POST** · roles: `Front Desk`, `Revenue Manager`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Revenue Manager`, `HotelPMS Agent`
 
 Everything Group Rooms Control needs: the block, per-type pickup,
 the rooming list, the tied event and the master folio.
@@ -1247,9 +1247,9 @@ the rooming list, the tied event and the master folio.
 | --- | --- | --- |
 | `group_booking` | yes |  |
 
-### `kamra.api.save_group_blocks`
+### `hotelpms.api.save_group_blocks`
 
-**POST** · roles: `Front Desk`, `Revenue Manager`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `Revenue Manager`, `HotelPMS Agent`
 
 Set the room block (list of {room_type, rooms_blocked, block_rate})
 and optionally the cutoff/status. Confirmed blocks hold inventory.
@@ -1261,9 +1261,9 @@ and optionally the cutoff/status. Confirmed blocks hold inventory.
 | `cutoff_date` | no | `None` |
 | `status` | no | `None` |
 
-### `kamra.api.pickup_group_room`
+### `hotelpms.api.pickup_group_room`
 
-**POST** · roles: `Front Desk`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `HotelPMS Agent`
 
 Name a guest into the block: creates a reservation on the group's
 dates against its held inventory.
@@ -1277,9 +1277,9 @@ dates against its held inventory.
 | `adults` | no | `2` |
 | `children` | no | `0` |
 
-### `kamra.api.create_group_block`
+### `hotelpms.api.create_group_block`
 
-**POST** · roles: `Front Desk`, `Revenue Manager`, `Kamra Agent`
+**POST** · roles: `Front Desk`, `Revenue Manager`, `HotelPMS Agent`
 
 One call drafts the whole piece of MICE business: the group, its room
 block, and (optionally) the banquet event - the agent wedge: an inquiry
@@ -1301,7 +1301,7 @@ agent turns "30 rooms + a 200-pax wedding on Dec 12" into a proposal.
 | `customer_phone` | no | `None` |
 | `notes` | no | `None` |
 
-### `kamra.api.my_connector_credentials`
+### `hotelpms.api.my_connector_credentials`
 
 **POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `Housekeeping`
 
@@ -1316,7 +1316,7 @@ Platform-wide / service keys stay on the Developers page (IT admin).
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.api.linked_records`
+### `hotelpms.api.linked_records`
 
 **GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `Housekeeping`
 
@@ -1329,9 +1329,9 @@ can offer one-tap paths to billing and editing. One endpoint, all types.
 | `doctype` | yes |  |
 | `name` | yes |  |
 
-### `kamra.api.property_locale`
+### `hotelpms.api.property_locale`
 
-**GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `Housekeeping`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `Housekeeping`, `HotelPMS Agent`
 
 Currency, number locale and tax vocabulary for this property, from its
 localization pack. Drives the frontend's money formatting and tax dropdowns
@@ -1344,7 +1344,7 @@ so no screen hardcodes ₹ or GST %.
 
 ## Restaurant POS & kitchen
 
-### `kamra.pos.outlets`
+### `hotelpms.pos.outlets`
 
 **GET/POST**
 
@@ -1352,7 +1352,7 @@ so no screen hardcodes ₹ or GST %.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.pos.pos_menu`
+### `hotelpms.pos.pos_menu`
 
 **GET/POST**
 
@@ -1362,7 +1362,7 @@ The digital menu for an outlet: available items grouped by category.
 | --- | --- | --- |
 | `outlet` | yes |  |
 
-### `kamra.pos.create_order`
+### `hotelpms.pos.create_order`
 
 **POST**
 
@@ -1387,7 +1387,7 @@ and delivery carry the customer's details instead of a table/room.
 | `delivery_address` | no | `None` |
 | `allergy_note` | no | `None` |
 
-### `kamra.pos.open_orders`
+### `hotelpms.pos.open_orders`
 
 **GET/POST**
 
@@ -1398,7 +1398,7 @@ now, so a captain can juggle several at once.
 | --- | --- | --- |
 | `outlet` | yes |  |
 
-### `kamra.pos.table_map`
+### `hotelpms.pos.table_map`
 
 **GET/POST**
 
@@ -1412,7 +1412,7 @@ them all and shows the most urgent state.
 | --- | --- | --- |
 | `outlet` | yes |  |
 
-### `kamra.pos.reserve_table`
+### `hotelpms.pos.reserve_table`
 
 **POST**
 
@@ -1429,7 +1429,7 @@ before the time until it's seated, cancelled or marked a no-show.
 | `party_size` | no | `None` |
 | `notes` | no | `None` |
 
-### `kamra.pos.set_reservation`
+### `hotelpms.pos.set_reservation`
 
 **POST**
 
@@ -1440,7 +1440,7 @@ Seat / cancel / no-show a table reservation.
 | `reservation` | yes |  |
 | `status` | yes |  |
 
-### `kamra.pos.mark_table_clean`
+### `hotelpms.pos.mark_table_clean`
 
 **POST**
 
@@ -1451,7 +1451,7 @@ Housekeeping done - the table goes back to vacant on the map.
 | `outlet` | yes |  |
 | `table_no` | yes |  |
 
-### `kamra.pos.recent_orders`
+### `hotelpms.pos.recent_orders`
 
 **GET/POST**
 
@@ -1463,7 +1463,7 @@ captain can jump back to a running bill or reprint a settled one.
 | `outlet` | yes |  |
 | `limit` | no | `8` |
 
-### `kamra.pos.split_order`
+### `hotelpms.pos.split_order`
 
 **POST**
 
@@ -1478,7 +1478,7 @@ the two bills conserve the original total.
 | `item_rows` | yes |  |
 | `table_no` | no | `None` |
 
-### `kamra.pos.order_detail`
+### `hotelpms.pos.order_detail`
 
 **GET/POST**
 
@@ -1488,7 +1488,7 @@ One order's full contents - to load a running tab back into the till.
 | --- | --- | --- |
 | `order` | yes |  |
 
-### `kamra.pos.add_items`
+### `hotelpms.pos.add_items`
 
 **POST**
 
@@ -1500,7 +1500,7 @@ start as New (a later fire_kot sends them to the kitchen).
 | `order` | yes |  |
 | `items` | yes |  |
 
-### `kamra.pos.confirm_order`
+### `hotelpms.pos.confirm_order`
 
 **POST**
 
@@ -1511,7 +1511,7 @@ until a captain has vetted it.
 | --- | --- | --- |
 | `order` | yes |  |
 
-### `kamra.pos.apply_discount`
+### `hotelpms.pos.apply_discount`
 
 **POST**
 
@@ -1523,7 +1523,7 @@ The guest-discount popup - a captain grants a discount with a reason.
 | `amount` | yes |  |
 | `reason` | no | `''` |
 
-### `kamra.pos.fire_kot`
+### `hotelpms.pos.fire_kot`
 
 **POST**
 
@@ -1541,7 +1541,7 @@ captain opened the tab, is when the cook's clock starts.
 | `order` | yes |  |
 | `course` | no | `None` |
 
-### `kamra.pos.kitchen_queue`
+### `hotelpms.pos.kitchen_queue`
 
 **GET/POST**
 
@@ -1569,7 +1569,7 @@ hour over drinks must not hand the kitchen a ticket that is already red.
 | `outlet` | no | `None` |
 | `station` | no | `None` |
 
-### `kamra.pos.mark_prepared`
+### `hotelpms.pos.mark_prepared`
 
 **POST**
 
@@ -1581,7 +1581,7 @@ are never swept up by "all ready" - that food is cancelled, not cooked.
 | `order` | yes |  |
 | `item_row` | no | `None` |
 
-### `kamra.pos.accept_ticket`
+### `hotelpms.pos.accept_ticket`
 
 **POST**
 
@@ -1592,7 +1592,7 @@ has no evidence anyone has seen it - a KOT can print to an empty pass.
 | --- | --- | --- |
 | `order` | yes |  |
 
-### `kamra.pos.recall_prepared`
+### `hotelpms.pos.recall_prepared`
 
 **POST**
 
@@ -1604,7 +1604,7 @@ display. A mis-tap on a greasy touchscreen must not be one-way.
 | `order` | yes |  |
 | `item_row` | no | `None` |
 
-### `kamra.pos.acknowledge_void`
+### `hotelpms.pos.acknowledge_void`
 
 **POST**
 
@@ -1616,7 +1616,7 @@ it; drop it from the display. The void itself stays on the order.
 | `order` | yes |  |
 | `item_row` | yes |  |
 
-### `kamra.pos.deliver_order`
+### `hotelpms.pos.deliver_order`
 
 **POST**
 
@@ -1627,7 +1627,7 @@ Order served - moves to Delivered, which posts it to the room folio
 | --- | --- | --- |
 | `order` | yes |  |
 
-### `kamra.pos.pay_order`
+### `hotelpms.pos.pay_order`
 
 **POST**
 
@@ -1640,7 +1640,7 @@ closes the order without touching any folio.
 | `order` | yes |  |
 | `mode` | yes |  |
 
-### `kamra.pos.mark_nc`
+### `hotelpms.pos.mark_nc`
 
 **POST**
 
@@ -1657,7 +1657,7 @@ never touches a folio. `undo=1` lifts it.
 | `note` | no | `''` |
 | `undo` | no | `0` |
 
-### `kamra.pos.cancel_order`
+### `hotelpms.pos.cancel_order`
 
 **POST**
 
@@ -1669,7 +1669,7 @@ the audit trail). Closed orders can't be cancelled.
 | `order` | yes |  |
 | `reason` | yes |  |
 
-### `kamra.pos.void_item`
+### `hotelpms.pos.void_item`
 
 **POST**
 
@@ -1682,7 +1682,7 @@ through, amount zero) so the KOT-vs-bill audit holds up.
 | `item_row` | yes |  |
 | `reason` | yes |  |
 
-### `kamra.pos.bill_data`
+### `hotelpms.pos.bill_data`
 
 **GET/POST**
 
@@ -1696,7 +1696,7 @@ live lines, the discount, and the CGST/SGST split at the outlet's rate.
 
 ## Laundry (housekeeping)
 
-### `kamra.laundry.laundry_rates`
+### `hotelpms.laundry.laundry_rates`
 
 **GET/POST** · roles: `Finance`
 
@@ -1707,7 +1707,7 @@ from). Grouped by item for the pickers.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.laundry.save_laundry_rate`
+### `hotelpms.laundry.save_laundry_rate`
 
 **POST**
 
@@ -1723,7 +1723,7 @@ Add or edit one line of the rate card.
 | `name` | no | `None` |
 | `disabled` | no | `0` |
 
-### `kamra.laundry.delete_laundry_rate`
+### `hotelpms.laundry.delete_laundry_rate`
 
 **POST**
 
@@ -1731,7 +1731,7 @@ Add or edit one line of the rate card.
 | --- | --- | --- |
 | `name` | yes |  |
 
-### `kamra.laundry.import_laundry_rates`
+### `hotelpms.laundry.import_laundry_rates`
 
 **POST**
 
@@ -1745,7 +1745,7 @@ created, nothing is deleted. Headers are matched tolerantly.
 | `property` | yes |  |
 | `csv_text` | yes |  |
 
-### `kamra.laundry.request_pickup`
+### `hotelpms.laundry.request_pickup`
 
 **POST**
 
@@ -1762,7 +1762,7 @@ team's queue. Items are counted at the door, not here. A House order
 | `order_type` | no | `'Guest'` |
 | `house_label` | no | `None` |
 
-### `kamra.laundry.collect_laundry`
+### `hotelpms.laundry.collect_laundry`
 
 **POST**
 
@@ -1783,7 +1783,7 @@ walk-up (uniforms / linen) needs no room or guest and is never billed.
 | `house_label` | no | `None` |
 | `complimentary` | no | `0` |
 
-### `kamra.laundry.laundry_status`
+### `hotelpms.laundry.laundry_status`
 
 **POST**
 
@@ -1794,7 +1794,7 @@ Move the bag along: Collected -> In Process -> Ready.
 | `order` | yes |  |
 | `status` | yes |  |
 
-### `kamra.laundry.return_items`
+### `hotelpms.laundry.return_items`
 
 **POST**
 
@@ -1806,7 +1806,7 @@ Tick items back in as they return from the laundry. rows =
 | `order` | yes |  |
 | `rows` | yes |  |
 
-### `kamra.laundry.deliver_laundry`
+### `hotelpms.laundry.deliver_laundry`
 
 **POST**
 
@@ -1819,7 +1819,7 @@ Posting rides the governed agent path (HK can only bill laundry).
 | `order` | yes |  |
 | `shortage_note` | no | `None` |
 
-### `kamra.laundry.cancel_laundry`
+### `hotelpms.laundry.cancel_laundry`
 
 **POST**
 
@@ -1828,7 +1828,7 @@ Posting rides the governed agent path (HK can only bill laundry).
 | `order` | yes |  |
 | `reason` | yes |  |
 
-### `kamra.laundry.laundry_board`
+### `hotelpms.laundry.laundry_board`
 
 **GET/POST** · roles: `Finance`
 
@@ -1840,9 +1840,9 @@ delivered ones for reprints/queries.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.laundry.laundry_revenue`
+### `hotelpms.laundry.laundry_revenue`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Hotel Admin`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `Hotel Admin`, `HotelPMS Agent`
 
 Delivered-laundry revenue over the last N days, with a per-service
 breakdown. Only billed guest orders count as revenue; House and
@@ -1856,7 +1856,7 @@ complimentary bags are counted as volume but earn nothing.
 
 ## Banquets (functions, quotations, event orders)
 
-### `kamra.banquet.banquet_catalogue`
+### `hotelpms.banquet.banquet_catalogue`
 
 **GET/POST**
 
@@ -1867,7 +1867,7 @@ the service list. This is the picker behind every line item.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.banquet.save_banquet_menu`
+### `hotelpms.banquet.save_banquet_menu`
 
 **POST**
 
@@ -1882,7 +1882,7 @@ the user is looking at is the truth.
 | `courses` | no | `None` |
 | `name` | no | `None` |
 
-### `kamra.banquet.delete_banquet_menu`
+### `hotelpms.banquet.delete_banquet_menu`
 
 **POST**
 
@@ -1890,7 +1890,7 @@ the user is looking at is the truth.
 | --- | --- | --- |
 | `name` | yes |  |
 
-### `kamra.banquet.save_service_item`
+### `hotelpms.banquet.save_service_item`
 
 **POST**
 
@@ -1908,7 +1908,7 @@ and the pack list.
 | `uom` | no | `'Per Event'` |
 | `name` | no | `None` |
 
-### `kamra.banquet.delete_service_item`
+### `hotelpms.banquet.delete_service_item`
 
 **POST**
 
@@ -1916,7 +1916,7 @@ and the pack list.
 | --- | --- | --- |
 | `name` | yes |  |
 
-### `kamra.banquet.create_enquiry`
+### `hotelpms.banquet.create_enquiry`
 
 **POST**
 
@@ -1944,18 +1944,18 @@ a follow-up lands in the diary so the enquiry doesn't go quiet.
 | `with_venue_line` | no | `1` |
 | `sales_owner` | no | `None` |
 
-### `kamra.banquet.function_sheet`
+### `hotelpms.banquet.function_sheet`
 
 **GET/POST**
 
 One function, everything about it - the sheet the banquet screen
-renders and Kamra Agent reads.
+renders and HotelPMS Agent reads.
 
 | Param | Required | Default |
 | --- | --- | --- |
 | `function` | yes |  |
 
-### `kamra.banquet.update_function`
+### `hotelpms.banquet.update_function`
 
 **POST**
 
@@ -1967,7 +1967,7 @@ calls, because each one means something different).
 | `function` | yes |  |
 | `fields` | yes |  |
 
-### `kamra.banquet.set_status`
+### `hotelpms.banquet.set_status`
 
 **POST**
 
@@ -1981,7 +1981,7 @@ the controller refuses a clash with another confirmed function.
 | `reason` | no | `None` |
 | `tentative_until` | no | `None` |
 
-### `kamra.banquet.add_menu`
+### `hotelpms.banquet.add_menu`
 
 **POST**
 
@@ -1998,7 +1998,7 @@ the package's own plate price - pass `rate` when it's been negotiated.
 | `chargeable` | no | `1` |
 | `notes` | no | `None` |
 
-### `kamra.banquet.add_service`
+### `hotelpms.banquet.add_service`
 
 **POST**
 
@@ -2015,7 +2015,7 @@ by default; pass `chargeable` to override for this function.
 | `chargeable` | no | `None` |
 | `notes` | no | `None` |
 
-### `kamra.banquet.save_items`
+### `hotelpms.banquet.save_items`
 
 **POST**
 
@@ -2028,7 +2028,7 @@ print a menu's courses.
 | `function` | yes |  |
 | `items` | yes |  |
 
-### `kamra.banquet.remove_item`
+### `hotelpms.banquet.remove_item`
 
 **POST**
 
@@ -2037,7 +2037,7 @@ print a menu's courses.
 | `function` | yes |  |
 | `row` | yes |  |
 
-### `kamra.banquet.negotiate`
+### `hotelpms.banquet.negotiate`
 
 **POST**
 
@@ -2056,7 +2056,7 @@ after, so the fourth revision of a wedding quote can be explained.
 | `note` | no | `None` |
 | `venue_rental` | no | `None` |
 
-### `kamra.banquet.save_open_items`
+### `hotelpms.banquet.save_open_items`
 
 **POST**
 
@@ -2069,7 +2069,7 @@ extra generator. Each carries what agreeing it would do to the price.
 | `function` | yes |  |
 | `rows` | yes |  |
 
-### `kamra.banquet.set_payment_terms`
+### `hotelpms.banquet.set_payment_terms`
 
 **POST** · roles: `Finance`
 
@@ -2083,7 +2083,7 @@ sides agreed and stays put.
 | `terms` | yes |  |
 | `note` | no | `None` |
 
-### `kamra.banquet.default_payment_terms`
+### `hotelpms.banquet.default_payment_terms`
 
 **POST** · roles: `Finance`
 
@@ -2098,7 +2098,7 @@ completion. Editable afterwards like any other term.
 | `interim_percent` | no | `50` |
 | `interim_days_before` | no | `15` |
 
-### `kamra.banquet.record_receipt`
+### `hotelpms.banquet.record_receipt`
 
 **POST** · roles: `Finance`
 
@@ -2115,7 +2115,7 @@ payment-term row it pays, so the schedule and the ledger agree.
 | `receipt_date` | no | `None` |
 | `settle_term` | no | `None` |
 
-### `kamra.banquet.assign_green_room`
+### `hotelpms.banquet.assign_green_room`
 
 **POST**
 
@@ -2132,7 +2132,7 @@ Room Block on it so it genuinely leaves the sellable inventory; pass
 | `complimentary` | no | `1` |
 | `rate` | no | `0` |
 
-### `kamra.banquet.venue_availability`
+### `hotelpms.banquet.venue_availability`
 
 **GET/POST**
 
@@ -2150,7 +2150,7 @@ sell over. Halls too small for the pax are flagged, not hidden.
 | `pax` | no | `0` |
 | `exclude` | no | `None` |
 
-### `kamra.banquet.banquet_calendar`
+### `hotelpms.banquet.banquet_calendar`
 
 **GET/POST**
 
@@ -2165,7 +2165,7 @@ Multi-day functions appear on each of their days.
 | `days` | no | `31` |
 | `status` | no | `None` |
 
-### `kamra.banquet.banquet_pipeline`
+### `hotelpms.banquet.banquet_pipeline`
 
 **GET/POST** · roles: `Hotel Admin`
 
@@ -2180,7 +2180,7 @@ a banquet team's month is the month the function happens.
 | `to_date` | no | `None` |
 | `months` | no | `6` |
 
-### `kamra.banquet.banquet_reminders`
+### `hotelpms.banquet.banquet_reminders`
 
 **GET/POST**
 
@@ -2192,7 +2192,7 @@ team's morning list.
 | `property` | yes |  |
 | `days` | no | `30` |
 
-### `kamra.banquet.banquet_document`
+### `hotelpms.banquet.banquet_document`
 
 **GET/POST**
 
@@ -2210,7 +2210,7 @@ them all the same way:
 | `function` | yes |  |
 | `kind` | no | `'quote'` |
 
-### `kamra.banquet.generate_quote`
+### `hotelpms.banquet.generate_quote`
 
 **POST**
 
@@ -2223,7 +2223,7 @@ it was worth - so 'the price we sent on the 3rd' is answerable.
 | `valid_days` | no | `15` |
 | `note` | no | `None` |
 
-### `kamra.banquet.generate_beo`
+### `hotelpms.banquet.generate_beo`
 
 **POST**
 
@@ -2235,7 +2235,7 @@ teams shouldn't be preparing for business that isn't sold.
 | --- | --- | --- |
 | `function` | yes |  |
 
-### `kamra.banquet.post_to_folio`
+### `hotelpms.banquet.post_to_folio`
 
 **POST** · roles: `Finance`
 
@@ -2251,7 +2251,7 @@ settled separately instead of failing the whole post.
 | `function` | yes |  |
 | `folio` | no | `None` |
 
-### `kamra.banquet.close_out`
+### `hotelpms.banquet.close_out`
 
 **POST** · roles: `Finance`
 
@@ -2273,7 +2273,7 @@ three people remembering to do three things.
 | `refund_mode` | no | `'Bank Transfer'` |
 | `pax_actual` | no | `None` |
 
-### `kamra.banquet.receipt_document`
+### `hotelpms.banquet.receipt_document`
 
 **POST** · roles: `Finance`
 
@@ -2286,7 +2286,7 @@ piece of paper.
 | `function` | yes |  |
 | `receipt` | yes |  |
 
-### `kamra.banquet.menu_card`
+### `hotelpms.banquet.menu_card`
 
 **GET/POST**
 
@@ -2298,7 +2298,7 @@ customer read the same sheet, which is the whole point.
 | --- | --- | --- |
 | `function` | yes |  |
 
-### `kamra.banquet.month_availability`
+### `hotelpms.banquet.month_availability`
 
 **GET/POST**
 
@@ -2314,7 +2314,7 @@ side split by session, days across the top, and what's in each cell.
 | `property` | yes |  |
 | `month` | no | `None` |
 
-### `kamra.banquet.banquet_register`
+### `hotelpms.banquet.banquet_register`
 
 **GET/POST** · roles: `Hotel Admin`
 
@@ -2334,7 +2334,7 @@ every hall has kept on paper forever, dated and totalled:
 | `from_date` | no | `None` |
 | `to_date` | no | `None` |
 
-### `kamra.banquet.dish_library`
+### `hotelpms.banquet.dish_library`
 
 **GET/POST**
 
@@ -2346,7 +2346,7 @@ make. This is the picker behind menu building and the spine of margin.
 | `property` | yes |  |
 | `course_type` | no | `None` |
 
-### `kamra.banquet.save_dish`
+### `hotelpms.banquet.save_dish`
 
 **POST**
 
@@ -2360,7 +2360,7 @@ without one the dish is free, and so is the margin it reports.
 | `recipe` | no | `None` |
 | `name` | no | `None` |
 
-### `kamra.banquet.delete_dish`
+### `hotelpms.banquet.delete_dish`
 
 **POST**
 
@@ -2368,7 +2368,7 @@ without one the dish is free, and so is the margin it reports.
 | --- | --- | --- |
 | `name` | yes |  |
 
-### `kamra.banquet.recost_dishes`
+### `hotelpms.banquet.recost_dishes`
 
 **POST**
 
@@ -2380,7 +2380,7 @@ onions.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.banquet.menu_cost`
+### `hotelpms.banquet.menu_cost`
 
 **GET/POST**
 
@@ -2395,7 +2395,7 @@ before anyone has booked it.
 | `menu` | yes |  |
 | `pax` | no | `0` |
 
-### `kamra.banquet.menu_choices`
+### `hotelpms.banquet.menu_choices`
 
 **GET/POST**
 
@@ -2407,7 +2407,7 @@ course offers, how many the guest may take, and what's chosen so far.
 | `function` | yes |  |
 | `menu` | yes |  |
 
-### `kamra.banquet.compose_menu`
+### `hotelpms.banquet.compose_menu`
 
 **POST**
 
@@ -2425,7 +2425,7 @@ upgrade is a price change and should be visible as one.
 | `menu` | yes |  |
 | `picks` | yes |  |
 
-### `kamra.banquet.kitchen_indent`
+### `hotelpms.banquet.kitchen_indent`
 
 **GET/POST** · roles: `Housekeeping`
 
@@ -2440,7 +2440,7 @@ what's actually on the shelf.
 | --- | --- | --- |
 | `function` | yes |  |
 
-### `kamra.banquet.issue_indent`
+### `hotelpms.banquet.issue_indent`
 
 **POST** · roles: `Housekeeping`
 
@@ -2454,7 +2454,7 @@ a banquet the way it reflects a table.
 | `outlet` | yes |  |
 | `rows` | no | `None` |
 
-### `kamra.banquet.record_consumption`
+### `hotelpms.banquet.record_consumption`
 
 **POST**
 
@@ -2470,7 +2470,7 @@ rows = {line_row_name: actual_qty}.
 | `rows` | no | `None` |
 | `pax_actual` | no | `None` |
 
-### `kamra.banquet.add_supplementary`
+### `hotelpms.banquet.add_supplementary`
 
 **POST**
 
@@ -2491,7 +2491,7 @@ agreed.
 | `is_alcohol` | no | `0` |
 | `notes` | no | `None` |
 
-### `kamra.banquet.function_economics`
+### `hotelpms.banquet.function_economics`
 
 **GET/POST**
 
@@ -2503,7 +2503,7 @@ disagreed.
 | --- | --- | --- |
 | `function` | yes |  |
 
-### `kamra.banquet.link_customer`
+### `hotelpms.banquet.link_customer`
 
 **POST**
 
@@ -2518,7 +2518,7 @@ sees the same person the front desk does.
 | `function` | yes |  |
 | `guest` | no | `None` |
 
-### `kamra.banquet.customer_profile`
+### `hotelpms.banquet.customer_profile`
 
 **GET/POST**
 
@@ -2535,7 +2535,7 @@ usually book, and what's still owed.
 
 ## Migration (CSV import)
 
-### `kamra.migrate.preview_import`
+### `hotelpms.migrate.preview_import`
 
 **POST**
 
@@ -2548,7 +2548,7 @@ detected, and every row that would be skipped - nothing is written.
 | `csv_text` | yes |  |
 | `preset` | no | `'auto'` |
 
-### `kamra.migrate.run_import`
+### `hotelpms.migrate.run_import`
 
 **POST**
 
@@ -2566,7 +2566,7 @@ guest history survives the migration.
 
 ## Inventory & recipes
 
-### `kamra.inventory.ingredients`
+### `hotelpms.inventory.ingredients`
 
 **GET/POST**
 
@@ -2577,7 +2577,7 @@ The ingredient master - the picker behind the recipe editor.
 | `property` | yes |  |
 | `active_only` | no | `1` |
 
-### `kamra.inventory.menu_recipe`
+### `hotelpms.inventory.menu_recipe`
 
 **GET/POST**
 
@@ -2588,7 +2588,7 @@ has on hand right now - so the editor can say "you have 0.4 kg left".
 | --- | --- | --- |
 | `menu_item` | yes |  |
 
-### `kamra.inventory.recipe_overview`
+### `hotelpms.inventory.recipe_overview`
 
 **GET/POST**
 
@@ -2600,7 +2600,7 @@ movers - but you cannot decide that without seeing the list.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.inventory.save_recipe`
+### `hotelpms.inventory.save_recipe`
 
 **POST** · roles: `Finance`, `Hotel Admin`
 
@@ -2612,7 +2612,7 @@ Replace a dish's recipe wholesale. An empty list is valid and means
 | `menu_item` | yes |  |
 | `rows` | yes |  |
 
-### `kamra.inventory.save_ingredient`
+### `hotelpms.inventory.save_ingredient`
 
 **POST**
 
@@ -2628,7 +2628,7 @@ Create or update one ingredient.
 | `is_active` | no | `1` |
 | `name` | no | `None` |
 
-### `kamra.inventory.delete_ingredient`
+### `hotelpms.inventory.delete_ingredient`
 
 **POST**
 
@@ -2639,7 +2639,7 @@ recipe or punch a hole in the ledger. Deactivate instead.
 | --- | --- | --- |
 | `name` | yes |  |
 
-### `kamra.inventory.receive_stock`
+### `hotelpms.inventory.receive_stock`
 
 **POST**
 
@@ -2655,7 +2655,7 @@ a receipt is just its ledger rows plus a supplier and an invoice number.
 | `supplier` | no | `None` |
 | `invoice_no` | no | `None` |
 
-### `kamra.inventory.adjust_stock`
+### `hotelpms.inventory.adjust_stock`
 
 **POST**
 
@@ -2675,7 +2675,7 @@ shortage guard makes when it refuses to deliver a short bag unexplained.
 | `rows` | yes |  |
 | `note` | yes |  |
 
-### `kamra.inventory.record_wastage`
+### `hotelpms.inventory.record_wastage`
 
 **POST**
 
@@ -2694,7 +2694,7 @@ a Wastage row too would deduct it twice. Use wastage_report() for those.
 | `qty` | yes |  |
 | `reason_note` | yes |  |
 
-### `kamra.inventory.stock_list`
+### `hotelpms.inventory.stock_list`
 
 **GET/POST**
 
@@ -2707,7 +2707,7 @@ thing as a merged total across outlets and this never offers one.
 | `outlet` | yes |  |
 | `status` | no | `None` |
 
-### `kamra.inventory.ingredient_ledger`
+### `hotelpms.inventory.ingredient_ledger`
 
 **GET/POST**
 
@@ -2721,7 +2721,7 @@ produced, so the history explains the number on the shelf.
 | `ingredient` | yes |  |
 | `limit` | no | `50` |
 
-### `kamra.inventory.low_stock`
+### `hotelpms.inventory.low_stock`
 
 **GET/POST**
 
@@ -2735,7 +2735,7 @@ it. We flag and offer; a human decides. Nothing is ever auto-86'd.
 | `property` | yes |  |
 | `outlet` | no | `None` |
 
-### `kamra.inventory.wastage_report`
+### `hotelpms.inventory.wastage_report`
 
 **GET/POST**
 
@@ -2754,7 +2754,7 @@ destroyed outside a sale, so SUM(qty_change) always equals reality.
 | `outlet` | no | `None` |
 | `days` | no | `30` |
 
-### `kamra.inventory.set_menu_availability`
+### `hotelpms.inventory.set_menu_availability`
 
 **POST** · roles: `Finance`, `Hotel Admin`
 
@@ -2772,7 +2772,7 @@ someone who can walk over and look at the shelf.
 | `menu_item` | yes |  |
 | `available` | yes |  |
 
-### `kamra.inventory.set_par_level`
+### `hotelpms.inventory.set_par_level`
 
 **POST**
 
@@ -2788,7 +2788,7 @@ Where LOW starts for this ingredient at this outlet. Zero = no par.
 
 ## Menu bulk import
 
-### `kamra.menu_import.preview_menu_import`
+### `hotelpms.menu_import.preview_menu_import`
 
 **POST**
 
@@ -2801,7 +2801,7 @@ every row that would be skipped. Nothing is written.
 | `csv_text` | yes |  |
 | `outlet` | no | `None` |
 
-### `kamra.menu_import.run_menu_import`
+### `hotelpms.menu_import.run_menu_import`
 
 **POST**
 
@@ -2816,7 +2816,7 @@ One bad row never aborts the batch.
 | `outlet` | no | `None` |
 | `update_existing` | no | `1` |
 
-### `kamra.menu_import.menu_template`
+### `hotelpms.menu_import.menu_template`
 
 **GET/POST**
 
@@ -2828,9 +2828,9 @@ The CSV headers + one sample row, so the file starts out right.
 
 ## Central reservations (chain)
 
-### `kamra.crs.crs_search`
+### `hotelpms.crs.crs_search`
 
-**GET/POST** · roles: `Front Desk`, `Revenue Manager`, `Hotel Admin`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Revenue Manager`, `Hotel Admin`, `HotelPMS Agent`
 
 Find a room across the chain: for every property the user can access,
 the room types with space for these dates and their all-in rate.
@@ -2845,9 +2845,9 @@ the room types with space for these dates and their all-in rate.
 
 ## Dashboards
 
-### `kamra.dashboards.property_dashboard`
+### `hotelpms.dashboards.property_dashboard`
 
-**GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `Hotel Admin`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `Hotel Admin`, `HotelPMS Agent`
 
 Everything one hotel's dashboard needs, by department.
 
@@ -2856,9 +2856,9 @@ Everything one hotel's dashboard needs, by department.
 | `property` | yes |  |
 | `date` | no | `None` |
 
-### `kamra.dashboards.portfolio_dashboard`
+### `hotelpms.dashboards.portfolio_dashboard`
 
-**GET/POST** · roles: `Finance`, `Revenue Manager`, `Hotel Admin`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Revenue Manager`, `Hotel Admin`, `HotelPMS Agent`
 
 The chain's central view: headline metrics rolled up across every
 property the signed-in user may access, plus a per-property table.
@@ -2870,7 +2870,7 @@ property the signed-in user may access, plus a per-property table.
 
 ## Reports
 
-### `kamra.reports.void_allowance_report`
+### `hotelpms.reports.void_allowance_report`
 
 **GET/POST** · roles: `Finance`, `Hotel Admin`
 
@@ -2885,9 +2885,9 @@ cannot drift from what actually happened.
 | `from_date` | no | `None` |
 | `to_date` | no | `None` |
 
-### `kamra.reports.manager_flash`
+### `hotelpms.reports.manager_flash`
 
-**GET/POST** · roles: `Finance`, `Front Desk`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Front Desk`, `HotelPMS Agent`
 
 The daily flash: yesterday's performance, month to date, today's
 movement, collections by mode, and the 7-day outlook.
@@ -2897,9 +2897,9 @@ movement, collections by mode, and the 7-day outlook.
 | `property` | yes |  |
 | `date` | no | `None` |
 
-### `kamra.reports.budget_vs_actual`
+### `hotelpms.reports.budget_vs_actual`
 
-**GET/POST** · roles: `Finance`, `Revenue Manager`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Revenue Manager`, `HotelPMS Agent`
 
 Monthly target vs actual: room revenue, occupancy %, ADR, RevPAR - with
 variance. period is 'YYYY-MM' (defaults to the current month).
@@ -2909,7 +2909,7 @@ variance. period is 'YYYY-MM' (defaults to the current month).
 | `property` | yes |  |
 | `period` | no | `None` |
 
-### `kamra.reports.save_budget`
+### `hotelpms.reports.save_budget`
 
 **POST** · roles: `Revenue Manager`, `Hotel Admin`, `Finance`
 
@@ -2922,9 +2922,9 @@ variance. period is 'YYYY-MM' (defaults to the current month).
 | `adr_target` | no | `0` |
 | `revpar_target` | no | `0` |
 
-### `kamra.reports.contribution`
+### `hotelpms.reports.contribution`
 
-**GET/POST** · roles: `Finance`, `Revenue Manager`, `Kamra Agent`
+**GET/POST** · roles: `Finance`, `Revenue Manager`, `HotelPMS Agent`
 
 Who brings the business: revenue + room nights + share, grouped by
 booking source, company or travel agent. by = source | company | travel_agent.
@@ -2936,9 +2936,9 @@ booking source, company or travel agent. by = source | company | travel_agent.
 | `to_date` | yes |  |
 | `by` | no | `'source'` |
 
-### `kamra.reports.sla_report`
+### `hotelpms.reports.sla_report`
 
-**GET/POST** · roles: `Front Desk`, `Hotel Admin`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Hotel Admin`, `HotelPMS Agent`
 
 Operations SLA health from Service Tickets over a window: overall
 resolution and breach rates, a breakdown by category and by priority,
@@ -2956,9 +2956,9 @@ breached if it was resolved after due_by, or is still open past due_by.
 
 ## Activity ledger
 
-### `kamra.agents_api.activity_feed`
+### `hotelpms.agents_api.activity_feed`
 
-**GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `HotelPMS Agent`
 
 The one ledger: every action anyone took - human or AI - newest first.
 actor_kind filters to "human" or "agent".
@@ -2971,9 +2971,9 @@ actor_kind filters to "human" or "agent".
 | `limit` | no | `50` |
 | `start` | no | `0` |
 
-### `kamra.agents_api.activity_detail`
+### `hotelpms.agents_api.activity_detail`
 
-**GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `Kamra Agent`
+**GET/POST** · roles: `Front Desk`, `Finance`, `Revenue Manager`, `HotelPMS Agent`
 
 Everything one ledger row knows — including the before/after
 snapshots that are too heavy for the feed.
@@ -2987,17 +2987,17 @@ snapshots that are too heavy for the feed.
 
 > These are allow_guest endpoints: no token needed, rate-limited.
 
-### `kamra.public_api.site_info` <Badge type='tip' text='public' />
+### `hotelpms.public_api.site_info` <Badge type='tip' text='public' />
 
 **GET/POST**
 
 Public site metadata for the login/boot screen.
 
 demo_mode is true only on the seeded demo site (seed_demo sets the
-`kamra_demo_mode` default), so a real install never advertises the
+`hotelpms_demo_mode` default), so a real install never advertises the
 demo login accounts.
 
-### `kamra.public_api.showcase` <Badge type='tip' text='public' />
+### `hotelpms.public_api.showcase` <Badge type='tip' text='public' />
 
 **GET/POST**
 
@@ -3007,7 +3007,7 @@ Everything the public booking page needs to render.
 | --- | --- | --- |
 | `property` | yes |  |
 
-### `kamra.public_api.search_stay` <Badge type='tip' text='public' />
+### `hotelpms.public_api.search_stay` <Badge type='tip' text='public' />
 
 **GET/POST**
 
@@ -3021,7 +3021,7 @@ Availability + real quoted price per room type for the stay.
 | `adults` | no | `2` |
 | `children` | no | `0` |
 
-### `kamra.public_api.precheckin_info` <Badge type='tip' text='public' />
+### `hotelpms.public_api.precheckin_info` <Badge type='tip' text='public' />
 
 **GET/POST**
 
@@ -3031,7 +3031,7 @@ Stay summary for the pre-arrival check-in page.
 | --- | --- | --- |
 | `token` | yes |  |
 
-### `kamra.public_api.precheckin_submit` <Badge type='tip' text='public' />
+### `hotelpms.public_api.precheckin_submit` <Badge type='tip' text='public' />
 
 **POST**
 
@@ -3056,7 +3056,7 @@ photo of their ID - camera capture or upload - stored privately.
 | `id_image` | no | `''` |
 | `address_image` | no | `''` |
 
-### `kamra.public_api.precheckin_upload_id` <Badge type='tip' text='public' />
+### `hotelpms.public_api.precheckin_upload_id` <Badge type='tip' text='public' />
 
 **POST**
 
@@ -3079,7 +3079,7 @@ pre-register, so the submit gate never mentions this.
 | `token` | yes |  |
 | `data` | yes |  |
 
-### `kamra.public_api.laundry_info` <Badge type='tip' text='public' />
+### `hotelpms.public_api.laundry_info` <Badge type='tip' text='public' />
 
 **GET/POST**
 
@@ -3090,7 +3090,7 @@ Read-only — the guest sees what things cost, never a folio.
 | --- | --- | --- |
 | `token` | yes |  |
 
-### `kamra.public_api.request_guest_laundry` <Badge type='tip' text='public' />
+### `hotelpms.public_api.request_guest_laundry` <Badge type='tip' text='public' />
 
 **POST**
 
@@ -3105,7 +3105,7 @@ or the folio; staff count and price the bag at the door (status
 | `notes` | no | `''` |
 | `express` | no | `0` |
 
-### `kamra.public_api.book` <Badge type='tip' text='public' />
+### `hotelpms.public_api.book` <Badge type='tip' text='public' />
 
 **POST**
 
@@ -3129,7 +3129,7 @@ current payment policy and snapshotted onto the booking.
 | `addons` | no | `None` |
 | `voucher_code` | no | `''` |
 
-### `kamra.public_api.check_voucher` <Badge type='tip' text='public' />
+### `hotelpms.public_api.check_voucher` <Badge type='tip' text='public' />
 
 **GET/POST**
 
@@ -3142,7 +3142,7 @@ Live promo-code feedback on the booking page. Never throws - returns
 | `code` | yes |  |
 | `nights` | no | `1` |
 
-### `kamra.public_api.qr_menu` <Badge type='tip' text='public' />
+### `hotelpms.public_api.qr_menu` <Badge type='tip' text='public' />
 
 **GET/POST**
 
@@ -3154,7 +3154,7 @@ guest - they're read here.
 | --- | --- | --- |
 | `outlet` | yes |  |
 
-### `kamra.public_api.qr_order` <Badge type='tip' text='public' />
+### `hotelpms.public_api.qr_order` <Badge type='tip' text='public' />
 
 **POST**
 
@@ -3169,11 +3169,11 @@ the guest can never post directly to a folio.
 | `room` | no | `None` |
 | `table_no` | no | `None` |
 
-### `kamra.public_api.hosting_enquiry` <Badge type='tip' text='public' />
+### `hotelpms.public_api.hosting_enquiry` <Badge type='tip' text='public' />
 
 **POST**
 
-Kamra Cloud hosting enquiry from kamrapms.com. Stored first (a lead is
+HotelPMS Cloud hosting enquiry from hotelpms.yemenfrappe.com. Stored first (a lead is
 never lost even without SMTP), then a best-effort email to the team.
 
 | Param | Required | Default |

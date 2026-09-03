@@ -1,4 +1,4 @@
-# Releasing Kamra PMS
+# Releasing HotelPMS
 
 The maintainer runbook. Contributors don't need this — see
 [`CONTRIBUTING.md`](CONTRIBUTING.md).
@@ -7,8 +7,8 @@ The maintainer runbook. Contributors don't need this — see
 
 | Channel | Source | Where it goes | When |
 |---|---|---|---|
-| **nightly** | `develop` | nightly.kamrapms.com, `ghcr.io/kamra-pms/kamra:nightly`, rolling `nightly` prerelease | every night at 03:00 IST, if develop moved and CI is green |
-| **stable** | `main` + tag `vX.Y.Z` | GitHub Release, `ghcr.io/kamra-pms/kamra:<tag>` + `:latest`, demo.kamrapms.com, Frappe Cloud Marketplace | when a Release PR is merged |
+| **nightly** | `develop` | nightly.hotelpms.yemenfrappe.com, `ghcr.io/hotelpms-pms/hotelpms:nightly`, rolling `nightly` prerelease | every night at 03:00 IST, if develop moved and CI is green |
+| **stable** | `main` + tag `vX.Y.Z` | GitHub Release, `ghcr.io/hotelpms-pms/hotelpms:<tag>` + `:latest`, demo.hotelpms.yemenfrappe.com, Frappe Cloud Marketplace | when a Release PR is merged |
 
 ## The normal release train (monthly, or when a feature set is ready)
 
@@ -20,20 +20,20 @@ fixes do **not** need a new `vX.Y.Z` the same day.
    squash — keeps individual Conventional Commits visible to release-please).
 2. **Leave the Release PR as a draft until you mean to publish.** release-please
    opens/updates a draft `chore(main): release X.Y.Z` on `main` with the
-   version bump (`kamra/__init__.py`) and the CHANGELOG draft. You can merge
+   version bump (`hotelpms/__init__.py`) and the CHANGELOG draft. You can merge
    several trains/hotfixes into `main` and let that draft accumulate. Mark it
    ready and edit the changelog prose only when you intend to tag.
 3. **Merge the Release PR** when you are ready to ship. Automation then:
    tag `vX.Y.Z` → GitHub Release → Docker image → demo redeploy.
 4. **Frappe Cloud Marketplace** (manual, ~2 min): dashboard →
-   Apps → kamra → create a release from the new `main` state and submit for
+   Apps → hotelpms → create a release from the new `main` state and submit for
    approval.
 5. **Announce:** release thread on discuss.frappe.io; anything else
    (X/LinkedIn) as warranted.
 
 ### What bumps what
 
-Kamra defaults to **PATCH** releases (`2.6.0` → `2.6.1` → `2.6.2`). Small
+HotelPMS defaults to **PATCH** releases (`2.6.0` → `2.6.1` → `2.6.2`). Small
 features, polish, and fixes all ship as patches. We do **not** auto-bump to
 `2.7.0` just because a commit used `feat:`.
 
@@ -75,41 +75,41 @@ A month of small work should usually be one or two PATCHes, not a MINOR.
 - `nightly.yml` refuses to ship if CI on `develop` HEAD isn't green — fix CI
   rather than forcing.
 - Force an off-schedule nightly: Actions → Nightly → *Run workflow*.
-- nightly.kamrapms.com is disposable; wipe + reseed with
-  `bench --site nightly.kamrapms.com execute kamra.scripts.reset_demo.execute`
+- nightly.hotelpms.yemenfrappe.com is disposable; wipe + reseed with
+  `bench --site nightly.hotelpms.yemenfrappe.com execute hotelpms.scripts.reset_demo.execute`
   (or `seed_demo.execute` if you only want to fill missing showcase data).
 
 ## Distribution channels checklist (kept current per release)
 
 - **Frappe Cloud Marketplace** — listing tracks `main`; release step 4 above.
-- **Docker self-host** — `ghcr.io/kamra-pms/kamra:latest` (and `:nightly`);
+- **Docker self-host** — `ghcr.io/hotelpms-pms/hotelpms:latest` (and `:nightly`);
   built with frappe_docker's layered Containerfile, so standard
   frappe_docker compose files run it.
-- **bench self-host** — `bench get-app https://github.com/Kamra-PMS/kamra-pms`
-  (main) then `bench install-app kamra`; guarded by the fresh-install CI job.
-- **Demo** — demo.kamrapms.com redeploys automatically on each stable release.
+- **bench self-host** — `bench get-app https://github.com/YemenFrappe/hotelpms`
+  (main) then `bench install-app hotelpms`; guarded by the fresh-install CI job.
+- **Demo** — demo.hotelpms.yemenfrappe.com redeploys automatically on each stable release.
 
 ## Marketplace readiness (one-time, then keep true)
 
 - [x] Public repo, AGPL-3.0 `license.txt`
-- [x] `pyproject.toml` valid, version dynamic from `kamra/__init__.py`
+- [x] `pyproject.toml` valid, version dynamic from `hotelpms/__init__.py`
 - [x] `requires-python` floor at or below the Frappe Cloud v16 Python
       (`>=3.10`) — a floor above the bench's interpreter makes pip refuse the
       install during the marketplace build
 - [x] `required_apps = ["payments"]` in hooks
-- [x] `add_to_apps_screen` entry (logo, `/kamra` route)
-- [x] Prebuilt SPA committed under `kamra/public/frontend` (built by
+- [x] `add_to_apps_screen` entry (logo, `/hotelpms` route)
+- [x] Prebuilt SPA committed under `hotelpms/public/frontend` (built by
       `frontend/`'s `npm run build`; keep committing the build output —
       marketplace benches don't run npm)
 - [x] Root `package.json` build script for Frappe Cloud
-- [x] README compatibility table (Kamra `main` releases ↔ Frappe v16)
-- [x] Publisher account on frappecloud.com; Marketplace App `kamra` exists
+- [x] README compatibility table (HotelPMS `main` releases ↔ Frappe v16)
+- [x] Publisher account on frappecloud.com; Marketplace App `hotelpms` exists
       (public page is Draft / **Not Available** until a release is approved)
 - [x] Listing title, summary, logo, Support + Privacy + docs URLs
 - [ ] Human review of the latest App Release (Submission Gate is past
       the blocking Fail; app stays In Review until Frappe publishes)
 - [x] Offline marketplace install check:
-      `python kamra/scripts/marketplace_install_check.py`
+      `python hotelpms/scripts/marketplace_install_check.py`
 
 ## Secrets the pipelines need (repo → Settings → Secrets)
 
@@ -120,5 +120,5 @@ A month of small work should usually be one or two PATCHes, not a MINOR.
 | `DEPLOY_SSH_KEY` | private key whose pubkey is in the VPS `authorized_keys` |
 
 Deploy scripts themselves live in the private
-[`kamra-deploy`](https://github.com/Kamra-PMS/kamra-deploy) repo and are
-rsync'd to the VPS at `~/kamra-deploy/`.
+[`hotelpms-deploy`](https://github.com/HotelPMS-PMS/hotelpms-deploy) repo and are
+rsync'd to the VPS at `~/hotelpms-deploy/`.

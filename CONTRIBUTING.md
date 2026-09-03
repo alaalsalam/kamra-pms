@@ -1,6 +1,6 @@
-# Contributing to Kamra PMS
+# Contributing to HotelPMS
 
-Kamra is AGPL-3.0 and welcomes contributions — code, country packs, docs, bug
+HotelPMS is AGPL-3.0 and welcomes contributions — code, country packs, docs, bug
 reports. This file covers the mechanics; see [`README.md`](README.md) for
 install/quickstart and [`docs/`](docs/) for architecture.
 
@@ -13,11 +13,11 @@ and `npm run dev` in `frontend/` for the SPA.
 ## Branches
 
 - **`develop`** — the integration branch and the *nightly* channel. All PRs
-  target `develop` (it's the default branch). nightly.kamrapms.com and the
-  `ghcr.io/kamra-pms/kamra:nightly` image are rebuilt from it every night.
+  target `develop` (it's the default branch). nightly.hotelpms.yemenfrappe.com and the
+  `ghcr.io/hotelpms-pms/hotelpms:nightly` image are rebuilt from it every night.
 - **`main`** — the stable branch. Only release trains (maintainer merges of
   `develop`) and hotfixes land here; the Frappe Cloud Marketplace listing and
-  demo.kamrapms.com track its releases.
+  demo.hotelpms.yemenfrappe.com track its releases.
 
 ### Branch naming
 
@@ -42,7 +42,7 @@ See [`RELEASING.md`](RELEASING.md) for the full release process.
 - **Frontend:** `cd frontend && npm run build` must pass (typecheck + build).
 - **Backend:** if you touched Python, run the eval harness locally —
   `bench --site <site> console`, then
-  `from kamra.scripts.eval_harness import execute; execute()` — and confirm
+  `from hotelpms.scripts.eval_harness import execute; execute()` — and confirm
   it still reports all checks passing.
 - CI runs both automatically on every PR; a fresh-install check also verifies
   a brand-new site installs cleanly with your change.
@@ -74,7 +74,7 @@ deliberately sets it (see [`RELEASING.md`](RELEASING.md)).
 
 ## Versioning & releases
 
-Kamra follows [Semantic Versioning](https://semver.org/) with a **patch-first**
+HotelPMS follows [Semantic Versioning](https://semver.org/) with a **patch-first**
 cadence on the current minor line:
 
 - **PATCH** (default) — fixes and small features (`2.6.1`, `2.6.2`, …).
@@ -92,7 +92,7 @@ draft) until you intend to tag and build.
 Merging a release train from `develop` into `main` updates the draft Release
 PR with the version bump and [`CHANGELOG.md`](CHANGELOG.md) notes; merging
 that Release PR is what tags `vX.Y.Z`, publishes GitHub + Docker, and
-redeploys demo.kamrapms.com. Full runbook: [`RELEASING.md`](RELEASING.md).
+redeploys demo.hotelpms.yemenfrappe.com. Full runbook: [`RELEASING.md`](RELEASING.md).
 
 If your change removes or renames anything a self-hoster might depend on
 (a doctype, a whitelisted method, a config key), call it out explicitly under
@@ -101,12 +101,12 @@ decides the next version is a MAJOR bump.
 
 ## Country packs
 
-Localization lives behind the `kamra_localization` hook
-(`kamra/localization/`); India ships as the reference pack. A new country
+Localization lives behind the `hotelpms_localization` hook
+(`hotelpms/localization/`); India ships as the reference pack. A new country
 pack implements the same interface (tax calculation, invoice context, locale)
-without touching the core. See `kamra/localization/india.py` for the shape.
+without touching the core. See `hotelpms/localization/india.py` for the shape.
 
 ## Code of conduct
 
 Be respectful, assume good faith, keep discussion technical. Report abuse to
-hello@kamrapms.com.
+hello@hotelpms.yemenfrappe.com.

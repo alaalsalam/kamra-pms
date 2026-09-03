@@ -5,8 +5,8 @@ import { call, getCurrentProperty } from "../lib/api"
 import { cn } from "../lib/utils"
 import { Markdown } from "../lib/markdown"
 
-/** How-to help assistant - explains how to use Kamra (it never acts on data;
- *  that's Kamra Agent). Streams answers, grounded in the app. */
+/** How-to help assistant - explains how to use HotelPMS (it never acts on data;
+ *  that's HotelPMS Agent). Streams answers, grounded in the app. */
 
 interface Msg {
   role: "user" | "assistant"
@@ -31,7 +31,7 @@ export default function HelpPanel() {
   const endRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    call<{ enabled: boolean }>("kamra.assistant.assistant_status", {
+    call<{ enabled: boolean }>("hotelpms.assistant.assistant_status", {
       property: getCurrentProperty(),
     })
       .then((s) => setEnabled(s.enabled))
@@ -61,7 +61,7 @@ export default function HelpPanel() {
     }
     try {
       const csrf = (window as unknown as { csrf_token?: string }).csrf_token
-      const res = await fetch("/api/method/kamra.assistant.help_ask", {
+      const res = await fetch("/api/method/hotelpms.assistant.help_ask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,7 +134,7 @@ export default function HelpPanel() {
             {msgs.length === 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-zinc-600">
-                  Ask how to do anything in Kamra - I'll walk you through it.
+                  Ask how to do anything in HotelPMS - I'll walk you through it.
                 </p>
                 {SUGGESTIONS.map((s) => (
                   <button

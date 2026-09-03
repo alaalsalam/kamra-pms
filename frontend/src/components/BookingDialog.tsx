@@ -12,7 +12,7 @@ import {
   type Quote,
 } from "../lib/api"
 import { Button } from "./ui/button"
-import { cur, moneyLocale } from "../lib/money"
+import { cur, moneyLocale, taxLabel } from "../lib/money"
 
 interface ExtraRoom {
   room_type: string
@@ -276,7 +276,7 @@ export function BookingDialog(props: {
           group_booking: string
           created: string[]
           skipped: { room_type: string; reason: string }[]
-        }>("kamra.api.create_group_booking", {
+        }>("hotelpms.api.create_group_booking", {
           property: getCurrentProperty(),
           group_name: `${form.guest_name} · ${rooms.length} rooms`,
           check_in_date: form.check_in_date,
@@ -570,9 +570,11 @@ export function BookingDialog(props: {
                   <Field label="Phone">
                     <input
                       className={inputCls}
+                      type="tel"
+                      dir="ltr"
                       value={form.phone}
                       onChange={(e) => set("phone", e.target.value)}
-                      placeholder="+91 …"
+                      placeholder="+966 5X XXX XXXX"
                     />
                   </Field>
                 </div>
@@ -911,11 +913,13 @@ export function BookingDialog(props: {
                                 <Field label="Booker phone">
                                   <input
                                     className={inputCls}
+                                    type="tel"
+                                    dir="ltr"
                                     value={form.booked_by_phone}
                                     onChange={(e) =>
                                       set("booked_by_phone", e.target.value)
                                     }
-                                    placeholder="+91 …"
+                                    placeholder="+966 5X XXX XXXX"
                                   />
                                 </Field>
                               </div>
@@ -1128,7 +1132,7 @@ export function BookingDialog(props: {
                       </div>
                     )}
                     <div className="flex justify-between text-zinc-600">
-                      <span>GST {quote.tax_percent}%</span>
+                      <span>{taxLabel()} {quote.tax_percent}%</span>
                       <span className="tabular-nums">
                         {cur()}
                         {inr(quote.tax_amount)}
@@ -1155,7 +1159,7 @@ export function BookingDialog(props: {
                     )}
                     {addonsGross > 0 && (
                       <div className="flex justify-between text-zinc-600">
-                        <span>Add-ons (incl. GST)</span>
+                        <span>Add-ons (incl. {taxLabel()})</span>
                         <span className="tabular-nums">
                           {cur()}
                           {inr(addonsGross)}

@@ -1,142 +1,270 @@
 import { useEffect, useState } from "react"
 import { getLang, type Lang } from "./dir"
-
-/** Arabic strings, keyed by the English source. Grows incrementally - any
- * key without a translation falls back to English, so the app never breaks
- * as coverage expands. Covers the app/nav labels and common actions first. */
-const AR: Record<string, string> = {
-  // apps
-  "Front Desk": "الاستقبال",
-  "Housekeeping": "التدبير المنزلي",
-  "Operations": "العمليات",
-  "F&B": "المأكولات والمشروبات",
-  "Events": "الفعاليات",
-  "Revenue": "الإيرادات",
-  "Finance": "المالية",
-  "Booking Engine": "محرك الحجز",
-  "Admin": "الإدارة",
-  // front desk nav
-  "Today": "اليوم",
-  "Dashboard": "لوحة التحكم",
-  "Kamra Agent": "وكيل كامرا",
-  "Reservations": "الحجوزات",
-  "Central Reservations": "الحجوزات المركزية",
-  "Tape Chart": "مخطط الغرف",
-  "Calendar": "التقويم",
-  "Guests": "الضيوف",
-  "Room Blocks": "حجب الغرف",
-  // housekeeping / ops
-  "Room Board": "لوحة الغرف",
-  "Lost & Found": "المفقودات",
-  "Guest Requests": "طلبات الضيوف",
-  "SLA Report": "تقرير مستوى الخدمة",
-  "Shifts": "الورديات",
-  // f&b
-  "Restaurant POS": "نقطة بيع المطعم",
-  "Kitchen Display": "شاشة المطبخ",
-  "Menu": "القائمة",
-  "Outlets": "المنافذ",
-  // finance / revenue
-  "Billing": "الفوترة",
-  "Reports": "التقارير",
-  "Rate Plans": "خطط الأسعار",
-  "Seasons": "المواسم",
-  "Vouchers": "القسائم",
-  "Companies": "الشركات",
-  // common actions
-  "Search": "بحث",
-  "Save": "حفظ",
-  "Cancel": "إلغاء",
-  "Confirm": "تأكيد",
-  "Check in": "تسجيل الوصول",
-  "Check out": "تسجيل المغادرة",
-  "Arrivals": "الوصول",
-  "Departures": "المغادرة",
-  "In house": "داخل الفندق",
-  "Occupancy": "الإشغال",
-  "Revenue today": "إيرادات اليوم",
-  "Laundry": "الغسيل",
-  "Phone App": "تطبيق الهاتف",
-  "WhatsApp": "واتساب",
-  "Channels": "القنوات",
-  "Banquets": "المآدب",
-  "Month Availability": "توفر الشهر",
-  "Function Diary": "يومية المناسبات",
-  "Registers": "السجلات",
-  "Menus & Services": "القوائم والخدمات",
-  "All Functions": "كل المناسبات",
-  "Revenue Reports": "تقارير الإيرادات",
-  "Channel Manager": "مدير القنوات",
-  "OTA Room Mappings": "ربط غرف OTA",
-  "Guardrails": "حدود الأسعار",
-  "Meal Plans": "خطط الوجبات",
-  "Travel Agents": "وكلاء السفر",
-  "Accounting Export": "تصدير المحاسبة",
-  "Hotel Profile": "ملف الفندق",
-  "Amenities": "المرافق",
-  "Photos": "الصور",
-  "Policies": "السياسات",
-  "Payments": "المدفوعات",
-  "FAQ": "الأسئلة الشائعة",
-  "SEO": "تحسين محركات البحث",
-  "Settings": "الإعدادات",
-  "Rooms": "الغرف",
-  "Room Types": "أنواع الغرف",
-  "Activity Log": "سجل النشاط",
-  "Marketplace": "السوق",
-  "Developers": "المطورون",
-  "New Property": "عقار جديد",
-  "Manage Users": "إدارة المستخدمين",
-  "Frappe Desk": "مكتب فراب",
-  "Kitchen Inventory": "مخزون المطبخ",
-  "Banquets & Groups": "المآدب والمجموعات",
-  "Group bookings": "حجوزات المجموعات",
-  "Halls & Venues": "القاعات والأماكن",
-  "Group": "مجموعة",
-  "New booking": "حجز جديد",
-  "Sign out": "تسجيل الخروج",
-  "About this install": "حول هذا التثبيت",
-  "Email": "البريد الإلكتروني",
-  "Email or username": "البريد الإلكتروني أو اسم المستخدم",
-  "Password": "كلمة المرور",
-  "Sign in": "تسجيل الدخول",
-  "Signing in...": "جارٍ تسجيل الدخول...",
-  "Wrong email or password.": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
-  "Wrong email, username, or password.": "البريد الإلكتروني أو اسم المستخدم أو كلمة المرور غير صحيحة.",
-  "New": "جديد",
-  "Delete": "حذف",
-  "Export": "تصدير",
-  "Columns": "الأعمدة",
-  "Search…": "بحث…",
-  "Saving…": "جارٍ الحفظ…",
-  "Saved": "تم الحفظ",
-  "Clear": "مسح",
-  "Done": "تم",
-  "Property": "العقار",
-  "Front desk hours": "ساعات الاستقبال",
-  "Tax": "الضريبة",
-  "Guest privacy": "خصوصية الضيف",
-  "Booking page": "صفحة الحجز",
-  "AI assistant (bring your own key)": "مساعد الذكاء الاصطناعي (مفتاحك الخاص)",
-  "Revenue controls": "ضوابط الإيرادات",
-  "Laundry rate card": "بطاقة أسعار الغسيل",
-}
+import { AR } from "./translations/ar"
 
 const DICT: Record<Lang, Record<string, string>> = { en: {}, ar: AR }
 
-/** Translate an English string for the current language (falls back to it). */
-export function t(s: string): string {
-  return DICT[getLang()][s] ?? s
+/**
+ * Look up a UI string without ever making English rendering dependent on the
+ * translation catalogue. The product is deliberately English-first and every
+ * missing Arabic entry falls back to the original source string.
+ */
+function lookup(source: string, lang: Lang): string {
+  if (lang === "en") return source
+  return DICT[lang][source] ?? source
 }
 
-/** Subscribe a component to the language: re-renders on change, returns a
- * bound translator. */
+const UNIT: Record<string, string> = {
+  arrival: "وصول",
+  arrivals: "حالات وصول",
+  adult: "بالغ",
+  adults: "بالغون",
+  booking: "حجز",
+  bookings: "حجوزات",
+  departure: "مغادرة",
+  departures: "حالات مغادرة",
+  day: "يوم",
+  days: "أيام",
+  dish: "طبق",
+  dishes: "أطباق",
+  function: "فعالية",
+  functions: "فعاليات",
+  guest: "ضيف",
+  guests: "ضيوف",
+  hall: "قاعة",
+  halls: "قاعات",
+  invoice: "فاتورة",
+  invoices: "فواتير",
+  item: "صنف",
+  items: "أصناف",
+  night: "ليلة",
+  nights: "ليالٍ",
+  order: "طلب",
+  orders: "طلبات",
+  pax: "شخص",
+  payment: "دفعة",
+  payments: "دفعات",
+  request: "طلب",
+  requests: "طلبات",
+  reservation: "حجز",
+  reservations: "حجوزات",
+  room: "غرفة",
+  rooms: "غرف",
+  seat: "مقعد",
+  seats: "مقاعد",
+  row: "صف",
+  rows: "صفوف",
+  stay: "إقامة",
+  stays: "إقامات",
+  table: "طاولة",
+  tables: "طاولات",
+  ticket: "تذكرة",
+  tickets: "تذاكر",
+}
+
+function translateCore(source: string, lang: Lang): string {
+  const direct = lookup(source, lang)
+  if (direct !== source || lang === "en") return direct
+
+  // Dynamic counters are common throughout the operational screens.
+  const count = source.match(/^(\d+(?:[.,]\d+)?)\s+([A-Za-z]+)$/)
+  if (count) {
+    const unit = UNIT[count[2].toLowerCase()]
+    if (unit) return `${count[1]} ${unit}`
+  }
+
+  const showing = source.match(/^Showing\s+(\d+)\s+of\s+(\d+)$/i)
+  if (showing) return `عرض ${showing[1]} من ${showing[2]}`
+
+  const ofTotal = source.match(/^(\d+)\s+of\s+(\d+)\s+([A-Za-z]+)$/i)
+  if (ofTotal) {
+    const unit = UNIT[ofTotal[3].toLowerCase()]
+    if (unit) return `${ofTotal[1]} من ${ofTotal[2]} ${unit}`
+  }
+
+  const inDays = source.match(/^In\s+(\d+)\s+days?$/i)
+  if (inDays) return `خلال ${inDays[1]} أيام`
+
+  const labelledCount = source.match(/^(.+?)\s+\((\d+)\)$/)
+  if (labelledCount) {
+    const label = lookup(labelledCount[1], lang)
+    if (label !== labelledCount[1]) return `${label} (${labelledCount[2]})`
+  }
+
+  const prefixed = source.match(/^([·:,])\s*(.+)$/)
+  if (prefixed) {
+    const rest = lookup(prefixed[2], lang)
+    if (rest !== prefixed[2]) return `${prefixed[1]} ${rest}`
+  }
+
+  const room = source.match(/^Room\s+(.+)$/i)
+  if (room) return `غرفة ${room[1]}`
+
+  const left = source.match(/^(\d+)\s+left$/i)
+  if (left) return `متبقي ${left[1]}`
+
+  // Translate composable labels such as "Room · 201 · Clean" while keeping
+  // names, amounts and dates untouched. This also handles live API values.
+  for (const separator of [" · ", " — ", ": "]) {
+    if (!source.includes(separator)) continue
+    let changed = false
+    const translated = source
+      .split(separator)
+      .map((part) => {
+        const next = lookup(part, lang)
+        if (next !== part) changed = true
+        return next
+      })
+      .join(separator)
+    if (changed) return translated
+  }
+
+  const qualified = source.match(/^(.+?)\s+\((optional|required)\)$/i)
+  if (qualified) {
+    const base = lookup(qualified[1], lang)
+    const qualifier = qualified[2].toLowerCase() === "optional" ? "اختياري" : "مطلوب"
+    if (base !== qualified[1]) return `${base} (${qualifier})`
+  }
+
+  return source
+}
+
+/** Translate text while preserving JSX whitespace and punctuation. */
+export function translateText(source: string, lang: Lang = getLang()): string {
+  if (lang === "en" || !source.trim()) return source
+  const leading = source.match(/^\s*/)?.[0] ?? ""
+  const trailing = source.match(/\s*$/)?.[0] ?? ""
+  const core = source.slice(leading.length, source.length - trailing.length)
+  let translated = translateCore(core, lang)
+
+  if (translated === core) {
+    const punctuated = core.match(/^(.+?)([.…,:;!?])$/)
+    if (punctuated) {
+      const base = translateCore(punctuated[1], lang)
+      if (base !== punctuated[1]) translated = `${base}${punctuated[2]}`
+    }
+  }
+  return `${leading}${translated}${trailing}`
+}
+
+/** Translate an English string for the current language. */
+export function t(source: string): string {
+  return translateText(source)
+}
+
+/** Subscribe a component to language changes and return a bound translator. */
 export function useT() {
-  const [lang, setL] = useState<Lang>(getLang())
+  const [lang, setLanguage] = useState<Lang>(getLang())
   useEffect(() => {
-    const on = () => setL(getLang())
-    window.addEventListener("kamra:lang", on)
-    return () => window.removeEventListener("kamra:lang", on)
+    const onChange = () => setLanguage(getLang())
+    window.addEventListener("hotelpms:lang", onChange)
+    return () => window.removeEventListener("hotelpms:lang", onChange)
   }, [])
-  return { lang, t: (s: string) => DICT[lang][s] ?? s }
+  return { lang, t: (source: string) => translateText(source, lang) }
+}
+
+type TextState = { source: string; output: string }
+type AttributeState = Map<string, TextState>
+const textStates = new WeakMap<Text, TextState>()
+const attributeStates = new WeakMap<Element, AttributeState>()
+const TRANSLATED_ATTRIBUTES = ["placeholder", "title", "aria-label", "alt"] as const
+const SKIP_SELECTOR = "script,style,code,pre,kbd,[data-no-translate]"
+
+function localizeTextNode(node: Text, lang: Lang) {
+  if (node.parentElement?.closest(SKIP_SELECTOR)) return
+  const current = node.nodeValue ?? ""
+  const previous = textStates.get(node)
+
+  if (lang === "en") {
+    if (previous && current === previous.output) node.nodeValue = previous.source
+    textStates.delete(node)
+    return
+  }
+
+  const source = previous && current === previous.output ? previous.source : current
+  const output = translateText(source, lang)
+  if (output !== source) {
+    textStates.set(node, { source, output })
+    if (current !== output) node.nodeValue = output
+  } else if (previous) {
+    textStates.delete(node)
+  }
+}
+
+function localizeAttributes(element: Element, lang: Lang) {
+  if (element.closest(SKIP_SELECTOR)) return
+  let states = attributeStates.get(element)
+
+  for (const name of TRANSLATED_ATTRIBUTES) {
+    const current = element.getAttribute(name)
+    if (current == null) continue
+    const previous = states?.get(name)
+
+    if (lang === "en") {
+      if (previous && current === previous.output) element.setAttribute(name, previous.source)
+      states?.delete(name)
+      continue
+    }
+
+    const source = previous && current === previous.output ? previous.source : current
+    const output = translateText(source, lang)
+    if (output !== source) {
+      states ??= new Map<string, TextState>()
+      states.set(name, { source, output })
+      if (current !== output) element.setAttribute(name, output)
+    } else {
+      states?.delete(name)
+    }
+  }
+
+  if (states?.size) attributeStates.set(element, states)
+  else attributeStates.delete(element)
+}
+
+function localizeSubtree(root: Node, lang: Lang = getLang()) {
+  if (root instanceof Text) {
+    localizeTextNode(root, lang)
+    return
+  }
+  if (!(root instanceof Element || root instanceof DocumentFragment || root instanceof Document)) return
+
+  if (root instanceof Element) localizeAttributes(root, lang)
+  const elements = root.querySelectorAll?.("*") ?? []
+  for (const element of elements) localizeAttributes(element, lang)
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  let node: Node | null
+  while ((node = walker.nextNode())) localizeTextNode(node as Text, lang)
+}
+
+let observer: MutationObserver | undefined
+
+/**
+ * Localize legacy and lazy-loaded React screens that predate the translation
+ * hook. New components can use useT(); the observer keeps the entire shipped
+ * product bilingual today, including API-provided status labels.
+ */
+export function initI18n() {
+  if (observer) return
+  const apply = () => localizeSubtree(document.documentElement)
+  apply()
+  observer = new MutationObserver((mutations) => {
+    const lang = getLang()
+    for (const mutation of mutations) {
+      if (mutation.type === "attributes") {
+        localizeAttributes(mutation.target as Element, lang)
+        continue
+      }
+      for (const node of mutation.addedNodes) localizeSubtree(node, lang)
+      if (mutation.type === "characterData") localizeTextNode(mutation.target as Text, lang)
+    }
+  })
+  observer.observe(document.documentElement, {
+    subtree: true,
+    childList: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: [...TRANSLATED_ATTRIBUTES],
+  })
+  window.addEventListener("hotelpms:lang", () => queueMicrotask(apply))
 }

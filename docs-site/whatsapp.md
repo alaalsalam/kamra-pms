@@ -1,8 +1,8 @@
 # WhatsApp on your own number
 
-Kamra talks to guests over WhatsApp through **Meta's official Cloud
+HotelPMS talks to guests over WhatsApp through **Meta's official Cloud
 API**, on a number you own. Nothing sits in between: no gateway
-markup, no per-message fee to Kamra — Meta bills you directly at
+markup, no per-message fee to HotelPMS — Meta bills you directly at
 their per-conversation rates (marketing/utility conversations are a
 few cents; most hotel traffic falls in the cheaper *utility* bucket,
 and guest-initiated *service* conversations are free).
@@ -38,7 +38,7 @@ minutes, free:
      give it access to the app with the `whatsapp_business_messaging`
      permission, and **Generate token** with no expiry.
 
-## Step 2 — connect it in Kamra
+## Step 2 — connect it in HotelPMS
 
 *Operations → Channels → New* (you need the Hotel Admin role):
 
@@ -53,15 +53,15 @@ minutes, free:
 | Template language code | `en` (or the language your templates are approved in) |
 | Active | ✓ |
 
-## Step 3 — point Meta's webhook at Kamra
+## Step 3 — point Meta's webhook at HotelPMS
 
 This is what makes **incoming** guest messages appear.
 
 1. In the Meta app: **WhatsApp → Configuration → Webhook → Edit**.
 2. Callback URL:
-   `https://YOUR-SITE/api/method/kamra.whatsapp.webhook`
+   `https://YOUR-SITE/api/method/hotelpms.whatsapp.webhook`
 3. Verify token: the same string you entered on the Channels screen.
-   Click **Verify and save** — Kamra answers Meta's challenge.
+   Click **Verify and save** — HotelPMS answers Meta's challenge.
 4. Under **Webhook fields**, subscribe to **messages**.
 
 From now on, anything a guest writes to your number shows up in
@@ -76,19 +76,19 @@ that opens a free-form 24-hour session). Create these in
 [Meta Business Manager → WhatsApp Manager → Message templates](https://business.facebook.com/wa/manage/message-templates/),
 category **Utility**, then put their names on the Channels screen.
 
-**`kamra_booking_confirmation`** — variables are guest, property,
+**`hotelpms_booking_confirmation`** — variables are guest, property,
 check-in, check-out:
 
 > Hello {{1}}! Your booking at {{2}} is confirmed — arriving {{3}},
 > departing {{4}}. We look forward to hosting you. Reply to this
 > message any time; a person answers.
 
-**`kamra_precheckin_link`** — guest, link:
+**`hotelpms_precheckin_link`** — guest, link:
 
 > {{1}}, skip the front-desk queue: complete your check-in online
 > before you arrive — {{2}}
 
-**`kamra_payment_request`** — guest, amount, note:
+**`hotelpms_payment_request`** — guest, amount, note:
 
 > Hello {{1}}, a payment of {{2}} is due for your stay ({{3}}). You
 > can pay online or at the front desk.
@@ -123,11 +123,11 @@ Nothing else to configure:
 
 ## Campaigns and marketing broadcasts
 
-Kamra's built-in integration is deliberately **transactional** — the
+HotelPMS's built-in integration is deliberately **transactional** — the
 messages a stay generates. For marketing broadcasts (offers to past
 guests, campaign blasts), install the community
 [frappe_whatsapp](https://github.com/shridarpatil/frappe_whatsapp)
-app alongside Kamra on the same bench:
+app alongside HotelPMS on the same bench:
 
 ```bash
 bench get-app https://github.com/shridarpatil/frappe_whatsapp

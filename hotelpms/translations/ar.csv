@@ -1,0 +1,561 @@
+HotelPMS,هوتل PMS
+Property,المنشأة
+Property Name,اسم المنشأة
+Property Kind,نوع المنشأة
+Property Amenities (public),مرافق المنشأة (عامة)
+Property FAQ,الأسئلة الشائعة للمنشأة
+Property Photo,صورة المنشأة
+Hotel Admin,مدير الفندق
+Front Desk,الاستقبال
+Housekeeping,التدبير الفندقي
+Revenue Manager,مدير الإيرادات
+Finance,المالية
+HotelPMS Assistant,مساعد هوتل PMS
+Agent Action Log,سجل إجراءات الوكيل
+AI Assistant Settings,إعدادات مساعد الذكاء الاصطناعي
+Room Type,نوع الغرفة
+Room,الغرفة
+Rate Plan,خطة الأسعار
+Guest,الضيف
+Reservation,الحجز
+Housekeeping Task,مهمة تدبير فندقي
+Meal Plan,خطة الوجبات
+Season,الموسم
+Discount Voucher,قسيمة خصم
+Company,الشركة
+Group Booking,حجز مجموعة
+Group Room Block,حجب غرف المجموعة
+Folio,حساب الإقامة
+Folio Charge,رسم على حساب الإقامة
+Folio Payment,دفعة على حساب الإقامة
+Night Audit Run,تشغيل التدقيق الليلي
+Service Ticket,تذكرة خدمة
+Lost And Found Item,غرض مفقود أو موجود
+Shift Handover,تسليم الوردية
+Laundry Order,طلب مغسلة
+Laundry Order Item,صنف طلب المغسلة
+Laundry Rate,سعر المغسلة
+POS Outlet,منفذ بيع
+POS Order,طلب نقطة بيع
+POS Order Item,صنف طلب نقطة بيع
+POS Table Reservation,حجز طاولة
+Menu Item,صنف قائمة
+Menu Item Ingredient,مكوّن صنف القائمة
+Ingredient,مكوّن
+Ingredient Stock,مخزون مكوّن
+Stock Ledger Entry,حركة مخزون
+Venue,قاعة / مكان فعالية
+Venue Booking,حجز فعالية
+Venue Amenity,مرفق القاعة
+Venue Section,قسم القاعة
+Banquet Menu,قائمة حفلات
+Banquet Menu Course,مرحلة قائمة الحفل
+Banquet Menu Dish,طبق قائمة الحفل
+Banquet Dish,طبق حفلات
+Banquet Service Item,خدمة حفلات
+Banquet Function Item,بند فعالية
+Banquet Open Item,بند فعالية مفتوح
+Banquet Payment Term,شرط دفع فعالية
+Banquet Quote Revision,مراجعة عرض سعر الفعالية
+Banquet Receipt,إيصال فعالية
+Banquet Selection,اختيار فعالية
+Cancelled Invoice,فاتورة ملغاة
+Cashier PIN,رمز أمين الصندوق
+Channel Manager Connection,اتصال مدير القنوات
+Channel Provider Connection,اتصال مزوّد القناة
+Channel Room Mapping,ربط غرف القنوات
+Company Billing Rule,قاعدة فوترة الشركة
+Copilot Conversation,محادثة المساعد
+Experience,تجربة
+Hosting Enquiry,استفسار استضافة
+Hurdle Rate,حد تسعير الطلب
+MCP OAuth Client,عميل MCP OAuth
+MCP OAuth Grant,صلاحية MCP OAuth
+Payment Gateway Settings,إعدادات بوابة الدفع
+Rate Guardrail,حدود الأسعار
+Revenue Budget,موازنة الإيرادات
+Room Block,حجب غرفة
+Room Type Media,وسائط نوع الغرفة
+Security Deposit,تأمين مالي
+Sellable Unit,وحدة قابلة للبيع
+Sellable Unit Room,غرفة الوحدة القابلة للبيع
+Stay Addon,إضافة للإقامة
+Stay Instruction,تعليمات الإقامة
+Stay Occupant,نزيل الإقامة
+Travel Agent,وكيل سفر
+Turnover Profile,ملف تجهيز الغرفة
+WhatsApp Message,رسالة واتساب
+Name,الاسم
+Title,العنوان
+Description,الوصف
+Description (public),الوصف العام
+Status,الحالة
+Type,النوع
+Category,الفئة
+Code,الرمز
+Label,التسمية
+Active,نشط
+Enabled,مفعّل
+Disabled,معطّل
+Available,متاح
+Notes,ملاحظات
+Note,ملاحظة
+Internal Notes,ملاحظات داخلية
+Special Instructions,تعليمات خاصة
+Special Requests,طلبات خاصة
+Instructions,تعليمات
+Address,العنوان
+Address Line,سطر العنوان
+City,المدينة
+State,المنطقة / الولاية
+Country,الدولة
+Pincode,الرمز البريدي
+Phone,الهاتف
+Phone Number,رقم الهاتف
+Email,البريد الإلكتروني
+Website,الموقع الإلكتروني
+Timezone,المنطقة الزمنية
+Currency,العملة
+Locale,الإعدادات المحلية
+Latitude,خط العرض
+Longitude,خط الطول
+Location,الموقع
+Location Name,اسم الموقع
+Location Address,عنوان الموقع
+Google Maps Link,رابط خرائط Google
+Google Reviews URL,رابط تقييمات Google
+TripAdvisor URL,رابط تريب أدفايزر
+Driving Directions,إرشادات الوصول
+Logo,الشعار
+Hero Image,الصورة الرئيسية
+Image,الصورة
+Image Url,رابط الصورة
+Photo,الصورة
+Photo Gallery,معرض الصور
+Caption,التعليق
+Media Type,نوع الوسائط
+Media Gallery,معرض الوسائط
+Meta Title,عنوان محركات البحث
+Meta Description,وصف محركات البحث
+OG Image,صورة المشاركة
+Page Slug,رابط الصفحة
+Site Slug,رابط الموقع
+Listing Slug,رابط الوحدة
+PMS Slug,رابط نظام إدارة المنشأة
+Modules,الوحدات
+Modules In Use,الوحدات المستخدمة
+Booking Engine,محرك الحجز
+Booking Engine Enabled,تفعيل محرك الحجز
+Booking Mode,نمط الحجز
+Booking Page Accent,لون صفحة الحجز
+Show On Booking Page,عرض في صفحة الحجز
+House Rules,قواعد الإقامة
+Children Policy,سياسة الأطفال
+Pets Policy,سياسة الحيوانات الأليفة
+Extra Bed Policy,سياسة السرير الإضافي
+Cancellation Policy,سياسة الإلغاء
+Payment Policy,سياسة الدفع
+Payment Terms Note,ملاحظات شروط الدفع
+Room Type Name,اسم نوع الغرفة
+Room Type Code,رمز نوع الغرفة
+Room Number,رقم الغرفة
+Floor,الطابق
+Floor Plan,مخطط الطابق
+Bed Type,نوع السرير
+Bathroom Type,نوع الحمام
+Room Category,فئة الغرفة
+Room Type / Listing,نوع الغرفة / الوحدة
+Physical Rooms,الغرف الفعلية
+Housekeeping Status,حالة التدبير الفندقي
+Occupancy Status,حالة الإشغال
+Base Price,السعر الأساسي
+Base Occupancy,الإشغال الأساسي
+Adults Capacity,سعة البالغين
+Children Capacity,سعة الأطفال
+Max Occupants,الحد الأقصى للنزلاء
+Max Total Occupants,الحد الأقصى الإجمالي للنزلاء
+Max Extra Beds,الحد الأقصى للأسرة الإضافية
+Single Occupancy Price,سعر الإشغال الفردي
+Extra Adult Price,سعر البالغ الإضافي
+Extra Bed Price,سعر السرير الإضافي
+Child Price,سعر الطفل
+Price,السعر
+Rack Rate,السعر المعلن
+Floor Price,الحد الأدنى للسعر
+Ceiling Price,الحد الأقصى للسعر
+Agreed Rate,السعر المتفق عليه
+Negotiated Rate / Night,السعر المتفاوض عليه / ليلة
+Rate / Pax,السعر / شخص
+Rate Basis,أساس السعر
+Modifier Type,نوع التعديل
+Modifier Value,قيمة التعديل
+Premium %,نسبة الزيادة
+Occupancy-based Pricing,تسعير حسب الإشغال
+Hurdle (Min Sell Rate),الحد الأدنى للبيع
+When Occupancy ≥ %,عندما يكون الإشغال ≥ %
+Overbooking Allowance %,نسبة السماح بالحجز الزائد
+Rates Include Tax,الأسعار شاملة الضريبة
+Weekend Rate,سعر نهاية الأسبوع
+Minimum Stay Nights,الحد الأدنى لليالي
+Min Nights,الحد الأدنى لليالي
+Valid From,صالح من
+Valid To,صالح حتى
+Days of Week,أيام الأسبوع
+Default for Property,افتراضي للمنشأة
+Rate Plan Name,اسم خطة الأسعار
+Negotiated Rate Plan,خطة سعر متفاوض عليها
+Season Name,اسم الموسم
+Voucher,القسيمة
+Voucher Code,رمز القسيمة
+Max Uses,الحد الأقصى للاستخدام
+Times Used,مرات الاستخدام
+Discount Type,نوع الخصم
+Discount Amount,مبلغ الخصم
+Discount Reason,سبب الخصم
+First Name,الاسم الأول
+Last Name,اسم العائلة
+Full Name,الاسم الكامل
+Guest Name,اسم الضيف
+Nationality,الجنسية
+Gender,الجنس
+Date of Birth,تاريخ الميلاد
+Age,العمر
+Guest Category,فئة الضيف
+VIP,ضيف مهم
+Blacklisted,مدرج في القائمة السوداء
+Blacklist Reason,سبب الإدراج في القائمة السوداء
+Guest Notes,ملاحظات الضيف
+Guest Allergy,حساسية الضيف
+Allergens,مسببات الحساسية
+Booker Name,اسم القائم بالحجز
+Booker Phone,هاتف القائم بالحجز
+Booked By (if not the guest),تم الحجز بواسطة (إن لم يكن الضيف)
+Contact For This Stay,جهة اتصال هذه الإقامة
+Check In Date,تاريخ الوصول
+Check Out Date,تاريخ المغادرة
+Actual Check In,الوصول الفعلي
+Actual Check Out,المغادرة الفعلية
+Planned Check-in Time,وقت الوصول المخطط
+Planned Check-out Time,وقت المغادرة المخطط
+Check-in Time,وقت تسجيل الوصول
+Check-out Time,وقت تسجيل المغادرة
+Guest ETA,موعد وصول الضيف المتوقع
+Arrival Time,وقت الوصول
+Departure Time,وقت المغادرة
+Arrival Mode,وسيلة الوصول
+Departure Mode,وسيلة المغادرة
+Flight / Train No.,رقم الرحلة / القطار
+Departure Flight / Train No.,رقم رحلة / قطار المغادرة
+Adults,البالغون
+Children,الأطفال
+Infants,الرضّع
+Nights,الليالي
+Day Use,استخدام نهاري
+Source,المصدر
+Channel,القناة
+Booking Type,نوع الحجز
+Auto Price,تسعير تلقائي
+OTA Booking Ref,مرجع منصة الحجز
+Extra Instructions,تعليمات إضافية
+Check-in Link Sent,تم إرسال رابط الوصول
+Pre-arrival Check-in,تسجيل الوصول المسبق
+Precheckin,تسجيل وصول مسبق
+Precheckin Token,رمز الوصول المسبق
+Precheckin Submitted On,تاريخ إرسال الوصول المسبق
+Pre-check-in Signature,توقيع الوصول المسبق
+Occupants,النزلاء
+Relation,صلة القرابة
+Registration Consent Given,الموافقة على التسجيل
+Purpose of Visit,غرض الزيارة
+ID Document,وثيقة الهوية
+ID Type,نوع الهوية
+ID Number,رقم الهوية
+Id Type,نوع الهوية
+Id Number,رقم الهوية
+ID Captured By,التقط الهوية بواسطة
+ID Captured On,تاريخ التقاط الهوية
+ID Discarded,تم إتلاف الهوية
+ID Retention,الاحتفاظ بالهوية
+Address Proof,إثبات العنوان
+Amount,المبلغ
+Amount Before Tax,المبلغ قبل الضريبة
+Amount After Tax,المبلغ بعد الضريبة
+Taxable Amount,المبلغ الخاضع للضريبة
+Tax Amount,مبلغ الضريبة
+Tax Total,إجمالي الضريبة
+Grand Total,الإجمالي الكلي
+Balance,الرصيد
+Balance Due,الرصيد المستحق
+Balance After,الرصيد بعد الحركة
+Charges,الرسوم
+Charges Total,إجمالي الرسوم
+Payments,المدفوعات
+Payments Total,إجمالي المدفوعات
+Payment Mode,طريقة الدفع
+Payment Link,رابط الدفع
+Payment Link ID,معرّف رابط الدفع
+Gateway,بوابة الدفع
+Test Mode,الوضع التجريبي
+Charge Type,نوع الرسم
+Posting Date,تاريخ الترحيل
+Posted,مرحّل
+Auto Posted,ترحيل تلقائي
+Posted To Folio,مرحّل إلى حساب الإقامة
+Folio Type,نوع حساب الإقامة
+Invoice No,رقم الفاتورة
+Invoice No.,رقم الفاتورة
+Invoice Number,رقم الفاتورة
+Invoice Date,تاريخ الفاتورة
+Cancellation Fee,رسوم الإلغاء
+Cancellation Reason,سبب الإلغاء
+Cancellation Number,رقم الإلغاء
+Cancellation Note,ملاحظات الإلغاء
+Cancelled On,تاريخ الإلغاء
+No-show Charge,رسم عدم الحضور
+Security Deposit Amount,مبلغ التأمين
+Deposit Held,التأمين المحتجز
+Deposit Refunded,التأمين المسترد
+Refundable Deposit,تأمين قابل للاسترداد
+Refundable Balance,الرصيد القابل للاسترداد
+Refunded Amount,المبلغ المسترد
+Withheld Amount,المبلغ المحتجز
+Damage Amount,مبلغ الضرر
+Damage Note,ملاحظات الضرر
+GST,ضريبة السلع والخدمات
+GST %,نسبة الضريبة
+GSTIN,الرقم الضريبي
+Gst Amount,مبلغ الضريبة
+GST Rules,قواعد الضريبة
+GST above threshold,الضريبة فوق الحد
+GST at/below threshold,الضريبة عند/دون الحد
+Rental GST %,نسبة ضريبة الإيجار
+Tax %,نسبة الضريبة
+Tax Exempt,معفى من الضريبة
+Company Name,اسم الشركة
+Legal Name,الاسم القانوني
+Billing Name,اسم الفوترة
+Billing Address,عنوان الفوترة
+Credit Allowed,السماح بالائتمان
+Billing Rules,قواعد الفوترة
+Commission %,نسبة العمولة
+Agent Commission,عمولة الوكيل
+Group Name,اسم المجموعة
+Rooms Blocked,الغرف المحجوبة
+Blocked Rooms,الغرف المحجوبة
+Room Charges Posted,تم ترحيل رسوم الغرف
+Folios Opened,الحسابات المفتوحة
+Task Type,نوع المهمة
+Assigned To,مُسند إلى
+Assignment,الإسناد
+Priority,الأولوية
+Due By,مستحق بحلول
+Due Date,تاريخ الاستحقاق
+SLA,مستوى الخدمة
+SLA Breached,تجاوز مهلة الخدمة
+Escalation Level,مستوى التصعيد
+Resolved On,تاريخ الحل
+Resolution Note,ملاحظات الحل
+Done By,أُنجز بواسطة
+Done On,تاريخ الإنجاز
+Requires Inspection,يتطلب فحصًا
+Clean Duration (minutes),مدة التنظيف (دقائق)
+Inspect Duration (minutes),مدة الفحص (دقائق)
+Buffer After Ready (minutes),مهلة بعد الجاهزية (دقائق)
+Same-day Turn Allowed,السماح بتجهيز نفس اليوم
+Item Name,اسم الصنف
+Item Description,وصف الصنف
+Item Type,نوع الصنف
+Service,الخدمة
+Express,مستعجل
+Express Rate,سعر المستعجل
+Ready By,جاهز بحلول
+Pickup Note,ملاحظات الاستلام
+Received On,تاريخ الاستلام
+Received By,استلمه
+Returned On,تاريخ التسليم
+Delivered At,وقت التسليم
+Delivered By,سلّمه
+Qty,الكمية
+Unit,الوحدة
+On Hand,المتوفر
+Par Level,المستوى المستهدف
+Cost / Unit,تكلفة الوحدة
+Cost Amount,مبلغ التكلفة
+Qty Change,تغير الكمية
+Batch,الدفعة
+Reference Type,نوع المرجع
+Reference Doctype,نوع المستند المرجعي
+Reference Name,اسم المرجع
+Outlet,منفذ البيع
+Outlet Name,اسم منفذ البيع
+Outlet Type,نوع منفذ البيع
+Tables,الطاولات
+Table,الطاولة
+Party Size,عدد الضيوف
+Reserved At,وقت الحجز
+Order Type,نوع الطلب
+Order Total,إجمالي الطلب
+Ordered On The Day,طُلب في يوم الفعالية
+KOT,أمر المطبخ
+KOT #,رقم أمر المطبخ
+KOT Fired,تم إرسال أمر المطبخ
+Fired At,وقت الإرسال للمطبخ
+Prep Station,محطة التحضير
+Prepared At,وقت التجهيز
+Complimentary,مجاني
+Complimentary (no charge),مجاني (دون رسوم)
+NC Authorized By,اعتماد المجانية بواسطة
+NC Reference,مرجع المجانية
+Void Reason,سبب الإلغاء
+Voided,ملغى
+Menu Name,اسم القائمة
+Menu Code,رمز القائمة
+Meal Period,فترة الوجبة
+Food Type,نوع الطعام
+Service Style,نمط الخدمة
+Cuisine,المطبخ
+Course,المرحلة
+Courses,مراحل القائمة
+Dish,الطبق
+Dish Name,اسم الطبق
+Dishes,الأطباق
+Recipe,الوصفة
+Portion Per Pax,حصة لكل شخص
+Cost Per Portion,تكلفة الحصة
+Veg,نباتي
+Supplier,المورّد
+Kitchen,المطبخ
+Kitchen Access,وصول المطبخ
+Venue Name,اسم القاعة
+Venue Code,رمز القاعة
+Venue Type,نوع القاعة
+Capacity,السعة
+Area (sq ft),المساحة (قدم²)
+Seats (round table),المقاعد (طاولة دائرية)
+Hourly Rate,سعر الساعة
+Minimum Hours,الحد الأدنى للساعات
+Minimum F&B spend,الحد الأدنى للإنفاق على الأغذية والمشروبات
+Setup Styles,أنماط التجهيز
+Setup Style,نمط التجهيز
+Setup Notes,ملاحظات التجهيز
+Start Date,تاريخ البدء
+End Date,تاريخ الانتهاء
+Start Time,وقت البدء
+End Time,وقت الانتهاء
+Event Name,اسم الفعالية
+Event Date,تاريخ الفعالية
+Event Type,نوع الفعالية
+Expected Pax,العدد المتوقع
+Guaranteed Pax,العدد المضمون
+Actual Pax,العدد الفعلي
+Customer,العميل
+Customer Name,اسم العميل
+Customer Email,بريد العميل
+Customer Phone,هاتف العميل
+Requirements,المتطلبات
+Enquiry Date,تاريخ الاستفسار
+Follow Up Date,تاريخ المتابعة
+Sales Owner,مسؤول المبيعات
+Quotation,عرض السعر
+Quote Number,رقم عرض السعر
+Quote Version,إصدار عرض السعر
+Quote Sent On,تاريخ إرسال العرض
+Quote Valid Till,العرض صالح حتى
+Quoted Amount,المبلغ المعروض
+Negotiation History,سجل التفاوض
+Commercial Terms,الشروط التجارية
+Payment Terms,شروط الدفع
+Advance %,نسبة العربون
+Advance Due,العربون المستحق
+Advance Paid,العربون المدفوع
+Advance Received,العربون المستلم
+Receipts,الإيصالات
+Receipt Date,تاريخ الإيصال
+Event Order No.,رقم أمر الفعالية
+Event Order Notes,ملاحظات أمر الفعالية
+Beo Generated On,تاريخ إنشاء أمر الفعالية
+Open Items,البنود المفتوحة
+Price Impact,أثر السعر
+Actuals,الفعلي
+Actually Served,المقدم فعليًا
+Cost & Margin,التكلفة والهامش
+Total Cost,إجمالي التكلفة
+Gross Margin,هامش الربح الإجمالي
+Margin %,نسبة الهامش
+Food Cost,تكلفة الطعام
+Service Cost,تكلفة الخدمة
+Month (YYYY-MM),الشهر (YYYY-MM)
+Occupancy % Target,مستهدف الإشغال %
+ADR / ARR Target,مستهدف متوسط السعر اليومي
+RevPAR Target,مستهدف إيراد الغرفة المتاحة
+Room Revenue Target,مستهدف إيرادات الغرف
+Action Type,نوع الإجراء
+Actor (User),المنفّذ (المستخدم)
+Agent Name,اسم الوكيل
+Agent Type,نوع الوكيل
+Minutes Saved,الدقائق الموفرة
+Rationale,التعليل
+Executed At,وقت التنفيذ
+Before Snapshot,لقطة قبل
+After Snapshot,لقطة بعد
+Evidence URL / Ref,رابط / مرجع الدليل
+Channel / Notes,القناة / الملاحظات
+API Endpoint Override,عنوان API بديل
+API Key,مفتاح API
+API Key / Password,مفتاح API / كلمة المرور
+API Username,اسم مستخدم API
+Base URL,الرابط الأساسي
+Model,النموذج
+Provider,المزوّد
+Credentials,بيانات الاعتماد
+Access Token Hash,بصمة رمز الوصول
+Webhook Secret,سر Webhook
+Inbound Webhook Secret,سر Webhook الوارد
+External Account ID,معرّف الحساب الخارجي
+Provider's Property ID,معرّف المنشأة لدى المزوّد
+Provider Room ID,معرّف الغرفة لدى المزوّد
+Provider Rate Plan ID,معرّف خطة السعر لدى المزوّد
+Last ARI push,آخر مزامنة توفر وأسعار
+Last push result,نتيجة آخر مزامنة
+Template,القالب
+Template Language Code,رمز لغة القالب
+Template: booking confirmation,قالب: تأكيد الحجز
+Template: payment request,قالب: طلب الدفع
+Template: self check-in link,قالب: رابط الوصول المسبق
+Direction,الاتجاه
+Content,المحتوى
+Message,الرسالة
+Messages,الرسائل
+Meta Message ID,معرّف رسالة Meta
+Client ID,معرّف العميل
+Client Name,اسم العميل
+Redirect URI,رابط إعادة التوجيه
+Redirect URIs,روابط إعادة التوجيه
+Scope,النطاق
+Grant Types,أنواع الصلاحية
+Token Auth Method,طريقة مصادقة الرمز
+Issued At,تاريخ الإصدار
+Access Expires,انتهاء الوصول
+Refresh Expires,انتهاء التحديث
+Refresh Token Hash,بصمة رمز التحديث
+Revoked,ملغى
+User,المستخدم
+Opened On,تاريخ الفتح
+Closed On,تاريخ الإغلاق
+Opening Cash,النقدية الافتتاحية
+Closing Cash,النقدية الختامية
+Cash Collected,النقد المحصل
+Cash Count,جرد النقدية
+Counted By,تم الجرد بواسطة
+Shift,الوردية
+Shift Date,تاريخ الوردية
+Handed Over To,سُلّمت إلى
+Handover Notes,ملاحظات التسليم
+Found By,وُجد بواسطة
+Found In Room,وُجد في الغرفة
+Found On,تاريخ العثور
+Returned,تم التسليم
+Return,إرجاع
+Released By,أُفرج عنه بواسطة
+Released On,تاريخ الإفراج
+Lost Reason,سبب الفقد

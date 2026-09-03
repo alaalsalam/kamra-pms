@@ -179,7 +179,7 @@ export default function Setup() {
                 is_default: i === 1 ? 1 : 0,
               })),
       }
-      const res = await call<{ property: string }>("kamra.api.setup_property", { payload })
+      const res = await call<{ property: string }>("hotelpms.api.setup_property", { payload })
       setCreatedProperty(res.property)
       setCurrentProperty(res.property)
       setStep(importStep)
@@ -195,7 +195,7 @@ export default function Setup() {
     setError(null)
     setImportReport(null)
     try {
-      const res = await call<NonNullable<typeof preview>>("kamra.migrate.preview_import", {
+      const res = await call<NonNullable<typeof preview>>("hotelpms.migrate.preview_import", {
         property: createdProperty,
         csv_text: csv,
         preset,
@@ -216,7 +216,7 @@ export default function Setup() {
         created: number
         history: number
         errors: { row: number; guest: string; error: string }[]
-      }>("kamra.migrate.run_import", {
+      }>("hotelpms.migrate.run_import", {
         property: createdProperty,
         csv_text: csv,
         preset,
@@ -262,7 +262,7 @@ export default function Setup() {
       <h1 className="mb-1 text-lg font-semibold">Set up a new property</h1>
       <p className="mb-4 text-sm text-zinc-500">
         Hotel or vacation rental — same product, different defaults. Prefer talking?
-        Connect Claude to Kamra&apos;s MCP and say &quot;onboard my property&quot;.
+        Connect Claude to HotelPMS&apos;s MCP and say &quot;onboard my property&quot;.
       </p>
 
       <ol className="mb-6 flex flex-wrap gap-2">
@@ -329,11 +329,11 @@ export default function Setup() {
             <>
               {(
                 [
-                  ["property_name", "Property name *", "text", "Sunrise Residency"],
-                  ["city", "City", "text", "Bengaluru"],
-                  ["state", "State", "text", "Karnataka"],
-                  ["phone", "Phone", "text", "+91 …"],
-                  ["gstin", "GSTIN", "text", "29XXXXX…"],
+                  ["property_name", "Property name *", "text", "Nuzul Riyadh Hotel"],
+                  ["city", "City", "text", "Riyadh"],
+                  ["state", "State", "text", "Riyadh"],
+                  ["phone", "Phone", "text", "+966 11 XXX XXXX"],
+                  ["gstin", "VAT Registration No.", "text", "3XXXXXXXXXXXXXX"],
                   ["checkin_time", "Check-in Time", "time", ""],
                   ["checkout_time", "Check-out Time", "time", ""],
                   ["minimum_nights", "Minimum Nights", "number", "1"],
@@ -596,7 +596,7 @@ export default function Setup() {
               )}
               {topology === "whole_property" && (
                 <p className="rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
-                  Kamra will create a whole-property sellable unit for each listing. You can
+                  HotelPMS will create a whole-property sellable unit for each listing. You can
                   add physical rooms later for housekeeping if needed.
                 </p>
               )}
@@ -743,7 +743,7 @@ export default function Setup() {
                   rows={7}
                   placeholder={
                     "Guest Name,Mobile,Room Type,Arrival Date,Departure Date,Adults,Status\n" +
-                    '"Rao, Asha",+91 98xxxx,Deluxe,25/12/2025,28/12/2025,2,Checked Out'
+                    '"Alqahtani, Nora",+966 50xxxxxxx,Deluxe,25/12/2025,28/12/2025,2,Checked Out'
                   }
                   value={csv}
                   onChange={(e) => {

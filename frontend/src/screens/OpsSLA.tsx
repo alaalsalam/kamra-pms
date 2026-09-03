@@ -62,7 +62,7 @@ export default function OpsSLA() {
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    call<Sla>("kamra.reports.sla_report", {
+    call<Sla>("hotelpms.reports.sla_report", {
       property: getCurrentProperty(),
       from_date: from,
       to_date: to,

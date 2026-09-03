@@ -1,5 +1,5 @@
 name: Feature request
-description: Propose a capability Kamra should have
+description: Propose a capability HotelPMS should have
 labels: ["enhancement"]
 body:
   - type: textarea
@@ -13,7 +13,7 @@ body:
     id: proposal
     attributes:
       label: Proposed behaviour
-      description: What should Kamra do? If you've seen another PMS handle it well, describe the capability (please don't ask us to clone a competitor's screen).
+      description: What should HotelPMS do? If you've seen another PMS handle it well, describe the capability (please don't ask us to clone a competitor's screen).
     validations:
       required: true
   - type: textarea

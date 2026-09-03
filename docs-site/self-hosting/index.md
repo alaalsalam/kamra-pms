@@ -1,4 +1,4 @@
-# Self-hosting Kamra
+# Self-hosting HotelPMS
 
 Own your PMS end to end. Two supported paths: **Docker (recommended,
 see the [Quickstart](/quickstart))** or a classic
@@ -31,7 +31,7 @@ the server; ports 80/443 open; SSL via Let's Encrypt.
 | AWS | t3.medium + EBS | ~$30/mo | [Guide](/self-hosting/aws) |
 
 ::: tip Rather not run a server?
-[Kamra Cloud](https://kamrapms.com/#cloud) is the same software, hosted,
+[HotelPMS Cloud](https://hotelpms.yemenfrappe.com/#cloud) is the same software, hosted,
 backed up and updated by the team that builds it — from ₹2,999/month
 billed annually. You can export everything and move to self-hosting any
 time; that's the point of open source.
@@ -39,7 +39,7 @@ time; that's the point of open source.
 
 ## After install — production checklist
 
-1. **Create your property** — sign in at `/kamra` as `Administrator` (or
+1. **Create your property** — sign in at `/hotelpms` as `Administrator` (or
    `admin@example.com`) with the `--admin-password` you chose — there is
    no default — then Admin → New Property, rooms, room types and rates.
 2. **Staff users & roles** — Hotel Admin / Front Desk / Revenue / Finance /
@@ -58,7 +58,7 @@ time; that's the point of open source.
 ## Updating
 
 ```bash
-cd frappe-bench/apps/kamra && git pull
+cd frappe-bench/apps/hotelpms && git pull
 bench --site pms.yourhotel.com migrate
 bench build && bench restart
 ```
@@ -68,5 +68,5 @@ tax and availability logic:
 
 ```bash
 bench --site pms.yourhotel.com console
->>> from kamra.scripts.eval_harness import execute; execute()
+>>> from hotelpms.scripts.eval_harness import execute; execute()
 ```

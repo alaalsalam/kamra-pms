@@ -4,11 +4,12 @@ import { call } from "../../lib/api"
 import { Button } from "../../components/ui/button"
 import { inr, type Rate } from "./shared"
 import { cur } from "../../lib/money"
+import { useT } from "../../lib/i18n"
 
 /** In-stay guest self-service: request a laundry pickup from the check-in page.
  * Read-only price list + a request button. The guest never sees a folio or a
  * total — staff count and price the bag at the door. Written on the guest's
- * behalf by the governed agent (kamra.public_api.request_guest_laundry). */
+ * behalf by the governed agent (hotelpms.public_api.request_guest_laundry). */
 
 interface LaundryInfo {
   room_no: string
@@ -17,6 +18,7 @@ interface LaundryInfo {
 }
 
 export function GuestLaundryCard({ token }: Readonly<{ token: string }>) {
+  const { t } = useT()
   const [info, setInfo] = useState<LaundryInfo | null>(null)
   const [open, setOpen] = useState(false)
   const [showRates, setShowRates] = useState(false)
@@ -27,7 +29,7 @@ export function GuestLaundryCard({ token }: Readonly<{ token: string }>) {
 
   useEffect(() => {
     if (!token) return
-    call<LaundryInfo>("kamra.public_api.laundry_info", { token })
+    call<LaundryInfo>("hotelpms.public_api.laundry_info", { token })
       .then(setInfo)
       .catch(() => setInfo(null)) // not checked in / no rate card → hide
   }, [token])
@@ -39,7 +41,7 @@ export function GuestLaundryCard({ token }: Readonly<{ token: string }>) {
   async function submit() {
     setBusy(true)
     try {
-      await call("kamra.public_api.request_guest_laundry", {
+      await call("hotelpms.public_api.request_guest_laundry", {
         token,
         notes: notes || "",
         express: express ? 1 : 0,
@@ -57,36 +59,35 @@ export function GuestLaundryCard({ token }: Readonly<{ token: string }>) {
     <div className="mb-5 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
       <div className="flex items-center gap-2">
         <Shirt className="size-5 text-brand-600" aria-hidden />
-        <p className="font-medium">Laundry</p>
+        <p className="font-medium">{t("Laundry")}</p>
       </div>
 
       {alreadyOpen ? (
         <p className="mt-2 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
           <Check className="size-4" aria-hidden />
-          Housekeeping has your laundry pickup — they'll be by shortly.
+          {t("Housekeeping has your laundry pickup — they'll be by shortly.")}
         </p>
       ) : (
         <>
           <p className="mt-1 text-sm text-zinc-500">
-            Need clothes washed? Ask housekeeping to pick them up — they'll
-            count and price the bag with you at the door.
+            {t("Need clothes washed? Ask housekeeping to pick them up — they'll count and price the bag with you at the door.")}
           </p>
 
           {!open ? (
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button onClick={() => setOpen(true)}>Request pickup</Button>
+              <Button onClick={() => setOpen(true)}>{t("Request pickup")}</Button>
               <Button
                 variant="ghost"
                 onClick={() => setShowRates((s) => !s)}
               >
-                {showRates ? "Hide prices" : "See prices"}
+                {showRates ? t("Hide prices") : t("See prices")}
               </Button>
             </div>
           ) : (
             <div className="mt-3 space-y-3">
               <input
                 className="w-full rounded-lg border border-zinc-300 bg-white px-3.5 py-2.5 text-base focus:outline-2 focus:outline-offset-1 focus:outline-brand-600"
-                placeholder="Anything we should know? (bag by the door, after 3pm…)"
+                placeholder={t("Anything we should know? (bag by the door, after 3pm…)")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
@@ -102,15 +103,15 @@ export function GuestLaundryCard({ token }: Readonly<{ token: string }>) {
               >
                 <Zap className="size-4" aria-hidden />
                 {express
-                  ? "Express — same day (higher rate)"
-                  : "Standard service"}
+                  ? t("Express — same day (higher rate)")
+                  : t("Standard service")}
               </button>
               <div className="flex gap-2">
                 <Button className="flex-1" disabled={busy} onClick={submit}>
-                  Send request
+                  {t("Send request")}
                 </Button>
                 <Button variant="ghost" onClick={() => setOpen(false)}>
-                  Cancel
+                  {t("Cancel")}
                 </Button>
               </div>
             </div>

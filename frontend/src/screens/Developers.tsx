@@ -187,7 +187,7 @@ export default function Developers() {
               Example - today's front desk
             </div>
             <pre className="overflow-x-auto rounded-lg bg-zinc-900 p-3 text-xs leading-relaxed text-zinc-100">
-{`curl -X POST ${base}/api/method/kamra.api.front_desk_snapshot \\
+{`curl -X POST ${base}/api/method/hotelpms.api.front_desk_snapshot \\
   -H "Authorization: ${authHeader}" \\
   -H "Content-Type: application/json" \\
   -d '{"property": "${property}"}'`}
@@ -196,7 +196,7 @@ export default function Developers() {
           <p className="text-xs text-zinc-400">
             Full reference:{" "}
             <a
-              href="https://github.com/Kamra-PMS/kamra-pms/blob/main/docs/ai-and-api.md"
+              href="https://github.com/YemenFrappe/hotelpms/blob/main/docs/ai-and-api.md"
               target="_blank"
               rel="noreferrer"
               className="font-medium text-brand-700 hover:underline"
@@ -212,7 +212,7 @@ export default function Developers() {
         <CardHeader>
           <CardTitle>Key endpoints</CardTitle>
           <p className="mt-0.5 text-xs text-zinc-400">
-            All under <code className="text-zinc-500">/api/method/kamra.api.&lt;name&gt;</code>{" "}
+            All under <code className="text-zinc-500">/api/method/hotelpms.api.&lt;name&gt;</code>{" "}
             (POST, JSON). Role-gated the same as the UI.
           </p>
         </CardHeader>
@@ -244,15 +244,15 @@ export default function Developers() {
           <CardTitle>Connect an AI agent (MCP)</CardTitle>
           <p className="mt-0.5 text-xs text-zinc-400">
             Point Claude at this property over MCP. Staff should use{" "}
-            <a href="/kamra/assistant" className="font-medium text-brand-700 hover:underline">
-              Kamra Agent → Connect Claude
+            <a href="/hotelpms/assistant" className="font-medium text-brand-700 hover:underline">
+              HotelPMS Agent → Connect Claude
             </a>
             . The key above is for unattended / service integrations.
           </p>
         </CardHeader>
         <CardContent>
           <pre className="overflow-x-auto rounded-lg bg-zinc-100 p-3 text-xs leading-relaxed text-zinc-700">
-{`claude mcp add --transport http kamra ${base}/mcp`}
+{`claude mcp add --transport http hotelpms ${base}/mcp`}
           </pre>
         </CardContent>
       </Card>

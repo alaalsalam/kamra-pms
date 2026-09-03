@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // the session really ended (not a network problem) - leave a note
         // for the login screen when it happened mid-work
         if (statusRef.current === "authed")
-          sessionStorage.setItem("kamra_session_ended", "1")
+          sessionStorage.setItem("hotelpms_session_ended", "1")
         setStatus("anon")
         setUser(null)
         setRoles([])
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
       if (statusRef.current === "authed")
-        sessionStorage.setItem("kamra_session_ended", "1")
+        sessionStorage.setItem("hotelpms_session_ended", "1")
       setStatus("anon")
       setUser(null)
       setRoles([])
@@ -84,8 +84,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // only meaningful once we're past the initial load
       if (status !== "loading") refresh()
     }
-    window.addEventListener("kamra:auth-error", onAuthError)
-    return () => window.removeEventListener("kamra:auth-error", onAuthError)
+    window.addEventListener("hotelpms:auth-error", onAuthError)
+    return () => window.removeEventListener("hotelpms:auth-error", onAuthError)
   }, [refresh, status])
 
   const signOut = useCallback(async () => {

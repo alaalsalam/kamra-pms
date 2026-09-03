@@ -6,7 +6,7 @@ import { call } from "../lib/api"
 import { toFullPath } from "../lib/routing"
 import EditableNationality from "../components/EditableNationality"
 import { Button } from "../components/ui/button"
-import { cur, moneyLocale } from "../lib/money"
+import { cur, moneyLocale, taxLabel } from "../lib/money"
 
 /** Printable Guest Registration Card (GRC) - sign at check-in. */
 
@@ -113,7 +113,7 @@ function OccupantsEditor(props: {
     setBusy(true)
     try {
       const out = await call<{ rows: Occupant[] }>(
-        "kamra.api.update_occupants",
+        "hotelpms.api.update_occupants",
         {
           reservation: props.reservation,
           occupants: rows.filter((r) => r.full_name.trim()),
@@ -205,7 +205,7 @@ function OccupantsEditor(props: {
                     const f = e.target.files?.[0]
                     if (!f || !o.row) return
                     const r = await call<{ file: string }>(
-                      "kamra.api.upload_occupant_id",
+                      "hotelpms.api.upload_occupant_id",
                       {
                         reservation: props.reservation,
                         row: o.row,
@@ -270,7 +270,7 @@ function ActualTimeRow(props: {
           <Button variant="outline" className="!px-2 !py-1 text-xs"
             onClick={async () => {
               if (!val) return
-              await call("kamra.api.set_actual_times", {
+              await call("hotelpms.api.set_actual_times", {
                 reservation: props.reservation,
                 [props.field]: val.replace("T", " ") + ":00",
               })
@@ -323,7 +323,7 @@ export default function RegistrationCard() {
 
   const load = useCallback(() => {
     if (name)
-      call<Grc>("kamra.api.registration_card", { reservation: name }).then(setD)
+      call<Grc>("hotelpms.api.registration_card", { reservation: name }).then(setD)
   }, [name])
 
   useEffect(load, [load])
@@ -347,7 +347,7 @@ export default function RegistrationCard() {
             <h1 className="text-lg font-bold">{d.property.property_name}</h1>
             <p className="text-xs text-zinc-500">{d.property.address}</p>
             <p className="text-xs text-zinc-500">
-              {d.property.gstin && <>GSTIN {d.property.gstin} · </>}
+              {d.property.gstin && <>{taxLabel() === "VAT" ? "VAT Registration No." : "GSTIN"} {d.property.gstin} · </>}
               {d.property.phone}
             </p>
           </div>
@@ -399,7 +399,7 @@ export default function RegistrationCard() {
                       onChange={async (e) => {
                         const f = e.target.files?.[0]
                         if (!f || !d.guest.guest_id) return
-                        await call("kamra.api.upload_guest_document", {
+                        await call("hotelpms.api.upload_guest_document", {
                           guest: d.guest.guest_id, kind,
                           image: await fileToDataUrl(f),
                         })
@@ -426,7 +426,7 @@ export default function RegistrationCard() {
               field="actual_check_out" value={d.reservation.actual_check_out} onSaved={load} />
             <Row label="Nights" value={String(d.reservation.nights)} />
             <Row label="Guests" value={`${d.reservation.adults} adult(s)${d.reservation.children ? ` + ${d.reservation.children} child` : ""}`} />
-            <Row label="Stay total" value={`${cur()}${inr(d.reservation.rate_total)} (incl. GST)`} />
+            <Row label="Stay total" value={`${cur()}${inr(d.reservation.rate_total)} (incl. ${taxLabel()})`} />
             <Row label="Advance paid" value={`${cur()}${inr(d.reservation.advance_paid)}`} />
             {d.money && (
               <>

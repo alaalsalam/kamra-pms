@@ -86,7 +86,7 @@ export default function GroupControl({
   const [pick, setPick] = useState({ room_type: "", guest_name: "", phone: "" })
 
   const load = useCallback(() => {
-    call<Detail>("kamra.api.group_detail", { group_booking: name })
+    call<Detail>("hotelpms.api.group_detail", { group_booking: name })
       .then((r) => {
         setD(r)
         setBlocks(
@@ -126,7 +126,7 @@ export default function GroupControl({
 
   const saveBlocks = (status?: string) =>
     act(() =>
-      call("kamra.api.save_group_blocks", {
+      call("hotelpms.api.save_group_blocks", {
         group_booking: name,
         blocks: blocks
           .filter((b) => b.room_type && Number(b.rooms_blocked) > 0)
@@ -177,7 +177,7 @@ export default function GroupControl({
             disabled={busy}
             onClick={() =>
               act(() =>
-                call("kamra.api.group_master_folio", { group_booking: name }),
+                call("hotelpms.api.group_master_folio", { group_booking: name }),
               )
             }
           >
@@ -344,7 +344,7 @@ export default function GroupControl({
               disabled={busy || !pick.guest_name.trim() || !pick.room_type}
               onClick={() =>
                 act(async () => {
-                  await call("kamra.api.pickup_group_room", {
+                  await call("hotelpms.api.pickup_group_room", {
                     group_booking: name,
                     room_type: pick.room_type,
                     guest_name: pick.guest_name.trim(),

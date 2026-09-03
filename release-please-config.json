@@ -7,9 +7,9 @@
   "versioning": "always-bump-patch",
   "packages": {
     ".": {
-      "package-name": "kamra",
+      "package-name": "hotelpms",
       "changelog-path": "CHANGELOG.md",
-      "extra-files": ["kamra/__init__.py"]
+      "extra-files": ["hotelpms/__init__.py"]
     }
   }
 }

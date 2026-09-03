@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom"
 import { Plus, Minus, Leaf, ShoppingBag } from "lucide-react"
 import { call } from "../lib/api"
 import { accentVars } from "../lib/accents"
+import { PublicHeader } from "../components/PublicChrome"
 import { cur, moneyLocale, adoptUiLocale } from "../lib/money"
 
 const inr = (n: unknown) =>
@@ -38,7 +39,7 @@ export default function QrMenu() {
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    call<Menu>("kamra.public_api.qr_menu", { outlet })
+    call<Menu>("hotelpms.public_api.qr_menu", { outlet })
       .then((m) => { adoptUiLocale((m as { ui_locale?: { currency_symbol?: string; locale?: string } }).ui_locale); setMenu(m) })
       .catch((e) => setError((e as Error).message))
   }, [outlet])
@@ -61,7 +62,7 @@ export default function QrMenu() {
     setBusy(true)
     setError(null)
     try {
-      const r = await call<{ order: string; message: string }>("kamra.public_api.qr_order", {
+      const r = await call<{ order: string; message: string }>("hotelpms.public_api.qr_order", {
         outlet,
         room: room || null,
         table_no: table || null,
@@ -83,6 +84,7 @@ export default function QrMenu() {
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-28" style={accentVars("Emerald")}>
+      <PublicHeader />
       <header className="border-b border-zinc-200 bg-white px-4 py-4">
         <h1 className="text-lg font-bold text-zinc-800">{menu.outlet_name}</h1>
         <p className="text-xs text-zinc-500">
@@ -117,7 +119,7 @@ export default function QrMenu() {
                         <span className="text-sm font-medium">{it.item_name}</span>
                       </div>
                       {it.description && <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500">{it.description}</p>}
-                      <div className="mt-1 text-sm font-semibold">{cur()}{inr(it.price)}</div>
+                      <div className="mt-1 text-sm font-semibold text-gold">{cur()}{inr(it.price)}</div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5 self-center">
                       {qty(it.name) > 0 && (
@@ -126,7 +128,7 @@ export default function QrMenu() {
                           <span className="w-5 text-center text-sm tabular-nums">{qty(it.name)}</span>
                         </>
                       )}
-                      <button onClick={() => set(it.name, 1)} className="size-8 rounded-lg bg-brand-600 text-white"><Plus className="mx-auto size-4" /></button>
+                      <button onClick={() => set(it.name, 1)} className="size-8 rounded-lg bg-gold-500 text-navy-950 hover:bg-gold-600"><Plus className="mx-auto size-4" /></button>
                     </div>
                   </div>
                 ))}
@@ -139,7 +141,7 @@ export default function QrMenu() {
       {!done && count > 0 && (
         <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white p-3">
           <button disabled={busy} onClick={order}
-            className="mx-auto flex w-full max-w-lg items-center justify-between rounded-xl bg-brand-600 px-4 py-3 font-semibold text-white disabled:opacity-60">
+            className="mx-auto flex w-full max-w-lg items-center justify-between rounded-xl bg-gold-500 px-4 py-3 font-semibold text-navy-950 hover:bg-gold-600 disabled:opacity-60">
             <span>{count} item{count === 1 ? "" : "s"}</span>
             <span>Place order · {cur()}{inr(total)}</span>
           </button>

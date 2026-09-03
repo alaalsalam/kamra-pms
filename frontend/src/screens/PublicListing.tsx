@@ -14,6 +14,7 @@ import { serverError } from "../lib/resource"
 import { accentVars } from "../lib/accents"
 import { Badge } from "../components/ui/badge"
 import { Button } from "../components/ui/button"
+import { PublicFooter, PublicHeader } from "../components/PublicChrome"
 import { Sheet } from "../components/ui/sheet"
 import { cur, moneyLocale, adoptUiLocale } from "../lib/money"
 import { formatPhoneDisplay, formatPhoneTel } from "../lib/phone"
@@ -102,7 +103,7 @@ interface StayResult {
 
 const inputCls =
   "w-full rounded-lg border border-zinc-300 bg-white px-3.5 py-2.5 text-base " +
-  "focus:outline-2 focus:outline-offset-1 focus:outline-brand-600"
+  "focus:outline-2 focus:outline-offset-1 focus:outline-gold-500"
 
 function todayPlus(days: number) {
   const d = new Date()
@@ -197,7 +198,7 @@ function HostBlock({
         className="mt-4 inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-base font-semibold text-zinc-900 transition hover:border-brand-300 hover:bg-brand-50"
       >
         <Phone className="size-4 text-brand-700" aria-hidden />
-        {display}
+        <span dir="ltr">{display}</span>
       </a>
       <p className="mt-2 text-xs text-zinc-400">
         Call for directions, check-in help, or on-site questions.
@@ -254,13 +255,13 @@ export default function PublicListing() {
 
   useEffect(() => {
     if (!slug) return
-    call<Resolved>("kamra.public_api.resolve_slug", { slug })
+    call<Resolved>("hotelpms.public_api.resolve_slug", { slug })
       .then((r) => {
         setResolved(r)
         const args: Record<string, string> = { property: r.property }
         if (r.listing_slug) args.listing_slug = r.listing_slug
         if (r.location_slug) args.location_slug = r.location_slug
-        return call<Showcase>("kamra.public_api.showcase", args).then((d) => ({
+        return call<Showcase>("hotelpms.public_api.showcase", args).then((d) => ({
           d,
           r,
         }))
@@ -293,7 +294,7 @@ export default function PublicListing() {
 
   function fetchResults() {
     if (!resolved) return
-    call<StayResult[]>("kamra.public_api.search_stay", {
+    call<StayResult[]>("hotelpms.public_api.search_stay", {
       property: resolved.property,
       check_in_date: search.check_in_date,
       check_out_date: checkOut,
@@ -322,7 +323,7 @@ export default function PublicListing() {
     setError(null)
     try {
       const res = await call<{ reservation: string; amount_after_tax: number }>(
-        "kamra.public_api.book",
+        "hotelpms.public_api.book",
         {
           property: resolved.property,
           room_type: booking,
@@ -384,7 +385,23 @@ export default function PublicListing() {
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50" style={accent}>
-      <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/90 backdrop-blur">
+      <PublicHeader
+        links={isSite ? [{ label: "Rooms", href: "#choose-listing" }] : []}
+        cta={
+          <button
+            type="button"
+            onClick={() =>
+              document
+                .getElementById(isSite ? "choose-listing" : "book")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+            className="btn-gold rounded-lg px-4 py-1.5 text-sm"
+          >
+            Book now
+          </button>
+        }
+      />
+      <header className="border-b border-zinc-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-5 py-3">
           <Link
             to={isSite ? `/book/${stayPathSuffix}` : backToSite}
@@ -393,7 +410,7 @@ export default function PublicListing() {
             <ArrowLeft className="size-4" aria-hidden />
             {isSite ? "All properties" : "Back to property"}
           </Link>
-          <span className="ml-auto truncate text-sm font-medium text-zinc-500">
+          <span className="ms-auto truncate text-sm font-medium text-zinc-500">
             {p.property_name}
           </span>
         </div>
@@ -527,10 +544,10 @@ export default function PublicListing() {
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="text-sm">
                               {r?.quote ? (
-                                <p className="font-semibold text-zinc-900">
+                                <p className="font-semibold text-gold">
                                   {cur()}
                                   {inr(r.quote.amount_after_tax)}
-                                  <span className="ml-1 font-normal text-zinc-500">
+                                  <span className="ms-1 font-normal text-zinc-500">
                                     total
                                   </span>
                                 </p>
@@ -552,6 +569,7 @@ export default function PublicListing() {
                                 </Button>
                               )}
                               <Button
+                                variant="gold"
                                 disabled={!r?.quote}
                                 onClick={() => setBooking(rt.name)}
                               >
@@ -608,10 +626,10 @@ export default function PublicListing() {
             )}
           </div>
 
-          <aside className="lg:col-span-2">
+          <aside id="book" className="lg:col-span-2">
             <div className="sticky top-20 space-y-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-md">
               <div>
-                <p className="text-2xl font-semibold tabular-nums text-zinc-900">
+                <p className="text-2xl font-semibold tabular-nums text-gold">
                   {cur()}
                   {inr(
                     !isSite && results[primary?.name ?? ""]?.quote
@@ -703,7 +721,7 @@ export default function PublicListing() {
               </p>
 
               <Button
-                variant={isSite ? "outline" : undefined}
+                variant={isSite ? "outline" : "gold"}
                 className="w-full justify-center gap-2 py-2.5 text-base"
                 onClick={() => {
                   fetchResults()
@@ -719,6 +737,7 @@ export default function PublicListing() {
               {!isSite && primary && (
                 <Button
                   id="sticky-book"
+                  variant="gold"
                   className="w-full justify-center py-2.5 text-base"
                   disabled={!results[primary.name]?.quote}
                   onClick={() => setBooking(primary.name)}
@@ -745,13 +764,15 @@ export default function PublicListing() {
                   className="flex items-center justify-center gap-2 text-sm font-medium text-brand-700 hover:underline"
                 >
                   <Phone className="size-3.5" aria-hidden />
-                  Call caretaker {formatPhoneDisplay(phone, p.country)}
+                  Call caretaker <span dir="ltr">{formatPhoneDisplay(phone, p.country)}</span>
                 </a>
               )}
             </div>
           </aside>
         </div>
       </div>
+
+      <PublicFooter />
 
       {booking && (
         <Sheet
@@ -779,6 +800,7 @@ export default function PublicListing() {
               </Button>
             ) : (
               <Button
+                variant="gold"
                 className="w-full justify-center py-2.5 text-base"
                 disabled={busy || !form.guest_name || !form.phone}
                 onClick={submitBooking}
@@ -815,8 +837,10 @@ export default function PublicListing() {
                 </span>
                 <input
                   className={inputCls}
+                  type="tel"
+                  dir="ltr"
                   value={form.phone}
-                  placeholder="+91 …"
+                  placeholder="+966 5X XXX XXXX"
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 />
               </label>

@@ -36,7 +36,7 @@ export default function Guests() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      call<GuestRow[]>("kamra.api.guests_with_stats", {
+      call<GuestRow[]>("hotelpms.api.guests_with_stats", {
         search: search || undefined,
       }).then((r) => {
         setRows(r)
@@ -101,7 +101,7 @@ export default function Guests() {
                       />
                     )}
                   </td>
-                  <td className="py-2.5 pr-4 text-zinc-500">
+                  <td className="py-2.5 pr-4 text-zinc-500" dir="ltr">
                     {g.phone ?? "-"}
                   </td>
                   <td className="py-2.5 pr-4">{g.bookings}</td>
