@@ -4,6 +4,7 @@
     the right symbol immediately on reload, before the network answers. */
 
 import { call, getCurrentProperty } from "./api"
+import { getLang } from "./dir"
 
 interface Locale {
   currency_symbol: string
@@ -67,6 +68,15 @@ export const locale = () => cache
 export const cur = () => cache.currency_symbol
 /** The number-formatting locale, e.g. "en-IN" (lakhs) or "id-ID". */
 export const moneyLocale = () => cache.locale
+/**
+ * Locale for formatting Gregorian calendar dates. Follows the UI language (not
+ * the property's money locale — English-reading staff want English dates even
+ * for a Saudi property). Arabic (`ar-SA`) defaults to the Hijri calendar, so we
+ * force Gregorian while keeping Arabic month names + Arabic-Indic digits. Never
+ * used for `<input type="date">`, which stays LTR.
+ */
+export const dateLocale = () =>
+  getLang() === "ar" ? "ar-SA-u-ca-gregory" : "en-GB"
 export const fmtMoney = (n: unknown) =>
   cache.currency_symbol +
   Number(n ?? 0).toLocaleString(cache.locale, { maximumFractionDigits: 2 })

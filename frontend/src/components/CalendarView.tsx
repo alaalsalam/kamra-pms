@@ -4,7 +4,9 @@ import { getCalendar, type CalendarData } from "../lib/api"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { cn } from "../lib/utils"
-import { cur, moneyLocale } from "../lib/money"
+import { cur, moneyLocale, dateLocale } from "../lib/money"
+import { Bilingual } from "./Bilingual"
+import { Legend } from "./Legend"
 
 const inr = (n: number) =>
   n.toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
@@ -31,7 +33,7 @@ function rangeLabel(dates: string[]) {
   const f = new Date(dates[0]),
     l = new Date(dates[dates.length - 1])
   const fmt = (d: Date, withYear: boolean) =>
-    d.toLocaleDateString("en-IN", {
+    d.toLocaleDateString(dateLocale(), {
       day: "numeric",
       month: "short",
       ...(withYear ? { year: "numeric" } : {}),
@@ -55,13 +57,26 @@ export function CalendarView(props: {
   }, [props.refreshKey, start])
 
   if (!data) {
-    return <p className="py-8 text-center text-sm text-zinc-400">Loading…</p>
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Availability</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2" aria-busy="true" aria-label="Loading availability">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-9 animate-pulse rounded-md bg-zinc-100" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   const dayLabel = (iso: string) => {
     const d = new Date(iso)
     return {
-      dow: d.toLocaleDateString("en-IN", { weekday: "short" }),
+      dow: d.toLocaleDateString(dateLocale(), { weekday: "short" }),
       day: d.getDate(),
       weekend: d.getDay() === 0 || d.getDay() === 6,
     }
@@ -71,7 +86,10 @@ export function CalendarView(props: {
     <Card>
       <CardHeader>
         <div>
-          <CardTitle>Availability · {rangeLabel(data.dates)}</CardTitle>
+          <CardTitle>
+            Availability{" "}
+            <span className="font-normal text-zinc-400">· {rangeLabel(data.dates)}</span>
+          </CardTitle>
           <span className="text-xs text-zinc-400">
             Click a cell to start a booking
           </span>
@@ -108,6 +126,13 @@ export function CalendarView(props: {
         </div>
       </CardHeader>
       <CardContent className={cn(loading && "opacity-60 transition-opacity")}>
+        {data.room_types.length === 0 ? (
+          <div className="py-12 text-center">
+            <CalendarDays className="mx-auto mb-2 size-8 text-zinc-300" aria-hidden />
+            <p className="text-sm font-medium text-zinc-600">No room types to show</p>
+            <p className="mt-0.5 text-xs text-zinc-400">Add room types to see live availability here.</p>
+          </div>
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-separate border-spacing-0 text-sm">
             <thead>
@@ -137,14 +162,14 @@ export function CalendarView(props: {
             <tbody>
               {data.room_types.map((rt) => (
                 <tr key={rt.room_type}>
-                  <td className="sticky left-0 whitespace-nowrap bg-white py-1 pr-3 font-medium">
-                    {rt.room_type_name}
-                    <span className="ml-1 text-xs font-normal text-zinc-400">
+                  <td className="sticky left-0 whitespace-nowrap bg-white py-1 pe-3 font-medium">
+                    <Bilingual as="span" value={rt.room_type_name} primaryOnly />
+                    <span className="ms-1 text-xs font-normal text-zinc-400">
                       ×{rt.total_rooms}
                     </span>
                   </td>
                   {rt.cells.map((c) => (
-                    <td key={c.date} className="p-0.5">
+                    <td key={c.date} className={cn("p-0.5", c.date === iso(new Date()) && "bg-brand-50/60")}>
                       <button
                         onClick={() => props.onPick(rt.room_type, c.date)}
                         disabled={c.available === 0}
@@ -170,10 +195,19 @@ export function CalendarView(props: {
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-xs text-zinc-400">
-          Number = rooms available · price = 2-adult nightly rate with seasons
-          applied. Weekend columns in green.
-        </p>
+        )}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <Legend
+            items={[
+              { swatch: "bg-white", label: "Available" },
+              { swatch: "bg-amber-400", label: "Limited" },
+              { swatch: "bg-rose-500", label: "Sold out" },
+            ]}
+          />
+          <p className="text-xs text-zinc-400">
+            Number = rooms available · price = 2-adult nightly rate, taxes and seasons applied.
+          </p>
+        </div>
       </CardContent>
     </Card>
   )

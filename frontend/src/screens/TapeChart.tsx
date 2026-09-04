@@ -8,7 +8,10 @@ import { Badge } from "../components/ui/badge"
 import { Button } from "../components/ui/button"
 import { Sheet } from "../components/ui/sheet"
 import { cn } from "../lib/utils"
-import { cur, moneyLocale } from "../lib/money"
+import { cur, moneyLocale, dateLocale } from "../lib/money"
+import { qty } from "../lib/i18n"
+import { Bilingual } from "../components/Bilingual"
+import { Legend } from "../components/Legend"
 
 /** The tape chart: rooms × dates, bookings as bars. Click a bar to act. */
 
@@ -335,6 +338,19 @@ export default function TapeChart() {
         </div>
       </div>
 
+      {mode === "day" && (
+        <Legend
+          className="mb-3"
+          items={[
+            { swatch: "bg-brand-600", label: "In-house" },
+            { swatch: "bg-sky-500", label: "Confirmed" },
+            { swatch: "bg-zinc-300", label: "Held / blocked" },
+            { swatch: "bg-amber-400", label: "Needs cleaning" },
+            { swatch: "bg-rose-500", label: "Out of order" },
+          ]}
+        />
+      )}
+
       {mode === "hour" && hourly && (
         <TapeHourly data={hourly} onOpen={openBooking} />
       )}
@@ -343,11 +359,11 @@ export default function TapeChart() {
       {mode === "day" && (data?.conflicts?.length ?? 0) > 0 && (
         <div className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
           <span className="font-semibold">
-            {data!.conflicts.length} changeover conflict{data!.conflicts.length === 1 ? "" : "s"}:
+            {qty(data!.conflicts.length, "changeover conflict")}:
           </span>{" "}
           {data!.conflicts.map((c) => (
             <span key={c.in_res} className="mr-3 whitespace-nowrap">
-              Room {c.room_number} on {new Date(c.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} —
+              Room {c.room_number} on {new Date(c.date).toLocaleDateString(dateLocale(), { day: "numeric", month: "short" })} —
               out {c.etd} ({c.out_guest}) / in {c.eta} ({c.in_guest})
             </span>
           ))}
@@ -367,7 +383,7 @@ export default function TapeChart() {
                 <div key={d} style={{ width: cellW }}
                   className={cn("shrink-0 border-l border-zinc-100 px-1 py-2 text-center",
                     weekend && "bg-brand-50 text-brand-700")}>
-                  {day.toLocaleDateString("en-IN", { weekday: "short" })}{" "}
+                  {day.toLocaleDateString(dateLocale(), { weekday: "short" })}{" "}
                   <span className="font-semibold">{day.getDate()}</span>
                 </div>
               )
@@ -410,9 +426,9 @@ export default function TapeChart() {
                       className={cn("size-3.5 transition-transform", isCollapsed && "-rotate-90")}
                       aria-hidden
                     />
-                    {g.label}
+                    <Bilingual value={g.label} primaryOnly />
                     <span className="font-normal normal-case tracking-normal text-zinc-400">
-                      {g.rooms.length} rooms · {booked} in use
+                      {qty(g.rooms.length, "room")} · {booked} in use
                     </span>
                   </button>
                   {!isCollapsed &&

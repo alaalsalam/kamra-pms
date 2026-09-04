@@ -238,3 +238,8 @@ that records both human and AI actions with a headline "minutes saved" metric.
   live), translated the search-widget subtitle, and fixed residual night/listing plurals. Presentation only —
   no availability/pricing/API/RBAC/data change; both languages preserved (single-language display remains an
   owner call).
+- **2026-09-04** — Calendar & Rooms UX round: availability calendar + tape chart made faster to read —
+  locale-aware Arabic/English Gregorian dates (were always English), colour legends (availability + booking/
+  room-status), translated labels, bilingual-clean room-type names, and calendar loading/empty states. Shared
+  `Bilingual`/`Legend`/`dateLocale` foundations. No API/RBAC/availability/pricing change. Deferred (needs API
+  field): the Rooms list Type column showing a room-type link ID instead of a friendly name (project-memory §19).

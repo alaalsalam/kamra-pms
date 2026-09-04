@@ -286,6 +286,51 @@ audit, which can't be driven mid-session.)
   collapses on mobile and the header now wraps; a proper phone pass (wrap wide tables in `overflow-x-auto`,
   responsive card grids) is a larger follow-up. Staff screens target tablet/desktop; phone users have the
   dedicated mobile-clean experiences (public booking, `/hk`, POS kiosk). Tablet (~834px) is fixed.
+
+---
+
+## 19. Calendar & Rooms UX round (2026-09-04)
+
+Deep visual + functional pass over the availability calendar and rooms/occupancy screens, live-verified.
+Targets: `components/CalendarView.tsx` (`/calendar`), `screens/TapeChart.tsx` (`/tape`). No API/RBAC/backend/
+data changes; booking-bar interactions and money/availability logic untouched.
+
+**Shared foundations (reused across screens):**
+- Extracted `<Bilingual>` from PublicBooking to **`components/Bilingual.tsx`** (a move, not a fork — PublicBooking
+  now imports it); script-detects the Arabic vs Latin segment, `data-no-translate` secondary, `useT`-reactive.
+- New **`components/Legend.tsx`** — a compact colour-key row (swatch + label) reused on both calendars.
+- New **`dateLocale()`** in `lib/money.ts` — dates follow the **UI language** (`getLang()`), forcing the
+  Gregorian calendar on Arabic (`ar-SA-u-ca-gregory`; `ar-SA` alone is Hijri) with Arabic-Indic digits, else
+  `en-GB`. Replaced the calendar screens' **four** hardcoded `en-IN` `toLocaleDateString` sites (CalendarView×2
+  + TapeChart×2) so weekdays/months localise (were always English). `<input type="date">` stays LTR. Read at
+  render: correct on every page load; an in-place EN/ع toggle flips the `<Bilingual>` labels live but leaves
+  already-rendered *dates* in the prior language until the screen remounts (acceptable — no reactivity added).
+  `Billing.tsx` still has **2** `en-IN` sites (out of this round's scope — deferred).
+
+**CalendarView (`/calendar`):** locale-aware Arabic/English dates; a colour **Legend** (Available / Limited /
+Sold out) replacing the English-only sentence; the title "Availability" now translates ("التوفر", range muted);
+room-type row labels via `<Bilingual primaryOnly>` (no raw "AR | EN"); a **skeleton** loading state + an **empty
+state**; the Today column tinted end-to-end; RTL-logical spacing (`pe/ms`).
+
+**TapeChart (`/tape`):** locale-aware dates; a colour **Legend** (In-house / Confirmed / Held-blocked / Needs-
+cleaning / Out-of-order) matching the bar + room-status tones; group headers via `<Bilingual primaryOnly>`;
+"Position"→"الإشغال", "in use", "Days"/"Hourly", "Auto-assign arrivals" translated; `qty()` for the group
+`rooms` count + the changeover-conflict plural.
+
+**Rooms (`/rooms`, `ResourceScreen` + `roomsConfig`):** already solid (search, status filter, semantic
+occupancy/HK badge tones). **Deferred (documented, not touched):** the Type column shows the room-type link ID
+(`فندق نُزُل الرياض | Nuzul Riyadh Hotel-STD`) because the list API row carries only the `room_type` id, not
+`room_type_name`; a clean fix needs that field returned by the API (or a `format?` hook on `ScreenConfig` fed
+real data) — a small data/config follow-up, not string surgery on the ID.
+
+**Verified live** (AR default + EN, light + dark, desktop 1440 + tablet 834): Arabic Gregorian dates + colour
+legends render; EN mode shows English dates (the first `dateLocale()` keyed off the property money-locale and
+leaked Arabic dates into the English UI — fixed to `getLang()`); no horizontal overflow (grids scroll
+internally), 0 console errors, no broken images; the TapeChart booking-bar click still opens the reservation
+sheet. (Dark-mode catch fixed during review: the `<Legend>` swatch ring was `ring-black/10` — invisible for the
+neutral "Available" swatch on the dark card — now `ring-zinc-300`, which remaps.) `tsc` + `bench build` clean. (SuperClaude `sc:*` commands aren't registered as invocable skills here, so
+their analyze→design→improve→reflect method was applied inline; the ui-tester→ui-fixer loop was replaced by a
+direct Playwright audit.)
 - Remaining English-heavy i18n gaps (Kitchen KDS labels LATE/MAIN/DESSERT/cooking, the Billing folios
   subtitle whose `ar.ts` key hardcodes "GST" vs the Saudi "VAT", night-audit summary sentences) — the same
   `qty()`/`ar.ts` technique applies; deferred to keep this change reviewable.
