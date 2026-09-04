@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useOutletContext } from "react-router-dom"
 import { useRealtime } from "../lib/realtime"
 import {
   BedDouble, LogIn, LogOut, Users, SaudiRiyal, Wallet, Building2, Brush, Receipt,
@@ -10,9 +10,11 @@ import { serverError } from "../lib/resource"
 import { useAuth } from "../lib/auth"
 import { useEnabledModules } from "../lib/modules"
 import { canAccessPath } from "../lib/apps"
+import type { ShellContext } from "../AppShell"
+import { Bilingual } from "../components/Bilingual"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { StatCard } from "../components/ui/stat-card"
-import { cur, moneyLocale } from "../lib/money"
+import { cur, moneyLocale, dateLocale } from "../lib/money"
 
 const inr = (n: unknown) =>
   Number(n ?? 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
@@ -96,6 +98,23 @@ function Tile({ icon: Icon, label, value, sub, tone, to }: {
   )
 }
 
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-5" aria-busy="true" aria-label="Loading dashboard">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-[92px] animate-pulse rounded-xl border border-zinc-200 bg-zinc-100" />
+        ))}
+      </div>
+      <div className="h-24 animate-pulse rounded-xl border border-zinc-200 bg-zinc-100" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="h-44 animate-pulse rounded-xl border border-zinc-200 bg-zinc-100" />
+        <div className="h-44 animate-pulse rounded-xl border border-zinc-200 bg-zinc-100" />
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const [scope, setScope] = useState<"property" | "portfolio">("property")
   const [multi, setMulti] = useState(false)
@@ -103,11 +122,13 @@ export default function Dashboard() {
   const [port, setPort] = useState<Portfolio | null>(null)
   const [error, setError] = useState<string | null>(null)
   const { roles } = useAuth()
+  const { switchProperty } = useOutletContext<ShellContext>()
   const modules = useEnabledModules()
   // A KPI links to its screen only when the user's role AND the property's
   // enabled modules allow it; otherwise the tile stays a plain, unlinked card.
   const linkTo = (path: string, query = "") =>
     canAccessPath(path, roles, modules) ? path + query : undefined
+  const activeDate = scope === "property" ? prop?.date : port?.date
 
   useEffect(() => {
     call<{ name: string }[]>("hotelpms.api.my_properties")
@@ -133,7 +154,19 @@ export default function Dashboard() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">Dashboard</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl font-semibold text-zinc-900">Dashboard</h1>
+            {activeDate && (
+              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500">
+                {new Date(activeDate + "T00:00:00").toLocaleDateString(dateLocale(), {
+                  weekday: "short",
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-zinc-500">
             {scope === "property"
               ? "Today at this property, by department."
@@ -163,6 +196,11 @@ export default function Dashboard() {
           {error}
         </div>
       )}
+
+      {!error &&
+        ((scope === "property" && !prop) || (scope === "portfolio" && !port)) && (
+          <DashboardSkeleton />
+        )}
 
       {scope === "property" && prop && (
         <>
@@ -266,8 +304,19 @@ export default function Dashboard() {
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
                     {port.properties.map((p) => (
-                      <tr key={p.property}>
-                        <td className="py-2 pr-3 font-medium">{p.property_name}</td>
+                      <tr key={p.property} className="hover:bg-zinc-50">
+                        <td className="py-2 pr-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              switchProperty(p.property)
+                              setScope("property")
+                            }}
+                            className="rounded text-start font-medium text-brand-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600"
+                          >
+                            <Bilingual value={p.property_name} primaryOnly />
+                          </button>
+                        </td>
                         <td className="py-2 pr-3 text-right tabular-nums">{p.occupancy_pct}%</td>
                         <td className="py-2 pr-3 text-right tabular-nums">{p.arrivals}</td>
                         <td className="py-2 pr-3 text-right tabular-nums">{p.departures}</td>

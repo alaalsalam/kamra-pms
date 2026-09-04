@@ -405,3 +405,14 @@ no RBAC widening; the `auth-isolation` e2e test still passes after all changes.
   per-type `get_doc`; `property_dashboard` loops `_day_stats` per day-of-month + a redundant `cash_summary`;
   `portfolio_dashboard` is N+1 over properties; no indexes on the hot filter columns. Invisible at demo scale
   (16 reservations / 24 rooms), a scaling risk — recommended fixes recorded, none applied this round.
+
+**Page-by-page deep pass (2026-09-04, ongoing — binding order Dashboard→Today→Reservations→Rooms→Calendar→
+Tape→BookingDialog).**
+- **① Dashboard** (`screens/Dashboard.tsx`, `AppShell.tsx`): added a **loading skeleton** (was blank while
+  fetching), a **date chip** in the header ("الجمعة، ٤ سبتمبر ٢٠٢٦" via `dateLocale`), and made the portfolio
+  **"By property" rows actionable** — clicking a property switches the active property (synced to the top-bar
+  selector via a new `ShellContext.switchProperty`) and drills into its property-view dashboard (no more silent
+  rows; the demo has 3 properties). Verified live **Hotel Admin + Front Desk**: date chip shows, Front Desk
+  still sees zero Revenue/Billing/Rooms/Housekeeping links, a portfolio click switched Riyadh→Olaya and reloaded,
+  no overflow, 0 app console errors (only the benign socket.io realtime warning); `auth-isolation` e2e still
+  passes; `tsc` + `bench build` clean.

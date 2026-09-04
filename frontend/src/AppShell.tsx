@@ -42,6 +42,8 @@ export interface ShellContext {
   openBooking: (initial: BookingInitial) => void
   /** Whether this user's role may create a booking (gate booking affordances). */
   canCreateBooking: boolean
+  /** Switch the active property (keeps the top-bar selector in sync). */
+  switchProperty: (name: string) => void
 }
 
 function SearchShortcut() {
@@ -360,6 +362,7 @@ export default function AppShell() {
                 refreshKey,
                 openBooking: (initial) => setBooking(initial),
                 canCreateBooking,
+                switchProperty,
               } satisfies ShellContext
             }
           />
