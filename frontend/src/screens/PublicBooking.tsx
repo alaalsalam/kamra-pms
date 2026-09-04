@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ElementType } from "react"
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
 import {
   BadgeCheck,
@@ -38,9 +38,51 @@ import { PublicFooter, PublicHeader } from "../components/PublicChrome"
 import { Sheet } from "../components/ui/sheet"
 import { cur, moneyLocale, adoptUiLocale } from "../lib/money"
 import { formatPhoneDisplay, formatPhoneTel } from "../lib/phone"
+import { qty, useT } from "../lib/i18n"
 
 const inr = (n: number) =>
   n.toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
+
+/**
+ * Render a "Arabic | English" seed string as a clean hierarchy — the current
+ * language's text prominent, the other language as a smaller muted line below —
+ * instead of the raw "AR | EN" both inline. The muted line carries
+ * `data-no-translate` so the live translator leaves the secondary language be.
+ */
+function Bilingual({
+  value,
+  as: Tag = "span",
+  className = "",
+  secondaryClassName = "text-zinc-400",
+  primaryOnly = false,
+}: {
+  value: string
+  as?: ElementType
+  className?: string
+  secondaryClassName?: string
+  primaryOnly?: boolean
+}) {
+  const { lang } = useT()
+  const parts = (value || "").split("|").map((s) => s.trim()).filter(Boolean)
+  const isAr = (s: string) => /[؀-ۿ]/.test(s)
+  const arPart = parts.find(isAr)
+  const enPart = parts.find((s) => !isAr(s))
+  const both = Boolean(arPart && enPart)
+  const primary = (lang === "ar" ? arPart ?? enPart : enPart ?? arPart) ?? ""
+  const secondary = primaryOnly || !both ? "" : (lang === "ar" ? enPart : arPart) ?? ""
+  return (
+    <>
+      <Tag className={className} dir="auto">
+        {primary}
+      </Tag>
+      {secondary && (
+        <span data-no-translate dir="auto" className={"block font-normal " + secondaryClassName}>
+          {secondary}
+        </span>
+      )}
+    </>
+  )
+}
 
 interface Showcase {
   property: {
@@ -552,12 +594,17 @@ export default function PublicBooking() {
             )}
             <span className="inline-flex items-center gap-1 text-white/80">
               <MapPin className="size-3.5" aria-hidden />
-              {p.city}, {p.state}
+              <span>
+                <Bilingual value={p.city} primaryOnly />, <Bilingual value={p.state} primaryOnly />
+              </span>
             </span>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            {p.property_name}
-          </h1>
+          <Bilingual
+            as="h1"
+            value={p.property_name}
+            className="text-3xl font-semibold tracking-tight sm:text-4xl"
+            secondaryClassName="mt-0.5 text-lg text-white/70 sm:text-xl"
+          />
           <div className="mt-3 flex items-center gap-1" aria-hidden>
             {Array.from({ length: 5 }).map((_, i) => (
               <Star key={i} className="size-4 fill-gold-400 text-gold-400" />
@@ -674,8 +721,7 @@ export default function PublicBooking() {
             </label>
           </div>
           <p className="mt-1.5 text-xs text-zinc-400">
-            {nightsBetween(search.check_in_date, search.check_out_date)} night
-            {nightsBetween(search.check_in_date, search.check_out_date) === 1 ? "" : "s"}
+            {qty(nightsBetween(search.check_in_date, search.check_out_date), "night")}
             {minNights > 1 ? ` · ${minNights}-night minimum` : ""}
           </p>
           <Button
@@ -694,13 +740,18 @@ export default function PublicBooking() {
         </div>
 
         {p.description && (
-          <p className="mb-4 max-w-3xl text-[15px] leading-relaxed text-zinc-600">
-            {p.description}
-          </p>
+          <div className="mb-4 max-w-3xl">
+            <Bilingual
+              as="p"
+              value={p.description}
+              className="text-[15px] leading-relaxed text-zinc-600"
+              secondaryClassName="mt-1 text-sm text-zinc-400"
+            />
+          </div>
         )}
         <div className="mb-10 flex flex-wrap gap-2">
           {p.amenities.map((a) => (
-            <Badge key={a} tone="zinc">{a}</Badge>
+            <Badge key={a} tone="zinc"><Bilingual value={a} primaryOnly /></Badge>
           ))}
           <Badge tone="brand">
             Check-in {p.checkin_time.slice(0, 5)} · Check-out {p.checkout_time.slice(0, 5)}
@@ -716,7 +767,7 @@ export default function PublicBooking() {
                   <img src={img.url} alt={img.caption || ""} className="size-full object-cover" />
                   {img.caption && (
                     <div className="absolute inset-x-0 bottom-0 bg-black/60 px-3 py-1 text-center text-xs text-white truncate">
-                      {img.caption}
+                      <Bilingual value={img.caption} primaryOnly />
                     </div>
                   )}
                 </div>
@@ -788,7 +839,7 @@ export default function PublicBooking() {
                           <span className="text-zinc-500"> / night</span>
                         </p>
                         <p className="text-sm font-medium text-brand-700">
-                          {count} listing{count === 1 ? "" : "s"} →
+                          {qty(count, "listing")} →
                         </p>
                       </div>
                     </div>
@@ -851,11 +902,16 @@ export default function PublicBooking() {
                     <div className="flex flex-col justify-between gap-3 p-5 sm:col-span-3">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-lg font-semibold text-zinc-900">
-                            {rt.room_type_name}
-                          </h3>
+                          <div>
+                            <Bilingual
+                              as="h3"
+                              value={rt.room_type_name}
+                              className="text-lg font-semibold text-zinc-900"
+                              secondaryClassName="text-xs text-zinc-400"
+                            />
+                          </div>
                           {rt.bed_type && <Badge tone="zinc">{rt.bed_type} bed</Badge>}
-                          {rt.room_view && <Badge tone="sky">{rt.room_view}</Badge>}
+                          {rt.room_view && <Badge tone="sky"><Bilingual value={rt.room_view} primaryOnly /></Badge>}
                         </div>
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
                           <span className="inline-flex items-center gap-1">
@@ -870,9 +926,12 @@ export default function PublicBooking() {
                           )}
                         </div>
                         {rt.description && (
-                          <p className="mt-2 line-clamp-2 text-sm text-zinc-500">
-                            {rt.description}
-                          </p>
+                          <Bilingual
+                            as="p"
+                            value={rt.description}
+                            primaryOnly
+                            className="mt-2 line-clamp-2 text-sm text-zinc-500"
+                          />
                         )}
                         {amenIcons.length > 0 && (
                           <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
@@ -887,7 +946,7 @@ export default function PublicBooking() {
                                     className="size-4 text-gold-600"
                                     aria-hidden
                                   />
-                                  {a}
+                                  <Bilingual value={a} primaryOnly />
                                 </li>
                               )
                             })}
@@ -907,8 +966,7 @@ export default function PublicBooking() {
                                 {cur()}
                                 {inr(r.quote.amount_after_tax)}
                                 <span className="ms-1 text-sm font-normal text-zinc-500">
-                                  total · {r.quote.nights} night
-                                  {r.quote.nights === 1 ? "" : "s"}, taxes in
+                                  total · {qty(r.quote.nights, "night")}, taxes in
                                 </span>
                               </p>
                               {r.rooms_left <= 2 && (
@@ -1010,9 +1068,12 @@ export default function PublicBooking() {
                           </span>
                         )}
                         <div className="min-w-0">
-                          <p className="truncate font-semibold text-zinc-900">
-                            {selRt.room_type_name}
-                          </p>
+                          <Bilingual
+                            as="p"
+                            value={selRt.room_type_name}
+                            className="truncate font-semibold text-zinc-900"
+                            secondaryClassName="truncate text-xs text-zinc-400"
+                          />
                           <p className="text-xs text-zinc-500">Taxes included</p>
                         </div>
                       </div>
@@ -1195,7 +1256,9 @@ export default function PublicBooking() {
                   )}
                   <p className="text-sm font-medium text-zinc-800 flex items-start gap-2">
                     <MapPin className="size-4 shrink-0 text-brand-600 mt-0.5" />
-                    {loc.address || `${p.city}, ${p.state}`}
+                    <span className="min-w-0">
+                      <Bilingual value={loc.address || `${p.city}, ${p.state}`} className="block" secondaryClassName="text-xs text-zinc-400" />
+                    </span>
                   </p>
                   {loc.google_maps_url && (
                     <a href={loc.google_maps_url} target="_blank" rel="noreferrer"
@@ -1229,15 +1292,22 @@ export default function PublicBooking() {
             <div className="space-y-3">
               {p.faqs.map((faq: any, i: number) => (
                 <details key={i} className="group rounded-xl border border-zinc-200 bg-white p-4 shadow-sm [&_summary::-webkit-details-marker]:hidden cursor-pointer">
-                  <summary className="flex items-center justify-between text-sm font-medium text-zinc-800 select-none">
-                    <span>{faq.question}</span>
-                    <span className="transition group-open:rotate-180">
+                  <summary className="flex items-center justify-between gap-3 text-sm font-medium text-zinc-800 select-none">
+                    <span className="min-w-0">
+                      <Bilingual value={faq.question} className="block" secondaryClassName="text-xs text-zinc-400" />
+                    </span>
+                    <span className="shrink-0 transition group-open:rotate-180">
                       <svg fill="none" height="24" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="24" className="size-4 text-zinc-500"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </span>
                   </summary>
-                  <p className="mt-3 text-xs leading-relaxed text-zinc-600 border-t border-zinc-100 pt-3">
-                    {faq.answer}
-                  </p>
+                  <div className="mt-3 border-t border-zinc-100 pt-3">
+                    <Bilingual
+                      as="p"
+                      value={faq.answer}
+                      className="text-xs leading-relaxed text-zinc-600"
+                      secondaryClassName="mt-1 text-xs text-zinc-400"
+                    />
+                  </div>
                 </details>
               ))}
             </div>

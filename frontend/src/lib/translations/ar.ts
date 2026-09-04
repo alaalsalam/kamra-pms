@@ -291,6 +291,7 @@ export const AR: Record<string, string> = {
   "for you - arrivals first": "المسندة إليك — الوصول أولاً",
   "No arrivals expected today.": "لا وصول متوقع اليوم.",
   "No departures due today.": "لا مغادرة مستحقة اليوم.",
+  "Choose your dates and see live availability instantly.": "اختر تواريخك وشاهد التوفر مباشرةً.",
   "Cancelled": "ملغى",
   "No show": "لم يحضر",
   "No-show": "عدم حضور",

@@ -253,6 +253,18 @@ Billing, HkApp (mobile), Revenue, Banquet, Settings. **No API/RBAC/backend/data 
   scroll on every authed screen). Added `flex-wrap` + a responsive `max-w`/`truncate` on the select
   (`lg:max-w-none` keeps it full on desktop). Also added an `onError` fallback to the POS menu card
   (defensive — swaps to the utensils icon if a menu photo URL fails). (`AppShell.tsx`, `screens/POS.tsx`)
+- **Public booking page — bilingual clutter → clean hierarchy** (design polish, `screens/PublicBooking.tsx`,
+  the product's marketing landing). Every "AR | EN" seed string rendered raw inline (hero title, the description
+  shown in *both* full languages, room names, amenity chips, gallery captions, FAQ Q&A, address). Added a
+  `<Bilingual>` helper that **script-detects** the Arabic vs Latin segment (order-agnostic — some seed fields are
+  "EN | AR") and shows the current language prominent + the other as a smaller muted line; the secondary carries
+  `data-no-translate` (the observer's skip hook) so it isn't re-translated, and language comes from `useT().lang`
+  so the on-page EN/ع toggle flips the hierarchy live. Chips / room+gallery descriptions show the primary language
+  only. Folded in: booking-widget subtitle → `ar.ts`, and two more `night{s}`/`listing{s}` plurals → `qty()`.
+  Verified live: 20 raw "AR | EN" body nodes → **0** (only the shared `PublicChrome` footer note remains); EN
+  toggle flips hierarchy; AR+EN, light+dark, desktop + mobile 390 all clean (no overflow / console errors /
+  broken images), FAQ opens. The Google-Maps `<iframe>` renders blank in headless only — left untouched (works
+  for real users).
 
 **Verification:** `tsc -b` clean; `npm run build` clean; live re-checks confirmed legible POS dark cards,
 "2 ليالٍ · 2 بالغون" (no stray s), Arabic empty states, "مهامي"/"مكتمل"; 0 console errors, no horizontal
@@ -264,8 +276,10 @@ audit, which can't be driven mid-session.)
 **Left for the product owner (content/policy, not UI polish — not changed here):**
 - The persistent demo banner says "data is restored every night", but the scheduled reset is a verified no-op
   on this site (`hotelpms_demo_mode` unset) → writes persist. Enable the reset or soften the copy.
-- Public pages render bilingual "AR | EN" seed strings raw (title/amenities/description) — a content-model
-  choice; consider one language per direction.
+- Bilingual "AR | EN" seed strings now render as a clean hierarchy (primary + muted secondary) on the **booking
+  page**; **dropping a language entirely (single-language display) remains an owner decision**. Still raw/one-
+  language: the shared `PublicChrome` footer note, English-only property policy text, and the other public
+  screens (PublicListing, PublicCheckin, QrMenu) — extend the `<Bilingual>` treatment there if wanted.
 - Demo guest names are largely Indian (Vikram/Sneha/Priya…), off-brand for a Saudi demo — a seed-data polish.
 - Full staff dashboards still overflow horizontally at phone widths (~390px), driven by wide data tables and
   multi-column content that don't collapse below `lg` (e.g. the Today in-house table). The sidebar already

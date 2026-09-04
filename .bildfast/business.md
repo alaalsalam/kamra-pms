@@ -233,3 +233,8 @@ that records both human and AI actions with a headline "minutes saved" metric.
   (Today/CRS/GuestJourney/PublicCheckin/Banquet/HkApp); filled visible Arabic catalogue gaps ("My Tasks",
   "Completed", empty states). No API/RBAC/backend/data change. Owner-decision items logged in project-memory
   §18 (demo-reset banner accuracy, bilingual seed strings, Saudi demo guest names).
+- **2026-09-04** — Public booking page (marketing landing) design polish: replaced raw bilingual "AR | EN"
+  clutter with a clean Arabic-first hierarchy (prominent primary + muted secondary; the EN/ع toggle flips it
+  live), translated the search-widget subtitle, and fixed residual night/listing plurals. Presentation only —
+  no availability/pricing/API/RBAC/data change; both languages preserved (single-language display remains an
+  owner call).
