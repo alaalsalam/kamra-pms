@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react"
 import { getCalendar, type CalendarData } from "../lib/api"
+import { serverError } from "../lib/resource"
+import { getLang } from "../lib/dir"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { cn } from "../lib/utils"
@@ -42,6 +44,14 @@ function rangeLabel(dates: string[]) {
   return `${fmt(f, f.getFullYear() !== l.getFullYear())} – ${fmt(l, true)}`
 }
 
+const isArabic = (s: string) => /[؀-ۿ]/.test(s)
+function primaryLabel(value: string) {
+  const parts = (value || "").split("|").map((s) => s.trim()).filter(Boolean)
+  const ar = parts.find(isArabic)
+  const en = parts.find((s) => !isArabic(s))
+  return (getLang() === "ar" ? ar ?? en : en ?? ar) ?? value
+}
+
 export function CalendarView(props: {
   onPick?: (roomType: string, date: string) => void
   refreshKey: number
@@ -49,28 +59,49 @@ export function CalendarView(props: {
   const [data, setData] = useState<CalendarData | null>(null)
   const [start, setStart] = useState(() => iso(new Date()))
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
+  const [rtFilter, setRtFilter] = useState("")
 
   useEffect(() => {
     setLoading(true)
+    setError(null)
     getCalendar(DAYS, start)
       .then(setData)
+      .catch((e) => setError(serverError(e)))
       .finally(() => setLoading(false))
-  }, [props.refreshKey, start])
+  }, [props.refreshKey, start, reloadKey])
 
   if (!data) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Availability</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2" aria-busy="true" aria-label="Loading availability">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-9 animate-pulse rounded-md bg-zinc-100" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-3">
+        <BoardNav />
+        <Card>
+          <CardHeader>
+            <CardTitle>Availability</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {error ? (
+              <div className="py-10 text-center">
+                <p className="text-sm font-medium text-rose-700">{error}</p>
+                <Button
+                  variant="outline"
+                  className="mt-3"
+                  onClick={() => setReloadKey((k) => k + 1)}
+                >
+                  Try again
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2" aria-busy="true" aria-label="Loading availability">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-9 animate-pulse rounded-md bg-zinc-100" />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
@@ -82,6 +113,10 @@ export function CalendarView(props: {
       weekend: d.getDay() === 0 || d.getDay() === 6,
     }
   }
+
+  const shownTypes = data.room_types.filter(
+    (rt) => !rtFilter || (rt.room_type_name || rt.room_type) === rtFilter,
+  )
 
   return (
     <div className="space-y-3">
@@ -97,7 +132,22 @@ export function CalendarView(props: {
             Click a cell to start a booking
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {data.room_types.length > 1 && (
+            <select
+              value={rtFilter}
+              onChange={(e) => setRtFilter(e.target.value)}
+              aria-label="Filter by room type"
+              className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm focus:outline-2 focus:outline-brand-600"
+            >
+              <option value="">All room types</option>
+              {data.room_types.map((rt) => (
+                <option key={rt.room_type} value={rt.room_type_name || rt.room_type}>
+                  {primaryLabel(rt.room_type_name || rt.room_type)}
+                </option>
+              ))}
+            </select>
+          )}
           <Button
             variant="outline"
             aria-label="Previous 14 days"
@@ -129,6 +179,14 @@ export function CalendarView(props: {
         </div>
       </CardHeader>
       <CardContent className={cn(loading && "opacity-60 transition-opacity")}>
+        {error && (
+          <div className="mb-3 flex items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            <span>{error}</span>
+            <button className="shrink-0 font-semibold underline" onClick={() => setReloadKey((k) => k + 1)}>
+              Retry
+            </button>
+          </div>
+        )}
         {data.room_types.length === 0 ? (
           <div className="py-12 text-center">
             <CalendarDays className="mx-auto mb-2 size-8 text-zinc-300" aria-hidden />
@@ -163,7 +221,7 @@ export function CalendarView(props: {
               </tr>
             </thead>
             <tbody>
-              {data.room_types.map((rt) => (
+              {shownTypes.map((rt) => (
                 <tr key={rt.room_type}>
                   <td className="sticky left-0 whitespace-nowrap bg-white py-1 pe-3 font-medium">
                     <Bilingual as="span" value={rt.room_type_name} primaryOnly />

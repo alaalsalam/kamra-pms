@@ -435,7 +435,14 @@ Tape→BookingDialog).**
   shared `ResourceScreen` loading state (③). Re-verified this pass (Hotel Admin): type column reads
   "غرفة نُزُل كلاسيك", 3 board tabs, rows open the edit drawer, HK-status filter present, no overflow, no
   regression — no new change needed.
-- **Remaining in the binding order:** ⑤ Calendar + ⑥ Tape already received deep passes this session (`e2d75a6`
-  locale-aware dates + colour legends + i18n; `2565d36` cell→booking + board-nav + floor/status filters) — a
-  further light pass (loading/empty polish) is optional follow-up. ⑦ BookingDialog stepped restructure stays
-  deferred (1244-line money path; presentation-only reorder + one create/cancel smoke test — see §21 deferred).
+- **⑤ Calendar** (`components/CalendarView.tsx`): on top of the earlier pass (locale dates, colour legend, i18n,
+  cell→booking, skeleton/empty), added a real **error state** — the load had no `.catch`, so a failed fetch stuck
+  the screen on the skeleton forever; now a failed initial load shows an error card with **Try again**, a failed
+  refetch shows an inline error banner + **Retry** over the stale grid, and recovery reloads cleanly. Also an
+  optional **room-type filter** (defaults to "All room types", primary-only labels, so the cross-type comparison
+  stays the default). Verified live (Hotel Admin): filter narrows to one type; a forced `availability_calendar`
+  failure surfaced the banner + Retry and recovering restored the grid; no overflow, 0 console errors. (Content
+  is role-neutral; Front Desk sees the same, BoardNav = Calendar+Tape.)
+- **Remaining:** ⑥ Tape already deep-passed (`e2d75a6` + `2565d36`) — a light loading/empty/error pass next. ⑦
+  BookingDialog stepped restructure stays deferred (1244-line money path; presentation-only reorder + one
+  create/cancel smoke test).

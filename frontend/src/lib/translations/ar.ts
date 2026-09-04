@@ -312,6 +312,8 @@ export const AR: Record<string, string> = {
   "Revenue reports →": "تقارير الإيرادات ←",
   "staying now": "مقيمون الآن",
   "All floors": "كل الطوابق",
+  "Try again": "حاول مرة أخرى",
+  "Retry": "إعادة المحاولة",
   "Filter by floor": "تصفية حسب الطابق",
   "Filter by status": "تصفية حسب الحالة",
   "Held / blocked": "محجوز / محظور",
