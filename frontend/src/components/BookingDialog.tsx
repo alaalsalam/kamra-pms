@@ -12,6 +12,7 @@ import {
   type Quote,
 } from "../lib/api"
 import { Button } from "./ui/button"
+import { cn } from "../lib/utils"
 import { cur, moneyLocale, taxLabel } from "../lib/money"
 
 interface ExtraRoom {
@@ -90,7 +91,11 @@ export function BookingDialog(props: {
     booked_by_phone: "",
     booker_relation: "",
     contact_preference: "Booker",
+    nationality: "",
+    id_type: "",
+    id_number: "",
   })
+  const [idOpen, setIdOpen] = useState(false)
   const [onBehalf, setOnBehalf] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [moreRooms, setMoreRooms] = useState<ExtraRoom[]>([])
@@ -257,6 +262,9 @@ export function BookingDialog(props: {
           meal_plan: form.meal_plan || undefined,
           voucher_code: form.voucher_code || undefined,
           company: form.company || undefined,
+          nationality: form.nationality.trim() || undefined,
+          id_type: form.id_type || undefined,
+          id_number: form.id_number.trim() || undefined,
           waitlist: 1,
         })
         setDone({ ref: res.reservation, room: null, waitlist: true })
@@ -318,6 +326,9 @@ export function BookingDialog(props: {
         meal_plan: form.meal_plan || undefined,
         voucher_code: form.voucher_code || undefined,
         company: form.company || undefined,
+        nationality: form.nationality.trim() || undefined,
+        id_type: form.id_type || undefined,
+        id_number: form.id_number.trim() || undefined,
         travel_agent: form.travel_agent || undefined,
         booking_type: form.company ? "Corporate" : undefined,
         booked_by_name: onBehalf ? form.booked_by_name || undefined : undefined,
@@ -364,6 +375,15 @@ export function BookingDialog(props: {
 
   const set = (k: string, v: string | number) =>
     setForm((f) => ({ ...f, [k]: v }))
+
+  // identity is optional at booking (required at check-in). Only validate the
+  // ID number's shape when one is actually typed — never block an empty field.
+  const idNumberBad =
+    !!form.id_number.trim() &&
+    !/^[A-Za-z0-9٠-٩\- ]{3,30}$/.test(form.id_number.trim())
+  const idError = idNumberBad
+    ? "Enter a valid ID number (3–30 letters or digits)."
+    : null
 
   const selectedRt = options?.room_types.find(
     (rt) => rt.name === form.room_type,
@@ -604,6 +624,76 @@ export function BookingDialog(props: {
                       placeholder="+966 5X XXX XXXX"
                     />
                   </Field>
+                </div>
+
+                <div className="rounded-xl border border-zinc-200 bg-zinc-50/40">
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-left text-sm font-medium text-zinc-700"
+                    onClick={() => setIdOpen((o) => !o)}
+                    aria-expanded={idOpen}
+                  >
+                    <span>
+                      Add ID &amp; nationality{" "}
+                      <span className="font-normal text-zinc-400">
+                        — optional, required at check-in
+                      </span>
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "size-4 shrink-0 text-zinc-400 transition-transform",
+                        idOpen && "rotate-180",
+                      )}
+                      aria-hidden
+                    />
+                  </button>
+                  {idOpen && (
+                    <div className="space-y-3 px-3.5 pb-3.5">
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <Field label="Nationality">
+                          <input
+                            className={inputCls}
+                            value={form.nationality}
+                            onChange={(e) => set("nationality", e.target.value)}
+                            placeholder="e.g. Saudi"
+                          />
+                        </Field>
+                        <Field label="ID type">
+                          <select
+                            className={inputCls}
+                            value={form.id_type}
+                            onChange={(e) => set("id_type", e.target.value)}
+                          >
+                            <option value="">—</option>
+                            <option value="Passport">Passport</option>
+                            <option value="Driving License">Driving License</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </Field>
+                        {form.id_type && (
+                          <Field label="ID number">
+                            <input
+                              className={cn(
+                                inputCls,
+                                idError &&
+                                  "outline-2 outline-offset-1 outline-rose-400",
+                              )}
+                              value={form.id_number}
+                              onChange={(e) => set("id_number", e.target.value)}
+                              placeholder="Document number"
+                              aria-invalid={!!idError}
+                            />
+                          </Field>
+                        )}
+                      </div>
+                      {idError && (
+                        <p className="text-xs font-medium text-rose-600">{idError}</p>
+                      )}
+                      <p className="text-xs text-zinc-400">
+                        Not required to book — captured now, it speeds up check-in.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <h3 className="-mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
@@ -1258,20 +1348,22 @@ export function BookingDialog(props: {
               <div className="shrink-0 space-y-2 border-t border-zinc-200 bg-white px-6 py-4 md:px-7">
                 <Button
                   className="w-full justify-center py-2.5 text-base"
-                  disabled={busy || !form.guest_name || !quote}
+                  disabled={busy || !form.guest_name || !quote || !!idError}
                   onClick={() => submit()}
                 >
                   {busy ? "Booking…" : "Confirm booking"}
                 </Button>
-                {!busy && (!form.guest_name || !quote) && (
+                {!busy && (!form.guest_name || !quote || idError) && (
                   <p className="text-center text-xs text-zinc-400">
                     {!form.guest_name
                       ? "Enter a guest name to continue"
-                      : quoting
-                        ? "Getting the latest price…"
-                        : error
-                          ? "Fix the issue above to continue"
-                          : "Enter stay details to see a price."}
+                      : idError
+                        ? "Check the highlighted ID field to continue"
+                        : quoting
+                          ? "Getting the latest price…"
+                          : error
+                            ? "Fix the issue above to continue"
+                            : "Enter stay details to see a price."}
                   </p>
                 )}
                 <div className="grid grid-cols-2 gap-2">

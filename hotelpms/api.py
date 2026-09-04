@@ -3144,19 +3144,47 @@ def get_quote(property: str, room_type: str, check_in_date: str,
 	             rate_plan or None, voucher_code or None)
 
 
-def _find_or_create_guest(guest_name: str, phone: str | None):
+def _find_or_create_guest(guest_name: str, phone: str | None,
+                          nationality: str | None = None,
+                          id_type: str | None = None,
+                          id_number: str | None = None):
 	if phone:
 		existing = frappe.db.get_value("Guest", {"phone": phone})
 		if existing:
 			return existing
 	parts = guest_name.strip().split(" ", 1)
-	guest = frappe.get_doc({
+	payload = {
 		"doctype": "Guest",
 		"first_name": parts[0],
 		"last_name": parts[1] if len(parts) > 1 else "",
 		"phone": phone,
-	}).insert(ignore_permissions=True)
+	}
+	# a brand-new profile takes the identity given at booking (overriding the
+	# doctype default nationality); an existing profile is never overwritten.
+	for field, val in (("nationality", nationality), ("id_type", id_type),
+	                   ("id_number", id_number)):
+		if (val or "").strip():
+			payload[field] = val.strip()
+	guest = frappe.get_doc(payload).insert(ignore_permissions=True)
 	return guest.name
+
+
+def _store_guest_identity(guest, nationality=None, id_type=None, id_number=None):
+	"""Fill blank identity fields on the guest profile from optional booking
+	input. Never overwrites an existing value (a typo at booking must not clobber
+	a verified profile); does not touch pricing or availability."""
+	provided = {}
+	for field, val in (("nationality", nationality), ("id_type", id_type),
+	                   ("id_number", id_number)):
+		val = (val or "").strip()
+		if val:
+			provided[field] = val
+	if not provided:
+		return
+	current = frappe.db.get_value("Guest", guest, list(provided), as_dict=True) or {}
+	updates = {f: v for f, v in provided.items() if not (current.get(f) or "").strip()}
+	if updates:
+		frappe.db.set_value("Guest", guest, updates)
 
 
 @frappe.whitelist()
@@ -3185,7 +3213,10 @@ def create_booking(property: str, room_type: str, check_in_date: str,
                    room: str | None = None,
                    status: str | None = None,
                    idempotency_key: str | None = None,
-                   hold_expires_on: str | None = None):
+                   hold_expires_on: str | None = None,
+                   nationality: str | None = None,
+                   id_type: str | None = None,
+                   id_number: str | None = None):
 	"""One-call booking: attach to an existing guest profile when given,
 	else dedup by phone / create one. Optional auto room assignment,
 	voucher applied, price computed by the engine.
@@ -3218,11 +3249,14 @@ def create_booking(property: str, room_type: str, check_in_date: str,
 		if not frappe.db.exists("Guest", guest):
 			frappe.throw(f"Guest profile {guest} not found.")
 	else:
-		guest = _find_or_create_guest(guest_name, phone)
+		guest = _find_or_create_guest(guest_name, phone,
+		                              nationality, id_type, id_number)
 	if guest_category:
 		frappe.db.set_value("Guest", guest, "guest_category", guest_category)
 		if guest_category == "VIP":
 			frappe.db.set_value("Guest", guest, "vip", 1)
+
+	_store_guest_identity(guest, nationality, id_type, id_number)
 
 	voucher = None
 	if voucher_code:

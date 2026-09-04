@@ -566,3 +566,24 @@ cancel). No `Authorized`/`Cancelled` status in this doctype → `Required`+uncol
 terminal state (no schema change / no migrate). **Tests:** site tests disabled (`allow_tests` unset — not enabled
 on the live demo); added pure-logic tests to `test_deposit_logic.py` (4 cases, pass) + a bench-console integration
 run of all 3 required cases (Required→released / collected→untouched / none→clean) — **all pass, no leftover data**.
+
+### ID / nationality at booking (user chose option b) — BookingDialog + create_booking
+Optional identity capture during booking; **required only at check-in** (unchanged), never blocks a public or
+internal booking when empty; no pricing/availability change.
+- **Backend** (`api.py`): `create_booking` accepts optional `nationality`/`id_type`/`id_number`. A **brand-new**
+  guest is created with them via `_find_or_create_guest(..., identity)` (overriding the doctype's `Indian`
+  nationality default — the original bug: fill-if-blank alone left it "Indian"); an **existing/attached** guest
+  is enriched **fill-if-blank** by `_store_guest_identity` (never clobbers a verified profile). `_find_or_create_guest`
+  got optional params (backward-compatible — the bulk-import + migrate callers pass only name+phone).
+- **Frontend** (`BookingDialog.tsx`): a collapsible "Add ID & nationality — optional, required at check-in"
+  subsection (nationality text, id_type select, id_number). **Logical show/hide**: the block is collapsed by
+  default and id_number appears only after id_type is chosen. **Validation**: id_number is shape-checked only
+  when typed (`^[A-Za-z0-9٠-٩\- ]{3,30}$`); a bad value shows an inline error, gates Confirm, and the disabled-
+  reason helper says "Check the highlighted ID field" — empty never blocks. Identity is sent on both the main
+  and waitlist `createBooking` payloads (not the group path). `createBooking` TS type + `ar.ts` updated.
+- **Verified live** (Hotel Admin, AR + EN): toggle + fields render, id_number hidden until id_type, bad ID →
+  error+helper+disabled → fixed → booking creates; bench-confirmed the guest stored `nationality='Saudi'`,
+  `id_type='Passport'`, `id_number` (live, through the restarted web worker); a booking with no identity still
+  succeeds; all test data deleted. (Fields are role-neutral → Front Desk parity; id_type options are a curated
+  subset Passport/Driving License/Other. **Follow-up:** Saudi National ID / Iqama would need a Guest `id_type`
+  Select option — a doctype change, deferred.)

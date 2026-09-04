@@ -368,6 +368,9 @@ export const createBooking = (
     waitlist?: number
     addons?: { experience: string; qty: number }[]
     guest_category?: string
+    nationality?: string
+    id_type?: string
+    id_number?: string
     stay_details?: Record<string, unknown>
     instructions?: { department: string; instruction: string }[]
   },
