@@ -532,3 +532,20 @@ no overflow._
   render correctly (e.g. Tape "Tape chart", dialog "Guest details"/"Stay & rate", English primaryLabel filter
   options). The only Arabic remaining in EN is **bilingual seed data** (property + room-type names stored as
   "AR \| EN") — by design, not a translation gap. Only console noise was a benign socket.io 400 (Frappe realtime).
+
+### Public booking page UX polish (`screens/PublicBooking.tsx`) — plan `0005` (approved)
+User was viewing `/book/…` and asked for best-UX/UI execution. Targeted refinement on the 1547-line
+conversion-critical guest page — **no redesign, no booking/pricing change, navy/gold identity kept.**
+- **Sticky mobile booking bar** — the stay-summary rail is desktop-only, so mobile guests had to scroll back
+  up to continue after picking a room. Added `fixed bottom-0 z-40 lg:hidden` bar (room + total + "Continue to
+  book") shown only when `selRt && selRes?.quote && !booking`, iOS safe-area padding, `pb-24 lg:pb-0` on the
+  container so it never hides the footer. Reuses the rail's exact expressions + `setBooking(selName)`.
+- **Location map** — the "Open in Google Maps" link was hidden whenever `google_maps_url` is null (true for the
+  demo property, though coords exist) → guests got a map with no escape hatch. Now the button always renders
+  from `google_maps_url ?? maps?q=<lat>,<lng>` and is styled as a proper brand button; embed made lazy + given a
+  bg container (the earlier "empty gray box" was just an unloaded lazy iframe — it renders fine).
+- **Bilingual policies/directions** — 5 bodies (house rules / pets / children / extra-bed / driving directions)
+  now render through `<Bilingual>` (AR-primary + muted-EN) instead of the raw "AR \| EN" pipe.
+- Verified live both viewports (390/1440) + AR/EN: bar shows/updates, Continue opens Sheet & bar hides (no
+  z-fight), desktop unaffected (bar `display:none`, rail intact), no overflow, **0 console errors**. Sheet was
+  opened + closed only — the public path creates real reservations, so no test booking was submitted.

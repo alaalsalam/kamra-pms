@@ -476,7 +476,10 @@ export default function PublicBooking() {
 
   return (
     <div
-      className="min-h-screen bg-zinc-50"
+      className={cn(
+        "min-h-screen bg-zinc-50",
+        selRt && selRes?.quote && !booking && "pb-24 lg:pb-0",
+      )}
       style={accentVars(data?.property.brand_accent)}
     >
       <PublicHeader
@@ -1165,25 +1168,25 @@ export default function PublicBooking() {
               {p.house_rules && (
                 <div>
                   <span className="block font-semibold text-zinc-700 mb-1">House Rules</span>
-                  <p className="text-zinc-600 text-xs leading-relaxed whitespace-pre-line">{p.house_rules}</p>
+                  <Bilingual as="p" value={p.house_rules} className="text-zinc-600 text-xs leading-relaxed whitespace-pre-line" secondaryClassName="mt-1 whitespace-pre-line text-zinc-400" />
                 </div>
               )}
               {p.pets_policy && (
                 <div>
                   <span className="block font-semibold text-zinc-700 mb-1">Pets Policy</span>
-                  <p className="text-zinc-600 text-xs leading-relaxed whitespace-pre-line">{p.pets_policy}</p>
+                  <Bilingual as="p" value={p.pets_policy} className="text-zinc-600 text-xs leading-relaxed whitespace-pre-line" secondaryClassName="mt-1 whitespace-pre-line text-zinc-400" />
                 </div>
               )}
               {p.children_policy && (
                 <div>
                   <span className="block font-semibold text-zinc-700 mb-1">Children & Extra Beds</span>
-                  <p className="text-zinc-600 text-xs leading-relaxed whitespace-pre-line">{p.children_policy}</p>
+                  <Bilingual as="p" value={p.children_policy} className="text-zinc-600 text-xs leading-relaxed whitespace-pre-line" secondaryClassName="mt-1 whitespace-pre-line text-zinc-400" />
                 </div>
               )}
               {p.extra_bed_policy && (
                 <div>
                   <span className="block font-semibold text-zinc-700 mb-1">Extra Bed Policy</span>
-                  <p className="text-zinc-600 text-xs leading-relaxed whitespace-pre-line">{p.extra_bed_policy}</p>
+                  <Bilingual as="p" value={p.extra_bed_policy} className="text-zinc-600 text-xs leading-relaxed whitespace-pre-line" secondaryClassName="mt-1 whitespace-pre-line text-zinc-400" />
                 </div>
               )}
             </div>
@@ -1202,13 +1205,17 @@ export default function PublicBooking() {
                     <p className="text-sm font-semibold text-zinc-800">{loc.name}</p>
                   )}
                   {loc.latitude && loc.longitude ? (
-                    <iframe
-                      title={`${loc.name} map`}
-                      width="100%"
-                      height="220"
-                      src={`https://maps.google.com/maps?q=${loc.latitude},${loc.longitude}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                      className="rounded-lg border border-zinc-200 shadow-inner"
-                    />
+                    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 shadow-inner">
+                      <iframe
+                        title={`${loc.name} map`}
+                        width="100%"
+                        height="220"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src={`https://maps.google.com/maps?q=${loc.latitude},${loc.longitude}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                        className="block w-full"
+                      />
+                    </div>
                   ) : (
                     <div className="flex h-40 items-center justify-center bg-zinc-50 rounded-lg border border-zinc-200">
                       <span className="text-sm text-zinc-400">Map location not set</span>
@@ -1220,10 +1227,16 @@ export default function PublicBooking() {
                       <Bilingual value={loc.address || `${p.city}, ${p.state}`} className="block" secondaryClassName="text-xs text-zinc-400" />
                     </span>
                   </p>
-                  {loc.google_maps_url && (
-                    <a href={loc.google_maps_url} target="_blank" rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline">
-                      Open in Google Maps <ExternalLink className="size-3" />
+                  {(loc.google_maps_url || (loc.latitude && loc.longitude)) && (
+                    <a
+                      href={loc.google_maps_url || `https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-100"
+                    >
+                      <MapPin className="size-4" aria-hidden />
+                      Open in Google Maps
+                      <ExternalLink className="size-3.5" aria-hidden />
                     </a>
                   )}
                   {locations.length > 1 && loc.room_types.length > 0 && (
@@ -1237,7 +1250,7 @@ export default function PublicBooking() {
                   {locations.length <= 1 && p.driving_directions && (
                     <div className="text-xs text-zinc-600 border-t border-zinc-100 pt-3">
                       <span className="block font-semibold text-zinc-700 mb-1">Driving Directions</span>
-                      <p className="leading-relaxed whitespace-pre-line">{p.driving_directions}</p>
+                      <Bilingual as="p" value={p.driving_directions} className="leading-relaxed whitespace-pre-line" secondaryClassName="mt-1 whitespace-pre-line text-zinc-400" />
                     </div>
                   )}
                 </div>
@@ -1297,6 +1310,38 @@ export default function PublicBooking() {
       </div>
 
       <PublicFooter note={`${p.property_name} · ${p.city}, ${p.state} — book direct for the best available rate.`} />
+
+      {/* mobile booking bar — keeps the selected total + CTA in reach without
+          scrolling back to the summary rail (which is desktop-only). */}
+      {selRt && selRes?.quote && !booking && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-6px_24px_rgba(8,43,92,0.14)] backdrop-blur animate-fade-in lg:hidden">
+          <div className="mx-auto flex max-w-6xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <Bilingual
+                as="p"
+                value={selRt.room_type_name}
+                primaryOnly
+                className="truncate text-sm font-semibold text-zinc-900"
+              />
+              <p className="text-xs text-zinc-500">
+                {qty(nights, "night")} ·{" "}
+                <span className="font-bold text-gold">
+                  {cur()}
+                  {inr(selRes.quote.amount_after_tax)}
+                </span>{" "}
+                <span className="text-zinc-400">Total</span>
+              </p>
+            </div>
+            <Button
+              variant="gold"
+              className="shrink-0 px-5 py-2.5 text-base"
+              onClick={() => selName && setBooking(selName)}
+            >
+              Continue to book
+            </Button>
+          </div>
+        </div>
+      )}
 
       {booking && (
         <Sheet
