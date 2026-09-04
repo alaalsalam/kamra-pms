@@ -604,6 +604,9 @@ internal booking when empty; no pricing/availability change.
 - **Verified live** (Hotel Admin, AR + EN): toggle + fields render, id_number hidden until id_type, bad ID →
   error+helper+disabled → fixed → booking creates; bench-confirmed the guest stored `nationality='Saudi'`,
   `id_type='Passport'`, `id_number` (live, through the restarted web worker); a booking with no identity still
-  succeeds; all test data deleted. (Fields are role-neutral → Front Desk parity; id_type options are a curated
+  succeeds; the **waitlist path** also stores identity (bench-verified: status=Waitlist + Saudi/Passport/id); all
+  test data deleted. **Design choice:** an existing/attached guest is enriched **fill-if-blank** — booking-time
+  input never overwrites a set field (a passport "correction" at booking won't take; edit the profile instead).
+  (Fields are role-neutral → Front Desk parity; id_type options are a curated
   subset Passport/Driving License/Other. **Follow-up:** Saudi National ID / Iqama would need a Guest `id_type`
   Select option — a doctype change, deferred.)
