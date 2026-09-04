@@ -17,7 +17,7 @@ export const roomsConfig: ScreenConfig = {
   orderBy: "room_number asc",
   columns: [
     { field: "room_number", label: "Room" },
-    { field: "room_type", label: "Type" },
+    { field: "room_type", label: "Type", lookup: { doctype: "Room Type", labelField: "room_type_name" } },
     { field: "floor", label: "Floor" },
     { field: "housekeeping_status", label: "Housekeeping", badge: true },
     { field: "occupancy_status", label: "Occupancy", badge: true },

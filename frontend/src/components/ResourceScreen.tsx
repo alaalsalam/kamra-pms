@@ -21,7 +21,9 @@ import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import ImageField from "./ImageField"
+import { Bilingual } from "./Bilingual"
 import { moneyLocale } from "../lib/money"
+import { useSearchParams } from "react-router-dom"
 
 export interface FieldSpec {
   field: string
@@ -38,7 +40,13 @@ export interface ScreenConfig {
   doctype: string
   title: string
   description?: string
-  columns: { field: string; label: string; badge?: boolean }[]
+  columns: {
+    field: string
+    label: string
+    badge?: boolean
+    /** Resolve a Link-ID column to a readable label from `doctype`.`labelField`. */
+    lookup?: { doctype: string; labelField: string }
+  }[]
   form: FieldSpec[]
   propertyScoped?: boolean
   allowCreate?: boolean
@@ -214,6 +222,8 @@ export function ResourceScreen({
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
   const [page, setPage] = useState(0)
+  const [lookupMaps, setLookupMaps] = useState<Record<string, Record<string, string>>>({})
+  const [searchParams] = useSearchParams()
 
   const pageSize = config.pageSize ?? 0
 
@@ -226,6 +236,47 @@ export function ResourceScreen({
     const t = setTimeout(() => setDebounced(search.trim()), 300)
     return () => clearTimeout(t)
   }, [search])
+
+  // seed filters from the URL once on mount, e.g. /rooms?housekeeping_status=Dirty
+  // (deep-links from the dashboard). One-way read; no state→URL syncing.
+  useEffect(() => {
+    const seed: Record<string, string> = {}
+    config.filters?.forEach((f) => {
+      const v = searchParams.get(f.field)
+      if (v) seed[f.field] = v
+    })
+    if (Object.keys(seed).length) setFilterVals((prev) => ({ ...prev, ...seed }))
+    const q = searchParams.get("q")
+    if (q) setSearch(q)
+    const from = searchParams.get("from")
+    const to = searchParams.get("to")
+    if (from) setDateFrom(from)
+    if (to) setDateTo(to)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // resolve Link-ID columns to their readable label once per screen
+  useEffect(() => {
+    config.columns
+      .filter((c) => c.lookup)
+      .forEach((c) => {
+        listResource(c.lookup!.doctype, {
+          fields: ["name", c.lookup!.labelField],
+          limit: 500,
+          orderBy: "name asc",
+        })
+          .then((r) =>
+            setLookupMaps((prev) => ({
+              ...prev,
+              [c.field]: Object.fromEntries(
+                r.map((x) => [x.name, String(x[c.lookup!.labelField] ?? x.name)]),
+              ),
+            })),
+          )
+          .catch(() => {})
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.doctype])
 
   // any search/filter change resets to the first page
   useEffect(() => setPage(0), [debounced, filterVals, dateFrom, dateTo])
@@ -290,7 +341,13 @@ export function ResourceScreen({
     }
     const csv = [
       cols.map((c) => esc(c.label)).join(","),
-      ...all.map((r) => cols.map((c) => esc(r[c.field])).join(",")),
+      ...all.map((r) =>
+        cols
+          .map((c) =>
+            esc(c.lookup ? lookupMaps[c.field]?.[String(r[c.field])] ?? r[c.field] : r[c.field]),
+          )
+          .join(","),
+      ),
     ].join("\n")
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" })
     const a = document.createElement("a")
@@ -540,6 +597,14 @@ export function ResourceScreen({
                         >
                           {String(row[c.field])}
                         </Badge>
+                      ) : c.lookup ? (
+                        <Bilingual
+                          value={
+                            lookupMaps[c.field]?.[String(row[c.field])] ??
+                            String(row[c.field] ?? "")
+                          }
+                          primaryOnly
+                        />
                       ) : (
                         cellValue(row[c.field])
                       )}
