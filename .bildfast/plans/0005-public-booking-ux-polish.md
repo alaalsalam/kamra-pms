@@ -32,3 +32,7 @@ Done + built + verified live on **both viewports (390 / 1440) and both languages
   lines); no raw pipe left in that section. No new `ar.ts` keys needed (all strings pre-existing).
 - No pricing/quote/booking-flow change; the public path creates real reservations so the create was **not**
   submitted during verification (Sheet opened + closed only).
+- Extra verification: bar **updates** when a different room card is picked (Deluxe → ر.س ٢٬١٨٥); policies +
+  directions render both AR+EN with **no raw pipe and no content loss** (confirmed no policy seed has >1 pipe, so
+  `Bilingual`'s first-AR/first-Latin split drops nothing); and the page works **logged-out (Guest)** — room cards,
+  sticky bar, and map button all render for the real guest audience.
