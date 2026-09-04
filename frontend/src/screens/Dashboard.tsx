@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 import { useRealtime } from "../lib/realtime"
 import {
-  BedDouble, LogIn, Users, IndianRupee, Wallet, Building2, Brush, Receipt,
-  PieChart, TrendingUp, BarChart3,
+  BedDouble, LogIn, LogOut, Users, SaudiRiyal, Wallet, Building2, Brush, Receipt,
+  PieChart,
 } from "lucide-react"
 import { call, getCurrentProperty } from "../lib/api"
 import { serverError } from "../lib/resource"
+import { useAuth } from "../lib/auth"
+import { useEnabledModules } from "../lib/modules"
+import { canAccessPath } from "../lib/apps"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { StatCard } from "../components/ui/stat-card"
 import { cur, moneyLocale } from "../lib/money"
@@ -72,12 +76,13 @@ interface Portfolio {
   }[]
 }
 
-function Tile({ icon: Icon, label, value, sub, tone }: {
+function Tile({ icon: Icon, label, value, sub, tone, to }: {
   icon: React.ComponentType<{ className?: string }>
   label: string
   value: string
   sub?: string
   tone?: string
+  to?: string
 }) {
   return (
     <StatCard
@@ -86,6 +91,7 @@ function Tile({ icon: Icon, label, value, sub, tone }: {
       value={value}
       sub={sub}
       accent={tone === "text-brand-600"}
+      to={to}
     />
   )
 }
@@ -96,6 +102,12 @@ export default function Dashboard() {
   const [prop, setProp] = useState<PropDash | null>(null)
   const [port, setPort] = useState<Portfolio | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { roles } = useAuth()
+  const modules = useEnabledModules()
+  // A KPI links to its screen only when the user's role AND the property's
+  // enabled modules allow it; otherwise the tile stays a plain, unlinked card.
+  const linkTo = (path: string, query = "") =>
+    canAccessPath(path, roles, modules) ? path + query : undefined
 
   useEffect(() => {
     call<{ name: string }[]>("hotelpms.api.my_properties")
@@ -156,21 +168,31 @@ export default function Dashboard() {
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <Tile icon={PieChart} label="Occupancy" value={`${prop.occupancy_pct}%`}
-              sub={`${prop.total_rooms} rooms`} tone="text-brand-600" />
-            <Tile icon={TrendingUp} label="ADR" value={`${cur()}${inr(prop.statistics.adr)}`}
-              sub="month to date" />
-            <Tile icon={BarChart3} label="RevPAR" value={`${cur()}${inr(prop.statistics.revpar)}`}
-              sub="month to date" />
-            <Tile icon={IndianRupee} label="Revenue" value={`${cur()}${inr(prop.revenue_today)}`}
-              sub="today" />
+              sub={`${prop.total_rooms} rooms`} tone="text-brand-600" to={linkTo("/tape")} />
+            <Tile icon={LogIn} label="Arrivals" value={String(prop.arrivals)}
+              sub="today" to={linkTo("/")} />
+            <Tile icon={LogOut} label="Departures" value={String(prop.departures)}
+              sub="today" to={linkTo("/")} />
+            <Tile icon={Users} label="In-house" value={String(prop.in_house)}
+              sub="staying now" to={linkTo("/")} />
+            <Tile icon={SaudiRiyal} label="Revenue" value={`${cur()}${inr(prop.revenue_today)}`}
+              sub="today" to={linkTo("/revenue-reports")} />
             <Tile icon={Wallet} label="Collections" value={`${cur()}${inr(prop.collections_today)}`}
-              sub="today" />
-            <Tile icon={Receipt} label="Outstanding" value={`${cur()}${inr(prop.finance.outstanding)}`}
-              sub="receivable" />
+              sub="today" to={linkTo("/billing")} />
           </div>
 
           <Card>
-            <CardHeader><CardTitle>Statistics (month to date)</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Statistics (month to date)</CardTitle>
+              {linkTo("/revenue-reports") && (
+                <Link
+                  to="/revenue-reports"
+                  className="rounded text-xs font-medium text-brand-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600"
+                >
+                  Revenue reports →
+                </Link>
+              )}
+            </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
                 {[
@@ -193,20 +215,20 @@ export default function Dashboard() {
             <Card>
               <CardHeader><CardTitle className="flex items-center gap-1.5"><Brush className="size-4 text-brand-600" />Housekeeping</CardTitle></CardHeader>
               <CardContent className="space-y-1.5 text-sm">
-                <Row label="Clean" value={prop.housekeeping.room_status.Clean ?? 0} />
-                <Row label="Dirty" value={prop.housekeeping.room_status.Dirty ?? 0} tone={prop.housekeeping.room_status.Dirty ? "text-amber-600" : undefined} />
-                <Row label="Inspected" value={prop.housekeeping.room_status.Inspected ?? 0} />
-                <Row label="Out of order" value={prop.housekeeping.room_status["Out of Order"] ?? 0} />
-                <Row label="Open tasks" value={prop.housekeeping.open_tasks} />
-                <Row label="Overdue" value={prop.housekeeping.overdue_tasks} tone={prop.housekeeping.overdue_tasks ? "text-rose-600" : undefined} />
+                <Row label="Clean" value={prop.housekeeping.room_status.Clean ?? 0} to={linkTo("/rooms", "?housekeeping_status=Clean")} />
+                <Row label="Dirty" value={prop.housekeeping.room_status.Dirty ?? 0} tone={prop.housekeeping.room_status.Dirty ? "text-amber-600" : undefined} to={linkTo("/rooms", "?housekeeping_status=Dirty")} />
+                <Row label="Inspected" value={prop.housekeeping.room_status.Inspected ?? 0} to={linkTo("/rooms", "?housekeeping_status=Inspected")} />
+                <Row label="Out of order" value={prop.housekeeping.room_status["Out of Order"] ?? 0} to={linkTo("/rooms", "?housekeeping_status=Out%20of%20Order")} />
+                <Row label="Open tasks" value={prop.housekeeping.open_tasks} to={linkTo("/housekeeping", "?status=Open")} />
+                <Row label="Overdue" value={prop.housekeeping.overdue_tasks} tone={prop.housekeeping.overdue_tasks ? "text-rose-600" : undefined} to={linkTo("/housekeeping")} />
               </CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle className="flex items-center gap-1.5"><Receipt className="size-4 text-brand-600" />Finance</CardTitle></CardHeader>
               <CardContent className="space-y-1.5 text-sm">
-                <Row label="Collected today" value={`${cur()}${inr(prop.finance.collections_today)}`} />
-                <Row label="Outstanding" value={`${cur()}${inr(prop.finance.outstanding)}`} tone={prop.finance.outstanding ? "text-amber-600" : undefined} />
-                <Row label="Open folios" value={prop.finance.open_folios} />
+                <Row label="Collected today" value={`${cur()}${inr(prop.finance.collections_today)}`} to={linkTo("/billing")} />
+                <Row label="Outstanding" value={`${cur()}${inr(prop.finance.outstanding)}`} tone={prop.finance.outstanding ? "text-amber-600" : undefined} to={linkTo("/billing")} />
+                <Row label="Open folios" value={prop.finance.open_folios} to={linkTo("/billing")} />
               </CardContent>
             </Card>
           </div>
@@ -218,11 +240,11 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <Tile icon={Building2} label="Properties" value={String(port.totals.properties)}
               sub={`${port.totals.total_rooms} rooms`} />
-            <Tile icon={BedDouble} label="Occupancy" value={`${port.totals.occupancy_pct}%`} tone="text-brand-600" />
-            <Tile icon={LogIn} label="Arrivals" value={String(port.totals.arrivals)} />
-            <Tile icon={Users} label="In house" value={String(port.totals.in_house)} />
-            <Tile icon={IndianRupee} label="Revenue" value={`${cur()}${inr(port.totals.revenue_today)}`} sub="today" />
-            <Tile icon={Wallet} label="Collections" value={`${cur()}${inr(port.totals.collections_today)}`} sub="today" />
+            <Tile icon={BedDouble} label="Occupancy" value={`${port.totals.occupancy_pct}%`} tone="text-brand-600" to={linkTo("/tape")} />
+            <Tile icon={LogIn} label="Arrivals" value={String(port.totals.arrivals)} to={linkTo("/")} />
+            <Tile icon={Users} label="In house" value={String(port.totals.in_house)} to={linkTo("/")} />
+            <Tile icon={SaudiRiyal} label="Revenue" value={`${cur()}${inr(port.totals.revenue_today)}`} sub="today" to={linkTo("/revenue-reports")} />
+            <Tile icon={Wallet} label="Collections" value={`${cur()}${inr(port.totals.collections_today)}`} sub="today" to={linkTo("/billing")} />
           </div>
 
           <Card>
@@ -266,11 +288,21 @@ export default function Dashboard() {
   )
 }
 
-function Row({ label, value, tone }: { label: string; value: unknown; tone?: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-zinc-500">{label}</span>
+function Row({ label, value, tone, to }: { label: string; value: unknown; tone?: string; to?: string }) {
+  const inner = (
+    <>
+      <span className="text-zinc-500 group-hover:text-zinc-700">{label}</span>
       <span className={`font-semibold tabular-nums ${tone ?? "text-zinc-800"}`}>{String(value)}</span>
-    </div>
+    </>
   )
+  if (to)
+    return (
+      <Link
+        to={to}
+        className="group -mx-2 flex items-center justify-between rounded-md px-2 py-1 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600"
+      >
+        {inner}
+      </Link>
+    )
+  return <div className="flex items-center justify-between">{inner}</div>
 }

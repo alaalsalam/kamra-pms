@@ -309,6 +309,8 @@ export const AR: Record<string, string> = {
   "Availability": "التوفر",
   "Limited": "محدود",
   "Colour key": "مفتاح الألوان",
+  "Revenue reports →": "تقارير الإيرادات ←",
+  "staying now": "مقيمون الآن",
   "Held / blocked": "محجوز / محظور",
   "Needs cleaning": "بحاجة للتنظيف",
   "Position": "الإشغال",

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { Link } from "react-router-dom"
 import { ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { cn } from "../../lib/utils"
 import { Sparkline } from "./sparkline"
@@ -20,6 +21,8 @@ export function StatCard({
   sub,
   accent,
   className,
+  to,
+  onClick,
 }: {
   icon: ReactNode
   label: string
@@ -32,15 +35,20 @@ export function StatCard({
   sub?: ReactNode
   accent?: boolean
   className?: string
+  /** Make the whole card a link to this route (keyboard + focus for free). */
+  to?: string
+  onClick?: () => void
 }) {
   const down = delta?.dir === "down"
-  return (
-    <div
-      className={cn(
-        "flex min-w-0 flex-col rounded-xl border border-zinc-200 bg-white p-4",
-        className,
-      )}
-    >
+  const interactive = Boolean(to || onClick)
+  const cls = cn(
+    "group flex min-w-0 flex-col rounded-xl border border-zinc-200 bg-white p-4 text-start",
+    interactive &&
+      "cursor-pointer transition hover:border-brand-300 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
+    className,
+  )
+  const body = (
+    <>
       <div className="flex items-center gap-2">
         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
           {icon}
@@ -48,6 +56,12 @@ export function StatCard({
         <span className="truncate text-[13px] font-medium text-zinc-500">
           {label}
         </span>
+        {interactive && (
+          <ArrowUpRight
+            className="ms-auto size-3.5 shrink-0 text-zinc-300 transition group-hover:text-brand-600"
+            aria-hidden
+          />
+        )}
       </div>
       <div className="mt-2.5 flex items-end justify-between gap-2">
         <div className="min-w-0">
@@ -99,6 +113,9 @@ export function StatCard({
           <span className="text-zinc-500">{delta.value}</span>
         </div>
       ) : null}
-    </div>
+    </>
   )
+  if (to) return <Link to={to} className={cls}>{body}</Link>
+  if (onClick) return <button type="button" onClick={onClick} className={cls}>{body}</button>
+  return <div className={cls}>{body}</div>
 }
