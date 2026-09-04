@@ -416,3 +416,10 @@ Tape→BookingDialog).**
   still sees zero Revenue/Billing/Rooms/Housekeeping links, a portfolio click switched Riyadh→Olaya and reloaded,
   no overflow, 0 app console errors (only the benign socket.io realtime warning); `auth-isolation` e2e still
   passes; `tsc` + `bench build` clean.
+- **② Today** (`screens/Today.tsx`): fixed the header date to follow the UI language (`dateLocale`, was
+  browser-default), and made all six KPIs actionable — Arrivals/Departures/In-house **scroll to their on-page
+  detail section** (anchor ids + `scroll-mt`), Occupancy→`/tape`, Revenue→`/revenue-reports`,
+  Open tasks→`/housekeeping?status=Open` — the last three gated by `canAccessPath`. Verified: **Front Desk**
+  sees Occupancy + the three scroll KPIs actionable and Revenue/Open-tasks static (gated); **Hotel Admin** sees
+  Revenue + Open-tasks as links too. Arabic date, 0 console errors, no overflow. (Note: on the short demo page
+  all sections fit the viewport so the scroll is small; it scales on a busy day.)

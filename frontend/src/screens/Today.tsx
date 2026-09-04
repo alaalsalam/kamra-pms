@@ -35,7 +35,10 @@ import type { ShellContext } from "../AppShell"
 import CheckInDialog from "../components/CheckInDialog"
 import { serverError } from "../lib/resource"
 import { toFullPath } from "../lib/routing"
-import { cur, moneyLocale } from "../lib/money"
+import { cur, moneyLocale, dateLocale } from "../lib/money"
+import { useAuth } from "../lib/auth"
+import { useEnabledModules } from "../lib/modules"
+import { canAccessPath } from "../lib/apps"
 
 const HK_CYCLE: RoomRow["housekeeping_status"][] = [
   "Dirty",
@@ -265,6 +268,13 @@ function InHouseTable({
 export default function Today() {
   const { refreshKey } = useOutletContext<ShellContext>()
   const navigate = useNavigate()
+  const { roles } = useAuth()
+  const modules = useEnabledModules()
+  // A KPI links to its screen only when the role + enabled modules allow it.
+  const linkTo = (path: string, query = "") =>
+    canAccessPath(path, roles, modules) ? path + query : undefined
+  const scrollTo = (id: string) => () =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })
   const [snap, setSnap] = useState<Snapshot | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [kpi, setKpi] = useState<any>(null)
@@ -382,7 +392,7 @@ export default function Today() {
   const greeting =
     hh < 12 ? "Good morning" : hh < 17 ? "Good afternoon" : "Good evening"
   const prettyDate = snap?.date
-    ? new Date(snap.date + "T00:00:00").toLocaleDateString(undefined, {
+    ? new Date(snap.date + "T00:00:00").toLocaleDateString(dateLocale(), {
         weekday: "short",
         day: "numeric",
         month: "short",
@@ -418,6 +428,7 @@ export default function Today() {
           label="Arrivals"
           value={arrivalsN}
           spark={mkTrend(arrivalsN)}
+          onClick={scrollTo("today-arrivals")}
         />
         <StatCard
           icon={<LogOut className="size-4" />}
@@ -425,12 +436,14 @@ export default function Today() {
           value={departuresN}
           spark={mkTrend(departuresN, false)}
           sparkColor="var(--color-amber-600)"
+          onClick={scrollTo("today-departures")}
         />
         <StatCard
           icon={<Users className="size-4" />}
           label="In-house"
           value={inhouseN}
           spark={mkTrend(inhouseN)}
+          onClick={scrollTo("today-inhouse")}
         />
         <StatCard
           icon={<PieChart className="size-4" />}
@@ -438,6 +451,7 @@ export default function Today() {
           value={`${occupancyPct}%`}
           progress={occupancyPct}
           progressLabel={`${occupied ?? 0} of ${roomsN} rooms`}
+          to={linkTo("/tape")}
         />
         <StatCard
           icon={<Wallet className="size-4" />}
@@ -445,18 +459,20 @@ export default function Today() {
           value={`${cur()}${inr0(revenue)}`}
           sub={`RevPAR ${cur()}${inr0(revpar)}`}
           spark={mkTrend(revenue)}
+          to={linkTo("/revenue-reports")}
         />
         <StatCard
           icon={<ListChecks className="size-4" />}
           label="Open tasks"
           value={tasksN}
           sub={overdueN ? `${overdueN} overdue` : undefined}
+          to={linkTo("/housekeeping", "?status=Open")}
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="space-y-4 lg:col-span-2">
-          <Card>
+          <Card id="today-arrivals" className="scroll-mt-20">
             <CardHeader>
               <CardTitle>Arrivals</CardTitle>
               <LogIn className="size-4 text-zinc-400" aria-hidden />
@@ -477,7 +493,7 @@ export default function Today() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="today-departures" className="scroll-mt-20">
             <CardHeader>
               <CardTitle>Departures</CardTitle>
               <LogOut className="size-4 text-zinc-400" aria-hidden />
@@ -554,7 +570,7 @@ export default function Today() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="today-inhouse" className="scroll-mt-20">
             <CardHeader>
               <CardTitle>In-house guests</CardTitle>
               <span className="text-xs text-zinc-400">{inhouseN} staying</span>
