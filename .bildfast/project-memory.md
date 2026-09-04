@@ -486,6 +486,18 @@ Tape→BookingDialog).**
     above the scheduled reset is a verified no-op → writes persist, so cleanup was done by hand rather than
     relied on.
 
+### Post-parts review — Guests + Room Types (per "review only if no critical errors")
+No critical errors after Parts 1–5 (`auth-isolation` e2e green; 0 code console errors). Reviewed both:
+- **Guests** (`Guests.tsx`): healthy — last round's loading/error/pagination/dateLocale/keyboard-a11y all intact
+  (13 rows, `role=button`/`tabIndex`, "٤ سبتمبر ٢٠٢٦" dates, no overflow). No change needed. (Not a ResourceScreen,
+  so unaffected by the ResourceScreen URL/write-back changes.)
+- **Room Types** (`roomTypesConfig`): loaded fine (no ResourceScreen regression), but the **Name column showed the
+  raw "AR \| English" pipe** → FIXED by adding a reusable `bilingual?: boolean` column flag to ResourceScreen
+  (renders via `<Bilingual primaryOnly>`, same as `lookup`) and setting it on the Name column; now shows "غرفة
+  نُزُل كلاسيك". *Minor finding (recorded, not fixed):* a few column headers are English (`Base …/night`,
+  `Extra adult …`, `VAT %`) because they interpolate `cur()`/`taxLabel()` — cleaner i18n would need splitting the
+  static label from the interpolated unit.
+
 ### Connected secondary screens — read-only audit (proposed improvements, NOT applied)
 _After ⑦, per the page-by-page brief: audit only the booking-connected screens (Rooms / Housekeeping / Guests)
 and record a list — no fixes, no expansion. Live-checked as Hotel Admin; all three load with 0 console errors,

@@ -42,7 +42,7 @@ export const roomTypesConfig: ScreenConfig = {
   propertyScoped: true,
   orderBy: "base_price asc",
   columns: [
-    { field: "room_type_name", label: "Name" },
+    { field: "room_type_name", label: "Name", bilingual: true },
     { field: "room_type_code", label: "Code", badge: true },
     { field: "room_category", label: "Category" },
     { field: "base_price", label: `Base ${cur()}/night` },

@@ -46,6 +46,8 @@ export interface ScreenConfig {
     field: string
     label: string
     badge?: boolean
+    /** Render a bilingual "AR | EN" seed value as its primary-language name only. */
+    bilingual?: boolean
     /** Resolve a Link-ID column to a readable label from `doctype`.`labelField`. */
     lookup?: { doctype: string; labelField: string }
   }[]
@@ -678,6 +680,8 @@ export function ResourceScreen({
                           }
                           primaryOnly
                         />
+                      ) : c.bilingual ? (
+                        <Bilingual value={String(row[c.field] ?? "")} primaryOnly />
                       ) : (
                         cellValue(row[c.field])
                       )}
