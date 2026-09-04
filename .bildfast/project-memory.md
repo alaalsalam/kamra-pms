@@ -517,3 +517,18 @@ no overflow._
   5. **Rows not keyboard-accessible** — the clickable `<tr>` has no `tabIndex`/`role`/Enter handler, so the guest
      journey can't be opened by keyboard (WCAG 2.1).
   6. *(Minor)* verify the headers + "never" / "No guests found." / the search placeholder are keyed in `ar.ts`.
+
+### Cross-cutting notes from the pages 5–7 pass (recorded, not fixed)
+- **Board filter state isn't deep-linkable.** Calendar's room-type filter and Tape's room-type/floor/housekeeping
+  filters are component `useState` only — unlike the ResourceScreen list screens, which seed filters from the URL
+  (page 4). The brief lists "deep links + filters preserving state," so board filters currently don't survive a
+  reload / shared link. Proposed: lift these to `useSearchParams` like ResourceScreen does. Not done (would touch
+  three screens; recorded per "no unnecessary expansion").
+- **BookingDialog room-type selects still show the raw "عربي \| English" pipe** (main room type + additional-room
+  rows), whereas the Calendar/Tape filter dropdowns were cleaned with the shared `primaryLabel()`. The dialog is a
+  data-entry form so showing both languages is defensible, but reusing `primaryLabel()` here would make room
+  selection consistent. Small follow-up; recorded, not applied.
+- **EN verified.** Pages 5–7 spot-checked with `hotelpms-lang=en`: `dir=ltr`, English headings/labels/helper text
+  render correctly (e.g. Tape "Tape chart", dialog "Guest details"/"Stay & rate", English primaryLabel filter
+  options). The only Arabic remaining in EN is **bilingual seed data** (property + room-type names stored as
+  "AR \| EN") — by design, not a translation gap. Only console noise was a benign socket.io 400 (Frappe realtime).
