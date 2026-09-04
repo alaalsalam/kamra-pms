@@ -40,6 +40,8 @@ export interface BookingInitial {
 export interface ShellContext {
   refreshKey: number
   openBooking: (initial: BookingInitial) => void
+  /** Whether this user's role may create a booking (gate booking affordances). */
+  canCreateBooking: boolean
 }
 
 function SearchShortcut() {
@@ -357,6 +359,7 @@ export default function AppShell() {
               {
                 refreshKey,
                 openBooking: (initial) => setBooking(initial),
+                canCreateBooking,
               } satisfies ShellContext
             }
           />

@@ -22,6 +22,7 @@ import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import ImageField from "./ImageField"
 import { Bilingual } from "./Bilingual"
+import { BoardNav } from "./BoardNav"
 import { moneyLocale } from "../lib/money"
 import { useSearchParams } from "react-router-dom"
 
@@ -60,6 +61,8 @@ export interface ScreenConfig {
   pageSize?: number
   /** Date-range filter on this date field (adds From/To pickers). */
   dateFilter?: { field: string; label: string }
+  /** Show the Calendar/Tape/Rooms quick-switch above the screen (rooms board). */
+  boardNav?: boolean
   /** Custom section rendered in the drawer below the form (existing rows only). */
   extra?: ComponentType<{ row: Row; reload: () => void }>
   /** Replace the generic edit form with a bespoke detail panel (existing rows).
@@ -432,7 +435,9 @@ export function ResourceScreen({
   }
 
   return (
-    <Card>
+    <div className="space-y-3">
+      {config.boardNav && <BoardNav />}
+      <Card>
       <CardHeader>
         <div>
           <CardTitle>{config.title}</CardTitle>
@@ -733,6 +738,7 @@ export function ResourceScreen({
         </Sheet>
         )
       })()}
-    </Card>
+      </Card>
+    </div>
   )
 }

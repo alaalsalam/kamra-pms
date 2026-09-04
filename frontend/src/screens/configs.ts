@@ -11,6 +11,7 @@ export const roomsConfig: ScreenConfig = {
   title: "Rooms",
   description: "Physical rooms - number, type, floor and live status.",
   searchFields: ["room_number", "name"],
+  boardNav: true,
   filters: [{ field: "housekeeping_status", label: "Status", options: ["Clean", "Dirty", "Inspected", "Out of Order"] }],
   pageSize: 25,
   propertyScoped: true,

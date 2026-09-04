@@ -12,6 +12,7 @@ import { cur, moneyLocale, dateLocale } from "../lib/money"
 import { qty } from "../lib/i18n"
 import { Bilingual } from "../components/Bilingual"
 import { Legend } from "../components/Legend"
+import { BoardNav } from "../components/BoardNav"
 
 /** The tape chart: rooms × dates, bookings as bars. Click a bar to act. */
 
@@ -163,6 +164,8 @@ export default function TapeChart() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [rtFilter, setRtFilter] = useState("")
+  const [floorFilter, setFloorFilter] = useState("")
+  const [hkFilter, setHkFilter] = useState("")
   const [mode, setMode] = useState<"day" | "hour">("day")
   const [hourly, setHourly] = useState<HourlyData | null>(null)
   const [alloc, setAlloc] = useState<AllocData | null>(null)
@@ -183,14 +186,17 @@ export default function TapeChart() {
       return next
     })
 
-  const { refreshKey } = useOutletContext<ShellContext>()
+  const { refreshKey, openBooking: openNewBooking, canCreateBooking } =
+    useOutletContext<ShellContext>()
 
-  // rooms grouped by room type, honoring the filter (rooms arrive ordered)
+  // rooms grouped by room type, honoring the filters (rooms arrive ordered)
   const groups = useMemo(() => {
     const out: { key: string; label: string; rooms: TapeRoom[] }[] = []
     for (const r of data?.rooms ?? []) {
       const label = r.room_type_name || r.room_type
       if (rtFilter && label !== rtFilter) continue
+      if (floorFilter && String(r.floor ?? "") !== floorFilter) continue
+      if (hkFilter && r.housekeeping_status !== hkFilter) continue
       let g = out.find((x) => x.label === label)
       if (!g) {
         g = { key: r.room_type, label, rooms: [] }
@@ -199,12 +205,19 @@ export default function TapeChart() {
       g.rooms.push(r)
     }
     return out
-  }, [data, rtFilter])
+  }, [data, rtFilter, floorFilter, hkFilter])
 
   const roomTypeNames = useMemo(
     () =>
       Array.from(
         new Set((data?.rooms ?? []).map((r) => r.room_type_name || r.room_type)),
+      ),
+    [data],
+  )
+  const floorNames = useMemo(
+    () =>
+      Array.from(
+        new Set((data?.rooms ?? []).map((r) => r.floor).filter(Boolean) as string[]),
       ),
     [data],
   )
@@ -289,6 +302,7 @@ export default function TapeChart() {
 
   return (
     <div>
+      <BoardNav className="mb-3" />
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <h1 className="text-lg font-semibold">Tape chart</h1>
         <select
@@ -301,6 +315,34 @@ export default function TapeChart() {
           {roomTypeNames.map((n) => (
             <option key={n} value={n}>
               {n}
+            </option>
+          ))}
+        </select>
+        {floorNames.length > 0 && (
+          <select
+            className={cn(inputCls, "w-auto py-1.5")}
+            value={floorFilter}
+            onChange={(e) => setFloorFilter(e.target.value)}
+            aria-label="Filter by floor"
+          >
+            <option value="">All floors</option>
+            {floorNames.map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </select>
+        )}
+        <select
+          className={cn(inputCls, "w-auto py-1.5")}
+          value={hkFilter}
+          onChange={(e) => setHkFilter(e.target.value)}
+          aria-label="Filter by status"
+        >
+          <option value="">All statuses</option>
+          {["Clean", "Dirty", "Inspected", "Out of Order"].map((s) => (
+            <option key={s} value={s}>
+              {s}
             </option>
           ))}
         </select>
@@ -443,10 +485,21 @@ export default function TapeChart() {
                             {room.housekeeping_status}
                           </span>
                         </div>
-                        {data.dates.map((d) => (
-                          <div key={d} style={{ width: cellW }}
-                            className="shrink-0 border-l border-zinc-100" />
-                        ))}
+                        {data.dates.map((d) =>
+                          canCreateBooking ? (
+                            <button
+                              key={d}
+                              type="button"
+                              style={{ width: cellW }}
+                              onClick={() => openNewBooking({ room_type: room.room_type, date: d })}
+                              title="New booking"
+                              aria-label={`New booking · room ${room.room_number} · ${d}`}
+                              className="shrink-0 border-l border-zinc-100 transition hover:bg-brand-50/60 focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600"
+                            />
+                          ) : (
+                            <div key={d} style={{ width: cellW }} className="shrink-0 border-l border-zinc-100" />
+                          ),
+                        )}
                         {/* held-out-of-sale bands (house use, VIP, maintenance) */}
                         {(room.blocks ?? []).map((k) => {
                           const s = Math.max(0,

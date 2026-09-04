@@ -7,6 +7,7 @@ import { cn } from "../lib/utils"
 import { cur, moneyLocale, dateLocale } from "../lib/money"
 import { Bilingual } from "./Bilingual"
 import { Legend } from "./Legend"
+import { BoardNav } from "./BoardNav"
 
 const inr = (n: number) =>
   n.toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
@@ -42,7 +43,7 @@ function rangeLabel(dates: string[]) {
 }
 
 export function CalendarView(props: {
-  onPick: (roomType: string, date: string) => void
+  onPick?: (roomType: string, date: string) => void
   refreshKey: number
 }) {
   const [data, setData] = useState<CalendarData | null>(null)
@@ -83,7 +84,9 @@ export function CalendarView(props: {
   }
 
   return (
-    <Card>
+    <div className="space-y-3">
+      <BoardNav />
+      <Card>
       <CardHeader>
         <div>
           <CardTitle>
@@ -171,8 +174,8 @@ export function CalendarView(props: {
                   {rt.cells.map((c) => (
                     <td key={c.date} className={cn("p-0.5", c.date === iso(new Date()) && "bg-brand-50/60")}>
                       <button
-                        onClick={() => props.onPick(rt.room_type, c.date)}
-                        disabled={c.available === 0}
+                        onClick={() => props.onPick?.(rt.room_type, c.date)}
+                        disabled={c.available === 0 || !props.onPick}
                         title={`${rt.room_type_name} · ${c.date} · ${c.available} left · ${cur()}${inr(c.rate)}`}
                         className={cn(
                           "w-full rounded-md border border-zinc-200 px-1 py-1.5 text-center transition-colors",
@@ -209,6 +212,7 @@ export function CalendarView(props: {
           </p>
         </div>
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   )
 }
