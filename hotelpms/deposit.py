@@ -47,6 +47,45 @@ def ensure_deposit_for_reservation(reservation) -> str | None:
 	return doc.name
 
 
+def release_uncollected_deposit(reservation) -> str | None:
+	"""Cancel-time cleanup: void a *Required* deposit that never captured money,
+	so a cancelled stay carries no open deposit liability.
+
+	Deliberately narrow to honour the approved constraint: it only touches a
+	deposit whose status is ``Required`` with ``collected_amount == 0``. It
+	never touches a deposit that has collected funds (a refund is the
+	``refund_deposit`` flow's job, not an auto-action here), and it creates no
+	payment, refund, invoice, or folio entry — it simply flips the empty
+	liability to ``Waived`` (the doctype has no ``Cancelled`` status; ``Waived``
+	is the existing terminal "no deposit owed" state and satisfies
+	``deposit_satisfied``).
+
+	(This model has no ``Authorized`` state; the uncollected guard is
+	``status == 'Required'`` with ``collected_amount == 0``, since
+	``collect_deposit`` flips the status the moment any amount is captured.)
+	"""
+	name = reservation if isinstance(reservation, str) else reservation.name
+	if not frappe.db.exists("DocType", "Security Deposit"):
+		return None
+	dep = frappe.db.get_value(
+		"Security Deposit",
+		{"reservation": name},
+		["name", "status", "collected_amount"],
+		as_dict=True,
+	)
+	if not dep:
+		return None
+	if dep.status != "Required" or flt(dep.collected_amount) > 0:
+		return None
+	sd = frappe.get_doc("Security Deposit", dep.name)
+	sd.status = "Waived"
+	sd.method = "waiver"
+	sd.required_amount = 0
+	sd.reason = "Reservation cancelled"
+	sd.save(ignore_permissions=True)
+	return sd.name
+
+
 def collect_deposit(
 	reservation: str,
 	amount: float,

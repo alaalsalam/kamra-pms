@@ -1,4 +1,4 @@
-<!-- bildfast:plan id=0003 status=planned agent=bildfast-backend task="Release the uncollected security deposit when a reservation is cancelled" -->
+<!-- bildfast:plan id=0003 status=approved agent=bildfast-backend task="Release the uncollected security deposit when a reservation is cancelled" -->
 # Plan: Release the uncollected security deposit on cancel
 
 ## Overview
@@ -44,4 +44,23 @@ frontend page-7 pass — it needs a controller change + a `FrappeTestCase`.
    but do NOT run `bench migrate` (the pipeline applies any doctype change).
 
 ## Execution Note
-_pending — filled after execution_
+Approved by the user with a precise constraint: on cancel, release/void **only** an uncollected
+deposit in a Required/Authorized state; **never** create a refund and **never** modify a Captured/Paid
+payment, invoice, or existing financial entry. Implemented exactly to that:
+- **`hotelpms/deposit.py` → `release_uncollected_deposit(reservation)`**: acts only when the deposit's
+  `status == "Required"` **and** `collected_amount == 0`; sets it to `Waived` + `required_amount = 0` +
+  reason "Reservation cancelled". Posts **no** payment/refund/folio/invoice entry. Returns `None` (no-op)
+  for a collected or already-terminal deposit, or when no deposit exists. **Mapping note:** this doctype
+  has no `Authorized` status and no `Cancelled` status — an authorized-but-uncollected hold maps to
+  `Required` (status flips to Collected the instant any amount is captured), and `Waived` is the existing
+  terminal "no deposit owed" state (satisfies `deposit_satisfied`), so no schema change / no `bench migrate`.
+- **`hotelpms/api.py` `_do_cancel`**: calls `release_uncollected_deposit(res)` right after the reservation
+  is saved Cancelled (covers both the desk `cancel_reservation` and the OTA channel-manager cancel, which
+  share `_do_cancel`). No pricing/quote change.
+- **Tests.** Site tests are disabled here (`allow_tests` unset — not enabled on the live demo), so per the
+  fallback: (a) **pure-logic unit tests** added to `hotelpms/tests/test_deposit_logic.py`
+  (`should_release_uncollected_deposit` + 4 cases — required→release, collected→no, none→no, terminal→no),
+  all pass; (b) a **scripted bench-console integration check** exercised the three required cases live and
+  **all passed with no leftover data**: ① Required/uncollected → `Waived`, `required_amount=0`, no folio
+  payment, reservation Cancelled; ② collected 200 → status + `collected_amount` unchanged, folio-payment
+  count unchanged (no refund posted); ③ no deposit → clean cancel, no folio.

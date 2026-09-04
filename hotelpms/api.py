@@ -2450,6 +2450,12 @@ def _do_cancel(res, reason: str = "Guest request", note: str | None = None,
 	finally:
 		frappe.flags.hotelpms_cancelling = False
 
+	# a cancelled stay owes nothing: void an uncollected Required deposit so
+	# it stops showing as an open liability. Never touches a collected deposit
+	# (refunds go through refund_deposit) and posts no payment/refund/folio.
+	from hotelpms.deposit import release_uncollected_deposit
+	release_uncollected_deposit(res)
+
 	voucher_code = None
 	if int(issue_credit_note or 0) == 1:
 		credit_amount = max(0.0, float(res.advance_paid or 0) - fee)

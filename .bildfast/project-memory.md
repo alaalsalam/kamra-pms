@@ -557,3 +557,12 @@ Actioned the recorded audit gaps (highest-value internal item; `guests_with_stat
   ring (WCAG 2.1 — were mouse-only).
 - Added `ar.ts` "Bookings"/"Showing". Verified live (Hotel Admin): rows keyboard-accessible, dates formatted,
   error/empty/recovery all work, 0 console errors.
+
+### Deposit release on cancel (plan 0003, approved) — backend, money-domain
+User approved with a strict constraint. `hotelpms/deposit.py:release_uncollected_deposit()` — on cancel, voids
+**only** a `Required` deposit with `collected_amount == 0` (→ `Waived`, `required_amount=0`, reason); never a
+collected one, never a refund, never a folio/payment/invoice entry. Wired into `_do_cancel` (covers desk + OTA
+cancel). No `Authorized`/`Cancelled` status in this doctype → `Required`+uncollected is the guard, `Waived` the
+terminal state (no schema change / no migrate). **Tests:** site tests disabled (`allow_tests` unset — not enabled
+on the live demo); added pure-logic tests to `test_deposit_logic.py` (4 cases, pass) + a bench-console integration
+run of all 3 required cases (Required→released / collected→untouched / none→clean) — **all pass, no leftover data**.
