@@ -494,9 +494,11 @@ no overflow._
   filter, loading/empty, pagination). Solid. *Optional:* add a **floor filter** to match Tape/Calendar (Rooms has
   a `floor` field). Low priority.
 - **Housekeeping** (`ResourceScreen(housekeepingConfig)`):
-  1. **Room column shows the raw docname** ("فندق نُزُل الرياض \| Nuzul Riyadh Hotel-302") instead of the room
-     number ("302"). Fix: add `lookup: { doctype: "Room", labelField: "room_number" }` on the `room` column —
-     the same one `reservationsConfig.room` already uses. Small, consistent with page-4 lookup work.
+  1. **Room column raw docname → FIXED.** Added `lookup: { doctype: "Room", labelField: "room_number" }` on the
+     `room` column (same as `reservationsConfig.room`); the board now shows "302". Loading/empty/error are already
+     inherited from ResourceScreen (skeleton, "Nothing here yet.", error banner at line 464), and task **details**
+     open via the existing row-click edit sheet (room/type/priority/status/notes) — no bespoke panel needed. Live-
+     verified (Hotel Admin): room shows the number, row-click opens the detail sheet, 0 console errors.
   2. **Status-vocabulary mismatch → FIXED this pass.** The list `filters` offered `["Open","In Progress","Done"]`
      but the Housekeeping Task `status` Select is `Pending / In Progress / Done / Verified` (default Pending;
      verified via `frappe.get_meta`). The "Open" option never matched anything. **This also broke a page-2

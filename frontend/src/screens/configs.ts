@@ -480,7 +480,7 @@ export const housekeepingConfig: ScreenConfig = {
   orderBy: "creation desc",
   columns: [
     { field: "name", label: "Task" },
-    { field: "room", label: "Room" },
+    { field: "room", label: "Room", lookup: { doctype: "Room", labelField: "room_number" } },
     { field: "task_type", label: "Type", badge: true },
     { field: "priority", label: "Priority" },
     { field: "status", label: "Status", badge: true },
