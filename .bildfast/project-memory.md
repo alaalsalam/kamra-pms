@@ -497,11 +497,14 @@ no overflow._
   1. **Room column shows the raw docname** ("فندق نُزُل الرياض \| Nuzul Riyadh Hotel-302") instead of the room
      number ("302"). Fix: add `lookup: { doctype: "Room", labelField: "room_number" }` on the `room` column —
      the same one `reservationsConfig.room` already uses. Small, consistent with page-4 lookup work.
-  2. **Status-vocabulary mismatch:** the list `filters` offer `["Open","In Progress","Done"]` but the `form`
-     select + live data use `["Pending","In Progress","Done","Verified"]` (rows show "Pending"/"معلّق"). The
-     "Open" filter option likely never matches → status filtering is broken for Pending/Verified. Align the
-     filter options to the Housekeeping Task doctype's real Select values (verify the doctype first — touches
-     the data model, so confirm before changing).
+  2. **Status-vocabulary mismatch → FIXED this pass.** The list `filters` offered `["Open","In Progress","Done"]`
+     but the Housekeeping Task `status` Select is `Pending / In Progress / Done / Verified` (default Pending;
+     verified via `frappe.get_meta`). The "Open" option never matched anything. **This also broke a page-2
+     deliverable:** Today's "Open tasks" KPI (count = tasks with status IN Pending/In Progress) deep-linked to
+     `/housekeeping?status=Open` → an always-empty board. Fixed both: Today link → `?status=Pending` (the default
+     open state; single-select can't express "Pending+In Progress"), and `housekeepingConfig.filters` options →
+     `["Pending","In Progress","Done","Verified"]` (+ added `ar.ts` "In Progress"/"Verified"). Frontend-only, no
+     doctype change. Committed separately as a page-2 defect repair.
   3. *Optional:* no `boardNav` (Rooms has one) — add for cross-navigation consistency.
 - **Guests** (`Guests.tsx`, custom screen — the biggest gaps):
   1. **No loading state** — first paint renders "No guests found." while the `guests_with_stats` fetch is in

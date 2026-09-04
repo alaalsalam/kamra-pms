@@ -466,7 +466,7 @@ export default function Today() {
           label="Open tasks"
           value={tasksN}
           sub={overdueN ? `${overdueN} overdue` : undefined}
-          to={linkTo("/housekeeping", "?status=Open")}
+          to={linkTo("/housekeeping", "?status=Pending")}
         />
       </div>
 

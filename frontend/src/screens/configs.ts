@@ -474,7 +474,7 @@ export const housekeepingConfig: ScreenConfig = {
   title: "Housekeeping Tasks",
   description: "Cleans and inspections. Completing a task updates the room's live status.",
   searchFields: ["room"],
-  filters: [{ field: "status", label: "Status", options: ["Open", "In Progress", "Done"] }],
+  filters: [{ field: "status", label: "Status", options: ["Pending", "In Progress", "Done", "Verified"] }],
   pageSize: 25,
   propertyScoped: true,
   orderBy: "creation desc",

@@ -203,6 +203,8 @@ export const AR: Record<string, string> = {
   "Booked": "محجوز",
   "Closed": "مغلق",
   "Pending": "معلّق",
+  "In Progress": "قيد التنفيذ",
+  "Verified": "تم التحقق",
   "Resolved": "تم الحل",
   "Overdue": "متأخر",
   "Priority": "الأولوية",
