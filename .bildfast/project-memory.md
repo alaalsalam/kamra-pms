@@ -360,3 +360,48 @@ frontend build passes; Playwright passes Finance → server Guest → Restaurant
 Finance cannot see booking/Front Desk navigation, POS cannot see Billing, a direct `/billing` attempt redirects
 to `/pos`, and `/apps` has neutral sidebar navigation. Default-data ownership and current counts are documented
 in `docs/demo-data-control.md`.
+
+---
+
+## 21. Dashboard, deep-links & room-selection UX round (2026-09-04)
+
+Independent UX/functional pass over the internal dashboard + availability screens, honouring the `ce6b769`
+session-isolation model (route authz = **role ∩ enabled module**). No availability/pricing/booking-rule change;
+no RBAC widening; the `auth-isolation` e2e test still passes after all changes.
+
+**Shipped (4 commits, each built + live-verified):**
+- **Rooms readable type + URL-filter deep-links** (`b01c93b`): `ScreenConfig` gains a `lookup` column option
+  (resolve a Link ID → `<doctype>.<labelField>`, rendered via `<Bilingual primaryOnly>`) so the Rooms Type
+  column shows the room-type *name*, not the id — a reliable formatter fed by real API data, no string surgery.
+  Plus one-way URL-filter seeding (`/rooms?housekeeping_status=Dirty`, `?q=`, `?from=/to=`) for dashboard links.
+- **Dashboard clickable KPI deep-links** (`eda14be`): every KPI tile + summary row with a destination is a real
+  `<Link>` (keyboard/focus/hover), gated by `canAccessPath(to, roles, modules)` — a KPI the role/module can't
+  open stays a plain, unlinked card (never hidden). Added the Arrivals/Departures/In-house tiles (already in the
+  payload). Occupancy→`/tape`, Revenue/ADR→`/revenue-reports`, Collections/Outstanding/folios→`/billing`,
+  room-status rows→`/rooms?housekeeping_status=…`, tasks→`/housekeeping?status=Open`. `IndianRupee`→`SaudiRiyal`.
+  `StatCard` gained optional `to`/`onClick`. **Verified:** Hotel Admin sees all links; Front Desk sees only
+  Occupancy + Today (4 links), zero Revenue/Billing/Rooms/Housekeeping links.
+- **Book from a calendar/tape cell + board quick-nav + filters** (`2565d36`): empty tape room-day cells are
+  booking buttons that open the New-booking dialog **prefilled with room-type + date** (verified: opens on
+  2026-09-04 + type); `canCreateBooking` now flows through `ShellContext` and gates the cells (Calendar cells
+  already prefilled, kept + gated). Shared `<BoardNav>` quick-switch Calendar/Tape/Rooms, role∩module gated
+  (Front Desk: Calendar+Tape; Hotel Admin: all three). Tape floor + housekeeping-status quick filters
+  (client-side on the existing payload).
+
+**Deferred (documented, deliberately not shipped):**
+- **BookingDialog stepped restructure (task #4):** the target order is dates→room→guest→review→confirm, but the
+  component is 1244 lines on the money path and its current order differs; a safe reorder needs a full
+  create+cancel re-verification. Deferred to protect the pricing/availability/create path (which the round was
+  told not to change). **Note:** `create_booking` (api.py:3158) **auto-assigns** the room and has no
+  `preferred_room` param, so tape-cell prefill is room-type + date only; a specific-room prefill would need a
+  booking-logic change (out of scope). Follow-up plan: presentation-only numbered sections + a persistent
+  price-review block + keyboard focus, every quote/create call byte-identical, verified with one labelled test
+  reservation created and cancelled.
+- **App-wide actionable cards / breadcrumbs (task #2):** the Dashboard is now fully actionable; the key detail
+  screens (GuestJourney, FolioView) already carry back-links, so full breadcrumbs there are low-value. A broad
+  audit of every remaining screen's silent cards + uniform loading/empty/error states is a follow-up.
+- **Backend performance** — audited (see `performance.md` §"Calendar/Dashboard/Rooms performance audit"):
+  `availability_calendar` recomputes `season_adjust` per (room-type × date) (~126–279 Season queries) + a
+  per-type `get_doc`; `property_dashboard` loops `_day_stats` per day-of-month + a redundant `cash_summary`;
+  `portfolio_dashboard` is N+1 over properties; no indexes on the hot filter columns. Invisible at demo scale
+  (16 reservations / 24 rooms), a scaling risk — recommended fixes recorded, none applied this round.
