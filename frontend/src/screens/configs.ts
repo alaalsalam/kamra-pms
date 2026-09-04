@@ -549,7 +549,7 @@ export const reservationsConfig: ScreenConfig = {
   columns: [
     { field: "name", label: "Ref" },
     { field: "guest_name", label: "Guest" },
-    { field: "room", label: "Room" },
+    { field: "room", label: "Room", lookup: { doctype: "Room", labelField: "room_number" } },
     { field: "check_in_date", label: "In" },
     { field: "check_out_date", label: "Out" },
     { field: "status", label: "Status", badge: true },

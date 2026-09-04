@@ -193,6 +193,7 @@ export function ResourceScreen({
   headerAction?: ReactNode
 }) {
   const [rows, setRows] = useState<Row[]>([])
+  const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Row | "new" | null>(null)
   const [draft, setDraft] = useState<Record<string, unknown>>({})
   const [error, setError] = useState<string | null>(null)
@@ -285,6 +286,7 @@ export function ResourceScreen({
   useEffect(() => setPage(0), [debounced, filterVals, dateFrom, dateTo])
 
   const load = useCallback(() => {
+    setLoading(true)
     const filters: (string | number)[][] = []
     if (config.propertyScoped)
       filters.push(["property", "=", getCurrentProperty()])
@@ -311,6 +313,7 @@ export function ResourceScreen({
         setError(null)
       })
       .catch((e) => setError(serverError(e)))
+      .finally(() => setLoading(false))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.doctype, debounced, filterVals, page, dateFrom, dateTo])
 
@@ -617,7 +620,16 @@ export function ResourceScreen({
                   ))}
                 </tr>
               ))}
-              {rows.length === 0 && (
+              {loading &&
+                rows.length === 0 &&
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={`sk-${i}`}>
+                    <td colSpan={config.columns.length} className="py-2">
+                      <div className="h-5 animate-pulse rounded bg-zinc-100" />
+                    </td>
+                  </tr>
+                ))}
+              {!loading && rows.length === 0 && (
                 <tr>
                   <td
                     colSpan={config.columns.length}

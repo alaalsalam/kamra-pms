@@ -423,3 +423,10 @@ Tape→BookingDialog).**
   sees Occupancy + the three scroll KPIs actionable and Revenue/Open-tasks static (gated); **Hotel Admin** sees
   Revenue + Open-tasks as links too. Arabic date, 0 console errors, no overflow. (Note: on the short demo page
   all sections fit the viewport so the scroll is small; it scales on a busy day.)
+- **③ Reservations** (`screens/configs.ts`, `components/ResourceScreen.tsx`): the **Room** column showed the
+  room's link id ("…Nuzul Riyadh Hotel-101") — fixed with the `lookup` option → shows the room number ("101").
+  Added a **loading state** to `ResourceScreen` (skeleton rows while fetching; the empty "Nothing here yet."
+  now shows only after the fetch, not misleadingly during it) — benefits every resource screen (**Rooms**,
+  Room-types, Room-blocks, Housekeeping…). Verified live: 16 rows, Room = "101"/"302", a row opens the
+  `ReservationDetail` panel, `?status=Confirmed` deep-link pre-filters to Confirmed only, no overflow, 0 console
+  errors. (Reservations content is role-neutral; route access is covered by the `auth-isolation` e2e.)
