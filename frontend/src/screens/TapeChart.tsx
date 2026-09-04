@@ -9,6 +9,7 @@ import { Button } from "../components/ui/button"
 import { Sheet } from "../components/ui/sheet"
 import { cn } from "../lib/utils"
 import { cur, moneyLocale, dateLocale } from "../lib/money"
+import { primaryLabel } from "../lib/dir"
 import { qty } from "../lib/i18n"
 import { Bilingual } from "../components/Bilingual"
 import { Legend } from "../components/Legend"
@@ -153,6 +154,63 @@ function shiftDate(iso: string, days: number) {
   return d.toISOString().slice(0, 10)
 }
 
+function TapeSkeleton() {
+  return (
+    <div
+      className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm"
+      aria-busy="true"
+      aria-label="Loading tape chart"
+    >
+      <div className="flex border-b border-zinc-200 bg-zinc-50 px-3 py-2.5">
+        <div className="h-4 w-24 animate-pulse rounded bg-zinc-200" />
+      </div>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3 border-b border-zinc-100 px-3 py-3">
+          <div className="h-4 w-16 shrink-0 animate-pulse rounded bg-zinc-100" />
+          <div className="h-7 flex-1 animate-pulse rounded-md bg-zinc-100" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function BoardError({ msg, onRetry }: { msg: string; onRetry: () => void }) {
+  return (
+    <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-10 text-center">
+      <p className="text-sm font-medium text-rose-700">{msg}</p>
+      <Button variant="outline" className="mt-3" onClick={onRetry}>
+        Try again
+      </Button>
+    </div>
+  )
+}
+
+function InlineRetry({ msg, onRetry }: { msg: string; onRetry: () => void }) {
+  return (
+    <div className="mb-3 flex items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+      <span>{msg}</span>
+      <button className="shrink-0 font-semibold underline" onClick={onRetry}>
+        Retry
+      </button>
+    </div>
+  )
+}
+
+function BoardEmpty({ filtered, onClear }: { filtered: boolean; onClear: () => void }) {
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white px-4 py-12 text-center shadow-sm">
+      <p className="text-sm font-medium text-zinc-600">
+        {filtered ? "No rooms match these filters" : "No rooms to show yet"}
+      </p>
+      {filtered && (
+        <Button variant="outline" className="mt-3" onClick={onClear}>
+          Clear filters
+        </Button>
+      )}
+    </div>
+  )
+}
+
 export default function TapeChart() {
   const [start, setStart] = useState(new Date().toISOString().slice(0, 10))
   const [data, setData] = useState<TapeData | null>(null)
@@ -163,6 +221,8 @@ export default function TapeChart() {
   })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [rtFilter, setRtFilter] = useState("")
   const [floorFilter, setFloorFilter] = useState("")
   const [hkFilter, setHkFilter] = useState("")
@@ -223,15 +283,17 @@ export default function TapeChart() {
   )
 
   const load = useCallback(() => {
-    if (mode === "day") {
-      call<TapeData>("hotelpms.api.tape_chart", {
-        property: getCurrentProperty(), start_date: start, days: DAYS,
-      }).then(setData)
-    } else {
-      call<HourlyData>("hotelpms.api.tape_chart_hourly", {
-        property: getCurrentProperty(), date: start,
-      }).then(setHourly)
-    }
+    setLoading(true)
+    setLoadError(null)
+    const p =
+      mode === "day"
+        ? call<TapeData>("hotelpms.api.tape_chart", {
+            property: getCurrentProperty(), start_date: start, days: DAYS,
+          }).then(setData)
+        : call<HourlyData>("hotelpms.api.tape_chart_hourly", {
+            property: getCurrentProperty(), date: start,
+          }).then(setHourly)
+    p.catch((e) => setLoadError(serverError(e))).finally(() => setLoading(false))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [start, refreshKey, mode])
 
@@ -314,7 +376,7 @@ export default function TapeChart() {
           <option value="">All room types</option>
           {roomTypeNames.map((n) => (
             <option key={n} value={n}>
-              {n}
+              {primaryLabel(n)}
             </option>
           ))}
         </select>
@@ -393,9 +455,17 @@ export default function TapeChart() {
         />
       )}
 
-      {mode === "hour" && hourly && (
-        <TapeHourly data={hourly} onOpen={openBooking} />
-      )}
+      {mode === "hour" &&
+        (hourly ? (
+          <>
+            {loadError && <InlineRetry msg={loadError} onRetry={load} />}
+            <TapeHourly data={hourly} onOpen={openBooking} />
+          </>
+        ) : loadError ? (
+          <BoardError msg={loadError} onRetry={load} />
+        ) : (
+          <TapeSkeleton />
+        ))}
 
       {/* back-to-back conflicts: the incoming guest lands before the room frees */}
       {mode === "day" && (data?.conflicts?.length ?? 0) > 0 && (
@@ -412,8 +482,30 @@ export default function TapeChart() {
         </div>
       )}
 
-      {mode === "day" && (
-      <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm">
+      {mode === "day" && !data && loadError && (
+        <BoardError msg={loadError} onRetry={load} />
+      )}
+      {mode === "day" && !data && !loadError && <TapeSkeleton />}
+      {mode === "day" && data && loadError && (
+        <InlineRetry msg={loadError} onRetry={load} />
+      )}
+      {mode === "day" && data && groups.length === 0 && (
+        <BoardEmpty
+          filtered={Boolean(rtFilter || floorFilter || hkFilter)}
+          onClear={() => {
+            setRtFilter("")
+            setFloorFilter("")
+            setHkFilter("")
+          }}
+        />
+      )}
+      {mode === "day" && data && groups.length > 0 && (
+      <div
+        className={cn(
+          "overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm",
+          loading && "opacity-60 transition-opacity",
+        )}
+      >
         <div style={{ minWidth: 130 + DAYS * cellW }}>
           {/* header row */}
           <div className="flex border-b border-zinc-200 bg-zinc-50 text-xs font-medium text-zinc-500">

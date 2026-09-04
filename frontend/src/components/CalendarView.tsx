@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react"
 import { getCalendar, type CalendarData } from "../lib/api"
 import { serverError } from "../lib/resource"
-import { getLang } from "../lib/dir"
+import { primaryLabel } from "../lib/dir"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { cn } from "../lib/utils"
@@ -42,14 +42,6 @@ function rangeLabel(dates: string[]) {
       ...(withYear ? { year: "numeric" } : {}),
     })
   return `${fmt(f, f.getFullYear() !== l.getFullYear())} – ${fmt(l, true)}`
-}
-
-const isArabic = (s: string) => /[؀-ۿ]/.test(s)
-function primaryLabel(value: string) {
-  const parts = (value || "").split("|").map((s) => s.trim()).filter(Boolean)
-  const ar = parts.find(isArabic)
-  const en = parts.find((s) => !isArabic(s))
-  return (getLang() === "ar" ? ar ?? en : en ?? ar) ?? value
 }
 
 export function CalendarView(props: {

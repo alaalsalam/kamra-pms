@@ -443,6 +443,17 @@ Tape→BookingDialog).**
   stays the default). Verified live (Hotel Admin): filter narrows to one type; a forced `availability_calendar`
   failure surfaced the banner + Retry and recovering restored the grid; no overflow, 0 console errors. (Content
   is role-neutral; Front Desk sees the same, BoardNav = Calendar+Tape.)
-- **Remaining:** ⑥ Tape already deep-passed (`e2d75a6` + `2565d36`) — a light loading/empty/error pass next. ⑦
-  BookingDialog stepped restructure stays deferred (1244-line money path; presentation-only reorder + one
-  create/cancel smoke test).
+- **⑥ Tape** (`screens/TapeChart.tsx`): the board had no loading/empty/error handling — `load()` had no `.catch`,
+  so a failed `tape_chart` fetch left the grid blank forever (same latent bug as Calendar). Added `loading` +
+  `loadError` (kept separate from the booking-Sheet `error`): initial-load skeleton (`TapeSkeleton`), a full error
+  card with **Try again** when there's no data, an inline **Retry** banner over the stale grid on a failed refetch,
+  and a subtle refetch dim. Added an **empty state** (`BoardEmpty`) when filters match no rooms, with a **Clear
+  filters** button that resets room-type/floor/status. Cleaned the room-type filter dropdown to show the primary-
+  language label only (was the raw "عربي | English" pipe) via a new shared `primaryLabel()` in `lib/dir.ts`
+  (extracted from CalendarView; both screens import it). Verified live for **both roles**: Hotel Admin + Front Desk
+  load 14 rooms; filters work; Executive+floor-1 → empty card + Clear filters restores the board; a forced
+  `tape_chart` failure showed the Retry banner over the stale grid and recovered; bar→edit Sheet and cell→new-
+  booking intact; Front Desk BoardNav correctly excludes Rooms; 0 console errors, no overflow. `auth-isolation`
+  e2e still green (4.0s).
+- **Remaining:** ⑦ BookingDialog stepped restructure (1244-line money path; presentation-only reorder + clearer
+  field validation/summary + one create/cancel smoke test — no pricing-logic change).
