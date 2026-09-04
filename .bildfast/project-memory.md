@@ -430,3 +430,12 @@ Tape→BookingDialog).**
   Room-types, Room-blocks, Housekeeping…). Verified live: 16 rows, Room = "101"/"302", a row opens the
   `ReservationDetail` panel, `?status=Confirmed` deep-link pre-filters to Confirmed only, no overflow, 0 console
   errors. (Reservations content is role-neutral; route access is covered by the `auth-isolation` e2e.)
+- **④ Rooms** — already deep-passed earlier this session (`b01c93b`: readable room-type column via `lookup` +
+  `?housekeeping_status=` URL deep-links; `2565d36`: `<BoardNav>` Calendar/Tape/Rooms) and now inherits the
+  shared `ResourceScreen` loading state (③). Re-verified this pass (Hotel Admin): type column reads
+  "غرفة نُزُل كلاسيك", 3 board tabs, rows open the edit drawer, HK-status filter present, no overflow, no
+  regression — no new change needed.
+- **Remaining in the binding order:** ⑤ Calendar + ⑥ Tape already received deep passes this session (`e2d75a6`
+  locale-aware dates + colour legends + i18n; `2565d36` cell→booking + board-nav + floor/status filters) — a
+  further light pass (loading/empty polish) is optional follow-up. ⑦ BookingDialog stepped restructure stays
+  deferred (1244-line money path; presentation-only reorder + one create/cancel smoke test — see §21 deferred).
