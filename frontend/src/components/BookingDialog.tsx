@@ -13,6 +13,7 @@ import {
 } from "../lib/api"
 import { Button } from "./ui/button"
 import { cn } from "../lib/utils"
+import { primaryLabel } from "../lib/dir"
 import { cur, moneyLocale, taxLabel } from "../lib/money"
 
 interface ExtraRoom {
@@ -388,7 +389,7 @@ export function BookingDialog(props: {
   const selectedRt = options?.room_types.find(
     (rt) => rt.name === form.room_type,
   )
-  const roomTypeName = selectedRt?.room_type_name ?? ""
+  const roomTypeName = primaryLabel(selectedRt?.room_type_name ?? "")
   const overCapacity =
     !!selectedRt &&
     ((selectedRt.adults_capacity > 0 &&
@@ -707,7 +708,7 @@ export function BookingDialog(props: {
                   >
                     {options?.room_types.map((rt) => (
                       <option key={rt.name} value={rt.name}>
-                        {rt.room_type_name} · {cur()}
+                        {primaryLabel(rt.room_type_name)} · {cur()}
                         {inr(rt.base_price)}/night
                       </option>
                     ))}
@@ -770,7 +771,7 @@ export function BookingDialog(props: {
 
                 {selectedRt && overCapacity && (
                   <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
-                    {selectedRt.room_type_name} sleeps up to{" "}
+                    {primaryLabel(selectedRt.room_type_name)} sleeps up to{" "}
                     <strong>{selectedRt.adults_capacity} adults</strong>
                     {selectedRt.children_capacity > 0 && (
                       <>
@@ -838,7 +839,7 @@ export function BookingDialog(props: {
                     >
                       {options?.room_types.map((rt) => (
                         <option key={rt.name} value={rt.name}>
-                          {rt.room_type_name}
+                          {primaryLabel(rt.room_type_name)}
                         </option>
                       ))}
                     </select>
@@ -1266,9 +1267,11 @@ export function BookingDialog(props: {
                         >
                           <span className="min-w-0 truncate">
                             Room {i + 2} ·{" "}
-                            {options?.room_types.find(
-                              (rt) => rt.name === moreRooms[i]?.room_type,
-                            )?.room_type_name ?? ""}
+                            {primaryLabel(
+                              options?.room_types.find(
+                                (rt) => rt.name === moreRooms[i]?.room_type,
+                              )?.room_type_name ?? "",
+                            )}
                           </span>
                           <span className="shrink-0 tabular-nums">
                             {cur()}
