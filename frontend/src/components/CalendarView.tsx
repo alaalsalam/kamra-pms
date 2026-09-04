@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react"
 import { getCalendar, type CalendarData } from "../lib/api"
 import { serverError } from "../lib/resource"
@@ -53,7 +54,20 @@ export function CalendarView(props: {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
-  const [rtFilter, setRtFilter] = useState("")
+  // the room-type filter lives in the URL so it survives a reload and can be
+  // deep-linked / shared, like the list screens.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const rtFilter = searchParams.get("rt") || ""
+  const setRtFilter = (v: string) =>
+    setSearchParams(
+      (p) => {
+        const next = new URLSearchParams(p)
+        if (v) next.set("rt", v)
+        else next.delete("rt")
+        return next
+      },
+      { replace: true },
+    )
 
   useEffect(() => {
     setLoading(true)

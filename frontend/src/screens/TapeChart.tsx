@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useOutletContext } from "react-router-dom"
+import { useOutletContext, useSearchParams } from "react-router-dom"
 import type { ShellContext } from "../AppShell"
 import { ChevronDown, ChevronLeft, ChevronRight, Lock, Sparkles, Star } from "lucide-react"
 import { call, getCurrentProperty } from "../lib/api"
@@ -223,9 +223,24 @@ export default function TapeChart() {
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [rtFilter, setRtFilter] = useState("")
-  const [floorFilter, setFloorFilter] = useState("")
-  const [hkFilter, setHkFilter] = useState("")
+  // filters live in the URL so they survive a reload and can be shared/deep-linked
+  const [searchParams, setSearchParams] = useSearchParams()
+  const setParam = (key: string, v: string) =>
+    setSearchParams(
+      (p) => {
+        const next = new URLSearchParams(p)
+        if (v) next.set(key, v)
+        else next.delete(key)
+        return next
+      },
+      { replace: true },
+    )
+  const rtFilter = searchParams.get("rt") || ""
+  const floorFilter = searchParams.get("floor") || ""
+  const hkFilter = searchParams.get("hk") || ""
+  const setRtFilter = (v: string) => setParam("rt", v)
+  const setFloorFilter = (v: string) => setParam("floor", v)
+  const setHkFilter = (v: string) => setParam("hk", v)
   const [mode, setMode] = useState<"day" | "hour">("day")
   const [hourly, setHourly] = useState<HourlyData | null>(null)
   const [alloc, setAlloc] = useState<AllocData | null>(null)

@@ -514,11 +514,16 @@ no overflow._
   non-keyboard rows (WCAG).
 
 ### Cross-cutting notes from the pages 5–7 pass (recorded, not fixed)
-- **Board filter state isn't deep-linkable.** Calendar's room-type filter and Tape's room-type/floor/housekeeping
-  filters are component `useState` only — unlike the ResourceScreen list screens, which seed filters from the URL
-  (page 4). The brief lists "deep links + filters preserving state," so board filters currently don't survive a
-  reload / shared link. Proposed: lift these to `useSearchParams` like ResourceScreen does. Not done (would touch
-  three screens; recorded per "no unnecessary expansion").
+- **Board filter state now deep-linkable → FIXED.** Calendar's room-type filter (`?rt=`) and Tape's
+  room-type/floor/housekeeping filters (`?rt=&floor=&hk=`) are now backed by `useSearchParams` (replace-mode) so
+  they persist on reload and can be shared. **ResourceScreen** was extended to (a) support **dynamic filter
+  options** via `optionsFrom: "<field>"` (fetches distinct, property-scoped values — used for the new **Rooms
+  floor filter**), and (b) **write** its active filters/search/dates back to the URL (previously one-way read
+  only), guarded by a `didSyncMount` ref so the mount-seed isn't wiped. Live-verified (Hotel Admin): Calendar
+  `?rt=Classic` → 1 row on reload; Tape `?floor=2` → 5 rooms on reload; Rooms floor filter shows dynamic options
+  (1–4), writes `?floor=3`, and reload seeds + filters to 4 floor-3 rooms. All URL-based → language/role-neutral
+  (Calendar/Tape are Front-Desk screens too; Rooms is admin). The write-back applies to **all** ResourceScreens
+  (Reservations/Housekeeping too) — filters now survive reload app-wide.
 - **BookingDialog room-type pipe → FIXED.** Applied the shared `primaryLabel()` to all 5 raw `room_type_name`
   renders (main room-type `<option>`, additional-room `<option>`s, the over-capacity warning, the quote-rail room
   line, and the extra-room quote lines). Dropdown now shows e.g. "غرفة نُزُل كلاسيك · ر.س ٦٥٠/night" — no "AR \|

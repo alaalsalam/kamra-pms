@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   type ComponentType,
   type ReactNode,
@@ -56,7 +57,15 @@ export interface ScreenConfig {
   /** Fields searched (LIKE) by the search box. Adds a search input when set. */
   searchFields?: string[]
   /** Dropdown filters shown in the toolbar (e.g. status). */
-  filters?: { field: string; label: string; options: string[] }[]
+  filters?: {
+    field: string
+    label: string
+    /** Static choices; omit and set `optionsFrom` to derive them from the data. */
+    options?: string[]
+    /** Doctype fieldname to pull distinct values from (property-scoped) — e.g.
+     * "floor", whose values vary per property. */
+    optionsFrom?: string
+  }[]
   /** Rows per page (adds pagination when set). */
   pageSize?: number
   /** Date-range filter on this date field (adds From/To pickers). */
@@ -199,6 +208,7 @@ export function ResourceScreen({
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [linkOptions, setLinkOptions] = useState<Record<string, string[]>>({})
+  const [dynOptions, setDynOptions] = useState<Record<string, string[]>>({})
   const [search, setSearch] = useState("")
   // Frappe-style list settings: choose which columns this table shows,
   // remembered per user per doctype.
@@ -227,7 +237,7 @@ export function ResourceScreen({
   const [dateTo, setDateTo] = useState("")
   const [page, setPage] = useState(0)
   const [lookupMaps, setLookupMaps] = useState<Record<string, Record<string, string>>>({})
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const pageSize = config.pageSize ?? 0
 
@@ -242,7 +252,7 @@ export function ResourceScreen({
   }, [search])
 
   // seed filters from the URL once on mount, e.g. /rooms?housekeeping_status=Dirty
-  // (deep-links from the dashboard). One-way read; no state→URL syncing.
+  // (deep-links from the dashboard, and to restore state on reload).
   useEffect(() => {
     const seed: Record<string, string> = {}
     config.filters?.forEach((f) => {
@@ -258,6 +268,37 @@ export function ResourceScreen({
     if (to) setDateTo(to)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // mirror the active filters/search back into the URL so a reload or a shared
+  // link keeps them. Skip the first run so the mount-seed above isn't wiped.
+  const didSyncMount = useRef(false)
+  useEffect(() => {
+    if (!didSyncMount.current) {
+      didSyncMount.current = true
+      return
+    }
+    setSearchParams(
+      (p) => {
+        const next = new URLSearchParams(p)
+        for (const f of config.filters ?? []) {
+          const v = filterVals[f.field]
+          if (v) next.set(f.field, v)
+          else next.delete(f.field)
+        }
+        if (debounced) next.set("q", debounced)
+        else next.delete("q")
+        if (config.dateFilter) {
+          if (dateFrom) next.set("from", dateFrom)
+          else next.delete("from")
+          if (dateTo) next.set("to", dateTo)
+          else next.delete("to")
+        }
+        return next
+      },
+      { replace: true },
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterVals, debounced, dateFrom, dateTo])
 
   // resolve Link-ID columns to their readable label once per screen
   useEffect(() => {
@@ -382,6 +423,30 @@ export function ResourceScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.doctype])
 
+  // derive dynamic filter options (e.g. floors) from distinct field values
+  useEffect(() => {
+    ;(config.filters ?? []).forEach((f) => {
+      if (!f.optionsFrom) return
+      const scope: (string | number)[][] = []
+      if (config.propertyScoped)
+        scope.push(["property", "=", getCurrentProperty()])
+      listResource(config.doctype, {
+        fields: [f.optionsFrom],
+        filters: scope.length ? scope : undefined,
+        limit: 1000,
+        orderBy: `${f.optionsFrom} asc`,
+      }).then((r) => {
+        const vals = [
+          ...new Set(
+            r.map((x) => String(x[f.optionsFrom!] ?? "").trim()).filter(Boolean),
+          ),
+        ]
+        setDynOptions((prev) => ({ ...prev, [f.field]: vals }))
+      })
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.doctype])
+
   function openEdit(row: Row | "new") {
     setEditing(row)
     setError(null)
@@ -488,7 +553,7 @@ export function ResourceScreen({
                 className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-brand-600"
               >
                 <option value="">{f.label}: all</option>
-                {f.options.map((o) => (
+                {(f.options ?? dynOptions[f.field] ?? []).map((o) => (
                   <option key={o} value={o}>
                     {o}
                   </option>
