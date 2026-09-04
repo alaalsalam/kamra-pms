@@ -334,3 +334,29 @@ direct Playwright audit.)
 - Remaining English-heavy i18n gaps (Kitchen KDS labels LATE/MAIN/DESSERT/cooking, the Billing folios
   subtitle whose `ar.ts` key hardcodes "GST" vs the Saudi "VAT", night-audit summary sentences) — the same
   `qty()`/`ar.ts` technique applies; deferred to keep this change reviewable.
+
+---
+
+## 20. Session, role and demo-data reliability (2026-09-04)
+
+**Root causes fixed:**
+- Public `book` correctly switches to the governed writer, but the nightly demo reset deleted
+  `agent@hotelpms.local` because it was not a clickable demo account; it then had no `HotelPMS Agent` role and
+  the protected create call raised “Not permitted”. `seed_users.ensure_governed_writer()` now creates/repairs
+  the non-login service identity; `seed_demo` always calls it and `reset_demo.KEEP_USERS` preserves it.
+- Logout used to swallow every server error, clear React roles and navigate to login while the Frappe session
+  cookie could remain valid. It now requires a successful logout + `whoami.user === "Guest"`, clears the prior
+  active-property key, and hard reloads. Failure keeps the real session visible and shows an Arabic/English error.
+- Module/tab state had four interpretations: AppShell used enabled modules, AppLauncher/CommandPalette did not,
+  and route RBAC checked only roles. Shared `/apps` also borrowed the first permitted app's sidebar. A shared
+  cached `useEnabledModules` now drives every surface; route authorization is `role ∩ enabled module`; shared
+  routes show no borrowed sidebar. “New booking” is only visible to roles that can call its API.
+- Re-running base showcase over the Saudi demo collided on renamed deterministic IDs and risked restoring the
+  old menu. The seed recognizes the curated Saudi dataset and stays unchanged; Experience/Venue/POS identity
+  checks are rename-safe.
+
+**Verified live:** public guest booking created `RES-2026-01105` (Confirmed, SAR 1,495, pay at hotel); production
+frontend build passes; Playwright passes Finance → server Guest → Restaurant POS, confirms roles do not leak,
+Finance cannot see booking/Front Desk navigation, POS cannot see Billing, a direct `/billing` attempt redirects
+to `/pos`, and `/apps` has neutral sidebar navigation. Default-data ownership and current counts are documented
+in `docs/demo-data-control.md`.

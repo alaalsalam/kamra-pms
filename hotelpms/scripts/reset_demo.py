@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import frappe
 
-from hotelpms.scripts.seed_users import USERS
+from hotelpms.scripts.seed_users import GOVERNED_WRITER, USERS
 
 # Public playgrounds only. Local benches with demo mode are allowed so
 # developers can exercise the same path.
@@ -31,6 +31,7 @@ PLAYGROUND_SITES = {
 KEEP_USERS = {
 	"Administrator",
 	"Guest",
+	GOVERNED_WRITER["email"],
 	*(spec["email"] for spec in USERS),
 }
 

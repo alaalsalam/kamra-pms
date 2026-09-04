@@ -27,6 +27,7 @@ import { useAuth } from "../lib/auth"
 import { visibleApps, type AppNavItem } from "../lib/apps"
 import { cn } from "../lib/utils"
 import { cur, moneyLocale } from "../lib/money"
+import { useEnabledModules } from "../lib/modules"
 
 interface Result {
   id: string
@@ -53,13 +54,13 @@ function fuzzy(text: string, q: string): boolean {
 // sidebar uses, so the palette reaches exactly the pages the user may open -
 // no second list to keep in sync, and item-level gates (Developers, Frappe
 // Desk) are honoured too.
-function navItemsForRoles(roles: string[]): {
+function navItemsForRoles(roles: string[], modules?: string[]): {
   item: AppNavItem
   app: string
 }[] {
   const out: { item: AppNavItem; app: string }[] = []
   const seen = new Set<string>()
-  for (const app of visibleApps(roles)) {
+  for (const app of visibleApps(roles, modules)) {
     for (const item of app.items) {
       if (item.roles && !item.roles.some((r) => roles.includes(r))) continue
       const key = item.to ?? item.href ?? item.label
@@ -73,6 +74,7 @@ function navItemsForRoles(roles: string[]): {
 
 export function CommandPalette() {
   const { roles } = useAuth()
+  const modules = useEnabledModules()
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState("")
   const [guests, setGuests] = useState<{ name: string; full_name: string; phone?: string }[]>([])
@@ -173,7 +175,7 @@ export function CommandPalette() {
     }
   }, [q, open])
 
-  const navItems = useMemo(() => navItemsForRoles(roles), [roles])
+  const navItems = useMemo(() => navItemsForRoles(roles, modules), [roles, modules])
 
   const navResults = useMemo<Result[]>(
     () =>

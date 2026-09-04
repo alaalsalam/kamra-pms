@@ -9,7 +9,7 @@ import {
 } from "react"
 import { useNavigate } from "react-router-dom"
 
-import { isNetworkError, logout, whoami } from "./api"
+import { clearCurrentProperty, isNetworkError, logout, whoami } from "./api"
 
 // Single source of auth truth for the app. Any component reads it via useAuth();
 // route guards (RequireAuth) redirect based on it, so the URL always reflects
@@ -89,11 +89,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh, status])
 
   const signOut = useCallback(async () => {
-    await logout().catch(() => undefined)
+    // Never paint a fake logout.  The old implementation swallowed a failed
+    // POST and left the server cookie alive, so the next demo persona could
+    // inherit the previous user's roles.
+    await logout()
+    const probe = await whoami()
+    if (probe.user !== "Guest") throw new Error("The server session is still active.")
+    clearCurrentProperty()
+    sessionStorage.removeItem("hotelpms_session_ended")
     setStatus("anon")
     setUser(null)
     setRoles([])
-    navigate("/login", { replace: true })
+    if (import.meta.env.PROD) window.location.replace("/hotelpms/login")
+    else navigate("/login", { replace: true })
   }, [navigate])
 
   return (

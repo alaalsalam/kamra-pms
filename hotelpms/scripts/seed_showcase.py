@@ -302,11 +302,28 @@ def execute():
 	if not frappe.db.exists("Property", PROPERTY):
 		print(f"Property '{PROPERTY}' not found — run seed_demo first.")
 		return
+	# The Saudi/Arabic showcase is a curated replacement (different dishes,
+	# labels and prices), not a translation overlay.  Re-running the upstream
+	# showcase on an already-localized demo used to collide on deterministic
+	# document IDs and could reintroduce the Indian sample menu.
+	if (
+		frappe.db.get_default("hotelpms_demo_language") == "ar"
+		and frappe.db.exists("POS Outlet", {"property": PROPERTY})
+	):
+		print("Saudi showcase already owns this demo — base showcase unchanged.")
+		return
 
 	added_exp = 0
 	for name, cat, price, dur, gst, desc, img in EXPERIENCES:
-		if frappe.db.exists("Experience", {"property": PROPERTY,
-		                                    "experience_name": name}):
+		# Arabic showcase updates the display label but deliberately preserves
+		# the original deterministic document ID. Check both, otherwise a later
+		# seed run tries to recreate the same primary key.
+		if (
+			frappe.db.exists("Experience", f"{PROPERTY}-{name}")
+			or frappe.db.exists("Experience", {
+				"property": PROPERTY, "experience_name": name,
+			})
+		):
 			continue
 		frappe.get_doc({
 			"doctype": "Experience",
@@ -325,7 +342,10 @@ def execute():
 	added_venue = 0
 	for (name, cap, price, amenities, vtype, min_cap, hourly, sqft,
 	     layouts) in VENUES:
-		if frappe.db.exists("Venue", {"property": PROPERTY, "venue_name": name}):
+		if (
+			frappe.db.exists("Venue", f"{PROPERTY}-{name}")
+			or frappe.db.exists("Venue", {"property": PROPERTY, "venue_name": name})
+		):
 			continue
 		frappe.get_doc({
 			"doctype": "Venue",
@@ -370,8 +390,11 @@ def execute():
 	for oname, otype, gst, items in POS:
 		tables = (RESTAURANT_TABLES if otype == "Restaurant"
 		          else BAR_TABLES if otype == "Bar" else None)
-		outlet = frappe.db.get_value(
-			"POS Outlet", {"property": PROPERTY, "outlet_name": oname})
+		outlet = (
+			frappe.db.get_value("POS Outlet", f"{PROPERTY}-{oname}")
+			or frappe.db.get_value(
+				"POS Outlet", {"property": PROPERTY, "outlet_name": oname}, "name")
+		)
 		if not outlet:
 			outlet = frappe.get_doc({
 				"doctype": "POS Outlet", "property": PROPERTY,

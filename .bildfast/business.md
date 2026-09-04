@@ -202,8 +202,8 @@ that records both human and AI actions with a headline "minutes saved" metric.
   Saudi go-live needs a ZATCA integration.
 - **Payments** are wired to Razorpay (India-oriented); a Saudi launch needs a local PSP (e.g. Moyasar/HyperPay/
   mada) integration.
-- **Demo persistence** — with the reset disabled, public write flows (bookings, POS orders) accumulate as
-  permanent data on the live demo; needs care during marketing.
+- **Demo lifecycle** — the nightly 04:15 reset is enabled on the public showcase. It removes play data and
+  sessions, restores the Saudi seed, and preserves/repairs the governed guest-writer identity.
 - **i18n mechanism** — English source strings + an Arabic catalog translated live via a MutationObserver
   (only the AR catalog exists); new user-visible strings must be added to `ar.ts` or they ship untranslated.
 - **Scale/perf** — some list/board screens should be watched for pagination and N+1 as data grows (see
@@ -243,3 +243,8 @@ that records both human and AI actions with a headline "minutes saved" metric.
   room-status), translated labels, bilingual-clean room-type names, and calendar loading/empty states. Shared
   `Bilingual`/`Legend`/`dateLocale` foundations. No API/RBAC/availability/pricing change. Deferred (needs API
   field): the Rooms list Type column showing a room-type link ID instead of a friendly name (project-memory §19).
+- **2026-09-04** — Session/RBAC/demo reliability round: fixed the missing governed writer that blocked guest
+  bookings; made demo reset preserve and repair it; verified public reservation `RES-2026-01105`; made logout
+  server-confirmed with a hard identity reset; unified module visibility across route guard, shell, launcher and
+  command palette; removed shared-route fallback to the first tab; hid staff booking action from non-booking
+  roles. Added a live Finance → logout → POS Playwright regression and `docs/demo-data-control.md`.

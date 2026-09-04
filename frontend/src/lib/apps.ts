@@ -292,12 +292,13 @@ export function matchingAppForPath(pathname: string): AppDef | undefined {
 }
 
 /** Route-level RBAC. Item-specific roles are narrower than their app gate. */
-export function canAccessPath(pathname: string, roles: string[]): boolean {
+export function canAccessPath(pathname: string, roles: string[], modules?: string[]): boolean {
   // The index contains no operational data; RoleHome immediately sends each
   // persona to its own approved workspace.
   if (pathname === "/") return true
   const app = matchingAppForPath(pathname)
   if (!app) return ["/apps", "/marketplace", "/activity"].includes(pathname)
+  if (modules?.length && !modules.includes(app.id)) return false
   if (!app.roles.some((r) => roles.includes(r))) return false
   const item = app.items
     .filter((i) => i.to && (pathname === i.to || pathname.startsWith(i.to + "/")))
@@ -305,7 +306,7 @@ export function canAccessPath(pathname: string, roles: string[]): boolean {
   return !item?.roles || item.roles.some((r) => roles.includes(r))
 }
 
-export function firstAccessiblePath(roles: string[]): string {
+export function firstAccessiblePath(roles: string[], modules?: string[]): string {
   const preferred: [string, string][] = [
     ["Front Desk", "/"],
     ["Revenue Manager", "/revenue-reports"],
@@ -314,11 +315,12 @@ export function firstAccessiblePath(roles: string[]): string {
     ["Restaurant POS", "/pos"],
     ["Kitchen", "/kitchen"],
   ]
-  const home = preferred.find(([role, path]) => roles.includes(role) && canAccessPath(path, roles))
+  const home = preferred.find(([role, path]) => roles.includes(role) && canAccessPath(path, roles, modules))
   if (home) return home[1]
   for (const app of APPS) {
     if (!app.roles.some((r) => roles.includes(r))) continue
-    const item = app.items.find((i) => i.to && canAccessPath(i.to, roles))
+    if (modules?.length && !modules.includes(app.id)) continue
+    const item = app.items.find((i) => i.to && canAccessPath(i.to, roles, modules))
     if (item?.to) return item.to
   }
   return "/apps"

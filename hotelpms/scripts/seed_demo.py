@@ -36,12 +36,13 @@ GUESTS = [
 
 
 def execute():
-	from hotelpms.scripts.seed_users import ensure_users
+	from hotelpms.scripts.seed_users import ensure_governed_writer, ensure_users
 
 	# Mark this as a demo site so the login screen shows the demo accounts.
 	frappe.db.set_default("hotelpms_demo_mode", "1")
 	if frappe.db.exists("Property", PROPERTY):
 		ensure_users()
+		ensure_governed_writer()
 		from hotelpms.scripts.seed_showcase import execute as seed_showcase
 		seed_showcase()
 		seed_generic_properties()
@@ -206,6 +207,7 @@ def execute():
 
 	# Demo login accounts (one per role) so the gated login buttons work.
 	ensure_users()
+	ensure_governed_writer()
 
 	# showcase experiences + venues (safari, spa, romantic dinner, ballrooms)
 	from hotelpms.scripts.seed_showcase import execute as seed_showcase

@@ -151,9 +151,9 @@ export const whoami = () => call<WhoAmI>("hotelpms.api.whoami")
 
 /** Which parts of HotelPMS this property runs. Empty on the server means
  *  "all of them", so an existing property is untouched. */
-export const enabledModules = () =>
+export const enabledModules = (property = getCurrentProperty()) =>
   call<string[]>("hotelpms.api.enabled_modules", {
-    property: getCurrentProperty(),
+    property,
   })
 export const setEnabledModules = (modules: string[]) =>
   call<{ ok: boolean; modules: string[] }>("hotelpms.api.set_enabled_modules", {
@@ -290,6 +290,14 @@ export function getCurrentProperty() {
 export function setCurrentProperty(p: string) {
   currentProperty = p
   localStorage.setItem("hotelpms_property", p)
+  window.dispatchEvent(new CustomEvent("hotelpms:property-changed", { detail: p }))
+}
+
+/** Remove identity-adjacent client state between demo users. Preferences such
+ * as language/theme are intentionally kept; the active hotel is not. */
+export function clearCurrentProperty() {
+  currentProperty = DEMO_PROPERTY
+  localStorage.removeItem("hotelpms_property")
 }
 
 export interface PropertyRow {

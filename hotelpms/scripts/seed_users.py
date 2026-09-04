@@ -111,6 +111,17 @@ USERS = [
 	 "roles": ["Kitchen"]},
 ]
 
+# Non-interactive identity used by strictly validated guest flows (booking,
+# pre-check-in, laundry and QR ordering).  Keep it out of ``USERS``: it must
+# never be advertised as a demo login, but it must survive/recover after a
+# demo reset because public writes are attributed to it.
+GOVERNED_WRITER = {
+	"email": "agent@hotelpms.local",
+	"first_name": "HotelPMS",
+	"last_name": "Agent",
+	"roles": ["HotelPMS Agent"],
+}
+
 
 def ensure_roles():
 	for role, grants in ROLE_GRANTS.items():
@@ -169,8 +180,50 @@ def ensure_users():
 		print(f"created user: {spec['email']}")
 
 
+def ensure_governed_writer():
+	"""Create/repair the service identity without exposing a login password.
+
+	The public guest endpoints switch to this user only after validating their
+	token/payload.  Demo reset used to delete it because it was not one of the
+	clickable demo users, making every public booking fail its role guard.
+	"""
+	spec = GOVERNED_WRITER
+	if not frappe.db.exists("Role", "HotelPMS Agent"):
+		frappe.get_doc({
+			"doctype": "Role",
+			"role_name": "HotelPMS Agent",
+			"desk_access": 0,
+		}).insert(ignore_permissions=True)
+
+	is_new = not frappe.db.exists("User", spec["email"])
+	if not is_new:
+		user = frappe.get_doc("User", spec["email"])
+		user.enabled = 1
+		user.user_type = "System User"
+	else:
+		user = frappe.get_doc({
+			"doctype": "User",
+			"email": spec["email"],
+			"first_name": spec["first_name"],
+			"last_name": spec["last_name"],
+			"enabled": 1,
+			"user_type": "System User",
+			"send_welcome_email": 0,
+		})
+
+	have = {row.role for row in user.roles}
+	for role in spec["roles"]:
+		if role not in have:
+			user.append("roles", {"role": role})
+	if is_new:
+		user.insert(ignore_permissions=True)
+	else:
+		user.save(ignore_permissions=True)
+
+
 def execute():
 	ensure_roles()
 	ensure_users()
+	ensure_governed_writer()
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit -- batch/seed/migration script runs outside the request cycle; explicit commit persists the staged writes
 	print("Roles and demo users ready.")

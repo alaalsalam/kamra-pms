@@ -12,6 +12,7 @@ import AppShell, { type ShellContext } from "./AppShell"
 const Login = lazy(() => import("./screens/Login"))
 import { useAuth } from "./lib/auth"
 import { canAccessPath, firstAccessiblePath } from "./lib/apps"
+import { useEnabledModules } from "./lib/modules"
 import { toFullPath } from "./lib/routing"
 import { CalendarView } from "./components/CalendarView"
 import { ResourceScreen } from "./components/ResourceScreen"
@@ -141,8 +142,10 @@ function RequireAuth() {
 function RequireRouteAccess() {
   const { roles } = useAuth()
   const location = useLocation()
-  if (canAccessPath(location.pathname, roles)) return <Outlet />
-  return <Navigate to={firstAccessiblePath(roles)} replace />
+  const modules = useEnabledModules()
+  if (!modules) return <Splash />
+  if (canAccessPath(location.pathname, roles, modules)) return <Outlet />
+  return <Navigate to={firstAccessiblePath(roles, modules)} replace />
 }
 
 /** The /login route. Already signed in → bounce to where you came from.

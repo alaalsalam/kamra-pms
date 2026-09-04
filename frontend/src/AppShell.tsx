@@ -8,14 +8,13 @@ import HelpPanel from "./components/HelpPanel"
 import UtilityControls from "./components/UtilityControls"
 import { Button } from "./components/ui/button"
 import {
-  appForPath,
+  matchingAppForPath,
   visibleApps,
   type AppDef,
   type AppNavItem,
 } from "./lib/apps"
 import {
   call,
-  enabledModules,
   getCurrentProperty,
   myProperties,
   setCurrentProperty,
@@ -25,6 +24,7 @@ import { useAuth } from "./lib/auth"
 import { subscribeRealtime } from "./lib/realtime"
 import { t as translate, useT } from "./lib/i18n"
 import { loadLocale } from "./lib/money"
+import { useEnabledModules } from "./lib/modules"
 import { cn } from "./lib/utils"
 import { useKiosk } from "./lib/kiosk"
 
@@ -62,7 +62,7 @@ function SearchShortcut() {
 }
 
 /** App switcher in the top bar: quiet grid, one accent for the current app. */
-function AppSwitcher({ apps, current }: { apps: AppDef[]; current: AppDef }) {
+function AppSwitcher({ apps, current }: { apps: AppDef[]; current?: AppDef }) {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
   const ref = useRef<HTMLDivElement>(null)
@@ -96,7 +96,7 @@ function AppSwitcher({ apps, current }: { apps: AppDef[]; current: AppDef }) {
         <div className="absolute left-0 top-10 z-50 w-64 rounded-lg border border-zinc-200 bg-white p-1.5 shadow-lg ring-1 ring-black/5">
           <div className="grid grid-cols-3 gap-0.5">
             {apps.map((app) => {
-              const active = app.id === current.id
+              const active = app.id === current?.id
               return (
                 <button
                   key={app.id}
@@ -150,6 +150,8 @@ export default function AppShell() {
   const [properties, setProperties] = useState<PropertyRow[]>([])
   const [property, setProperty] = useState(getCurrentProperty())
   const [demoMode, setDemoMode] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+  const [signOutError, setSignOutError] = useState(false)
 
   useEffect(() => {
     myProperties().then((props) => {
@@ -178,22 +180,35 @@ export default function AppShell() {
 
   // which parts of the product this property runs - undefined until it
   // answers, so nothing flashes in and then disappears
-  const [modules, setModules] = useState<string[] | undefined>(undefined)
-  useEffect(() => {
-    enabledModules()
-      .then(setModules)
-      .catch(() => setModules(undefined))
-  }, [property])
+  const modules = useEnabledModules()
 
   const apps = visibleApps(roles, modules)
-  const routeApp = appForPath(location.pathname)
-  const currentApp = apps.some((a) => a.id === routeApp.id) ? routeApp : apps[0]
+  const routeApp = matchingAppForPath(location.pathname)
+  const currentApp = routeApp && apps.some((a) => a.id === routeApp.id) ? routeApp : undefined
   const floor = location.pathname === "/pos" || location.pathname === "/kitchen"
   const { on: kiosk } = useKiosk()
 
   const items = (currentApp?.items ?? []).filter(
     (item) => !item.roles || item.roles.some((r) => roles.includes(r)),
   )
+  const canCreateBooking = [
+    "Front Desk",
+    "Hotel Admin",
+    "System Manager",
+    "Administrator",
+  ].some((role) => roles.includes(role))
+
+  async function handleSignOut() {
+    if (signingOut) return
+    setSigningOut(true)
+    setSignOutError(false)
+    try {
+      await signOut()
+    } catch {
+      setSignOutError(true)
+      setSigningOut(false)
+    }
+  }
 
   const renderItem = (item: AppNavItem) =>
     item.href ? (
@@ -270,7 +285,7 @@ export default function AppShell() {
       <div className="min-w-0 flex-1">
         {!kiosk && (
         <header className="sticky top-0 z-40 flex flex-wrap items-center gap-2 border-b border-zinc-200 bg-white px-4 py-2.5">
-          <AppSwitcher apps={apps} current={currentApp ?? apps[0]} />
+          <AppSwitcher apps={apps} current={currentApp} />
           {properties.length > 1 ? (
             <select
               className="max-w-[13rem] truncate rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium focus:outline-2 focus:outline-brand-600 lg:max-w-none"
@@ -301,17 +316,27 @@ export default function AppShell() {
               {user}
             </span>
             <button
-              onClick={signOut}
+              onClick={handleSignOut}
+              disabled={signingOut}
+              title={signOutError ? t("Could not sign out. Please try again.") : undefined}
               className="text-xs font-medium text-zinc-400 hover:text-zinc-700"
             >
-              Sign out
+              {t(signingOut ? "Signing out..." : "Sign out")}
             </button>
-            <Button variant="gold" onClick={() => setBooking({})}>
-              <Plus className="size-4" aria-hidden />
-              New booking
-            </Button>
+            {canCreateBooking && (
+              <Button variant="gold" onClick={() => setBooking({})}>
+                <Plus className="size-4" aria-hidden />
+                New booking
+              </Button>
+            )}
           </div>
         </header>
+        )}
+
+        {signOutError && !kiosk && (
+          <div role="alert" className="border-b border-rose-200 bg-rose-50 px-4 py-2 text-center text-sm text-rose-700">
+            {t("Could not sign out. Your session is still active; please try again.")}
+          </div>
         )}
 
         <main

@@ -4,13 +4,15 @@ import { Store } from "lucide-react"
 import { useAuth } from "../lib/auth"
 import { APP_TILE, visibleApps, type AppDef } from "../lib/apps"
 import { cn } from "../lib/utils"
+import { useEnabledModules } from "../lib/modules"
 
 /** The suite launcher - the "all apps" home. Opens an app by routing to its
  *  first screen. Also the front door to the Marketplace. */
 export default function AppLauncher() {
   const { roles } = useAuth()
   const navigate = useNavigate()
-  const apps = visibleApps(roles)
+  const modules = useEnabledModules()
+  const apps = visibleApps(roles, modules)
   const canMarket = ["Hotel Admin", "System Manager", "Administrator"].some(
     (r) => roles.includes(r),
   )
