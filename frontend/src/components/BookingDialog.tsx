@@ -25,11 +25,20 @@ const inputCls =
   "w-full rounded-lg border border-zinc-300 bg-white px-3.5 py-2.5 text-base " +
   "focus:outline-2 focus:outline-offset-1 focus:outline-brand-600"
 
-function Field(props: { label: string; children: React.ReactNode }) {
+function Field(props: {
+  label: string
+  required?: boolean
+  children: React.ReactNode
+}) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm font-medium text-zinc-600">
         {props.label}
+        {props.required && (
+          <span className="ms-0.5 text-rose-500" aria-hidden>
+            *
+          </span>
+        )}
       </span>
       {props.children}
     </label>
@@ -469,20 +478,34 @@ export function BookingDialog(props: {
           <div className="space-y-5 overflow-y-auto px-6 py-8 md:px-8">
             {done.waitlist ? (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-amber-800">
-                <p className="text-lg font-semibold">Waitlisted · {done.ref}</p>
+                <p className="text-lg font-semibold">
+                  <span>Waitlisted</span> · {done.ref}
+                </p>
                 <p className="mt-1 text-sm">
-                  Parked with no room. Promote it from the reservation when a
-                  room frees. Auto-purges 2 days after departure.
+                  <span>
+                    Parked with no room. Promote it from the reservation when a
+                    room frees. Auto-purges 2 days after departure.
+                  </span>
                 </p>
               </div>
             ) : (
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800">
-                <p className="text-lg font-semibold">Booked · {done.ref}</p>
+                <p className="text-lg font-semibold">
+                  <span>Booked</span> · {done.ref}
+                </p>
                 <p className="mt-1 text-sm">
-                  {done.room
-                    ? `Room ${done.room.split("-").pop()} assigned.`
-                    : "No room auto-assigned — pick one from Reservations."}{" "}
-                  Find it under Arrivals on the stay date.
+                  {done.room ? (
+                    <>
+                      <span>Room assigned:</span>{" "}
+                      <span className="font-semibold">
+                        {done.room.split("-").pop()}
+                      </span>
+                      .
+                    </>
+                  ) : (
+                    <span>No room auto-assigned — pick one from Reservations.</span>
+                  )}{" "}
+                  <span>Find it under Arrivals on the stay date.</span>
                 </p>
               </div>
             )}
@@ -505,8 +528,11 @@ export function BookingDialog(props: {
                   </div>
                 )}
 
+                <h3 className="-mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Guest details
+                </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Guest name">
+                  <Field label="Guest name" required>
                     <div className="relative">
                       <input
                         className={inputCls}
@@ -516,6 +542,7 @@ export function BookingDialog(props: {
                           set("guest_name", e.target.value)
                         }}
                         placeholder="Type to find or create"
+                        aria-required="true"
                         autoFocus
                       />
                       {hits.length > 0 && (
@@ -579,6 +606,9 @@ export function BookingDialog(props: {
                   </Field>
                 </div>
 
+                <h3 className="-mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Stay &amp; rate
+                </h3>
                 <Field label="Room type">
                   <select
                     className={inputCls}
@@ -1181,6 +1211,23 @@ export function BookingDialog(props: {
                       <p className="mt-1 text-xs text-zinc-400">
                         {form.check_in_date} → {checkOut}
                       </p>
+                      {(options?.property?.deposit_pct ?? 0) > 0 && (
+                        <div className="mt-2.5 flex items-baseline justify-between gap-2 border-t border-zinc-100 pt-2.5">
+                          <span className="text-sm font-medium text-zinc-500">
+                            Deposit due now
+                            <span className="text-zinc-400">
+                              {" "}
+                              ({options!.property.deposit_pct}%)
+                            </span>
+                          </span>
+                          <span className="text-base font-semibold tabular-nums text-zinc-900">
+                            {cur()}
+                            {inr(
+                              (grandTotal * options!.property.deposit_pct) / 100,
+                            )}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {options?.property && (
@@ -1190,14 +1237,14 @@ export function BookingDialog(props: {
                           : `Free cancellation until ${cancelCutoff}; after that the ${String(options.property.cancellation_fee).toLowerCase()} is charged.`}
                         {(options.property.no_show_charge || "None") !== "None" &&
                           ` No-show: ${String(options.property.no_show_charge).toLowerCase()} charged.`}
-                        {(options.property.deposit_pct ?? 0) > 0 &&
-                          ` Deposit expected now: ${cur()}${inr((grandTotal * options.property.deposit_pct) / 100)} (${options.property.deposit_pct}%).`}
                       </p>
                     )}
                   </div>
                 ) : (
                   <p className="text-sm text-zinc-400">
-                    {error ? "Fix the issue below to see a price." : "…"}
+                    {error
+                      ? "Fix the issue below to see a price."
+                      : "Enter stay details to see a price."}
                   </p>
                 )}
 
@@ -1216,6 +1263,17 @@ export function BookingDialog(props: {
                 >
                   {busy ? "Booking…" : "Confirm booking"}
                 </Button>
+                {!busy && (!form.guest_name || !quote) && (
+                  <p className="text-center text-xs text-zinc-400">
+                    {!form.guest_name
+                      ? "Enter a guest name to continue"
+                      : quoting
+                        ? "Getting the latest price…"
+                        : error
+                          ? "Fix the issue above to continue"
+                          : "Enter stay details to see a price."}
+                  </p>
+                )}
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="outline"

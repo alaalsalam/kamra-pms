@@ -455,5 +455,33 @@ Tape→BookingDialog).**
   `tape_chart` failure showed the Retry banner over the stale grid and recovered; bar→edit Sheet and cell→new-
   booking intact; Front Desk BoardNav correctly excludes Rooms; 0 console errors, no overflow. `auth-isolation`
   e2e still green (4.0s).
-- **Remaining:** ⑦ BookingDialog stepped restructure (1244-line money path; presentation-only reorder + clearer
-  field validation/summary + one create/cancel smoke test — no pricing-logic change).
+- **⑦ BookingDialog** (`components/BookingDialog.tsx`) — presentation + validation only, **no pricing/quote/
+  payload change** (getQuote / grandTotal / createBooking untouched). Changes: (a) **visual sequence** — added
+  "Guest details" and "Stay & rate" section headings to the flat form; (b) **clear validation** — a required
+  `*` marker + `aria-required` on Guest name, and a helper line under Confirm that *explains* the existing
+  `busy||!guest_name||!quote` gate ("Enter a guest name to continue" / "Getting the latest price…" / "Fix the
+  issue above to continue") instead of a silently-disabled button; (c) **financial summary** — promoted
+  "Deposit due now (N%)" to its own line inside the Total card (reuses the existing `(grandTotal*deposit_pct)/100`
+  expression verbatim; guard unchanged — **not exercisable in demo data, all 3 properties have `deposit_pct=0`**);
+  friendlier empty-quote placeholder ("Enter stay details to see a price."); (d) **success message** — the panel
+  was half-English ("Booked · REF", "Room 201 assigned") in an AR-first UI; isolated the status word + guidance
+  into translatable `<span>` nodes and reworded to "Room assigned: {n}" (number last), so it now renders fully
+  Arabic. All new strings added to `ar.ts`.
+  - **Live-verified (Front Desk):** tape-cell → dialog **prefill** (room_type + date) lands; guest **typeahead**
+    finds returning guest (Omar Haddad) and attaches (returning-guest chip); far-future date shows **"Free
+    cancellation"**; a garbage voucher surfaces the rose **error box** ("Voucher 'ZZINVALID' does not exist.") +
+    the "Fix the issue above" helper + disabled Confirm; clearing it recovers the quote; Confirm creates the
+    booking; improved **success panel is fully Arabic** ("محجوز · RES… · الغرفة المعيّنة: ٢٠١. ستجده ضمن الوصول…").
+    Only console error was the deliberate bad-voucher 417 (expected).
+  - **Create + cancel, "no financial trace" — PASS WITH ONE FINDING.** Created `RES-2026-01155`, cancelled it
+    through the real UI (ReservationDetail → "Cancel this stay…" → preview "40 days before arrival · outside the
+    fee window · free" → Confirm → `CXL-2026-00001`). Bench check: `status=Cancelled`, `cancellation_fee=0`,
+    `Folio=0`, `Folio Charge=0`, `advance_paid=0` — **no money moved**. **Finding:** an uncollected **Required
+    Security Deposit** (`DEP-01156`, required 500 / collected 0 / balance 0) is left dangling — the cancel path
+    (`_do_cancel`) never releases it. Pre-existing **backend** money-domain bug (not introduced here); recorded
+    as a planned fix for `@bildfast-backend` → **`.bildfast/plans/0003-release-deposit-on-cancel.md`** (awaiting
+    Approve). Do NOT claim "no financial trace" unqualified — say "no money moved; one lifecycle bug pending fix."
+  - Test data (`RES-2026-01155`, `RES-2026-01159` + their `DEP-*` rows) **deleted manually** after verification
+    (deposit rows first, then reservations). The demo banner *claims* nightly restore, but per the owner note
+    above the scheduled reset is a verified no-op → writes persist, so cleanup was done by hand rather than
+    relied on.
