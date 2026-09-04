@@ -485,3 +485,32 @@ Tape→BookingDialog).**
     (deposit rows first, then reservations). The demo banner *claims* nightly restore, but per the owner note
     above the scheduled reset is a verified no-op → writes persist, so cleanup was done by hand rather than
     relied on.
+
+### Connected secondary screens — read-only audit (proposed improvements, NOT applied)
+_After ⑦, per the page-by-page brief: audit only the booking-connected screens (Rooms / Housekeeping / Guests)
+and record a list — no fixes, no expansion. Live-checked as Hotel Admin; all three load with 0 console errors,
+no overflow._
+- **Rooms** (`ResourceScreen(roomsConfig)`) — already deep-passed in page 4 (boardNav, `room_type` lookup, status
+  filter, loading/empty, pagination). Solid. *Optional:* add a **floor filter** to match Tape/Calendar (Rooms has
+  a `floor` field). Low priority.
+- **Housekeeping** (`ResourceScreen(housekeepingConfig)`):
+  1. **Room column shows the raw docname** ("فندق نُزُل الرياض \| Nuzul Riyadh Hotel-302") instead of the room
+     number ("302"). Fix: add `lookup: { doctype: "Room", labelField: "room_number" }` on the `room` column —
+     the same one `reservationsConfig.room` already uses. Small, consistent with page-4 lookup work.
+  2. **Status-vocabulary mismatch:** the list `filters` offer `["Open","In Progress","Done"]` but the `form`
+     select + live data use `["Pending","In Progress","Done","Verified"]` (rows show "Pending"/"معلّق"). The
+     "Open" filter option likely never matches → status filtering is broken for Pending/Verified. Align the
+     filter options to the Housekeeping Task doctype's real Select values (verify the doctype first — touches
+     the data model, so confirm before changing).
+  3. *Optional:* no `boardNav` (Rooms has one) — add for cross-navigation consistency.
+- **Guests** (`Guests.tsx`, custom screen — the biggest gaps):
+  1. **No loading state** — first paint renders "No guests found." while the `guests_with_stats` fetch is in
+     flight (false empty). Add a loading flag + skeleton (same pattern as ResourceScreen/Calendar/Tape).
+  2. **No error handling** — the fetch has no `.catch`; a failure leaves the table blank/stuck. Add error + retry.
+  3. **Pagination is dead** — `page`/`PAGE`/`slice` exist but **no prev/next controls are rendered**, so only the
+     first 25 guests are ever visible (silent truncation once a property has >25 guests). Either render
+     pagination controls or drop the slice.
+  4. **Dates raw** — `last_stay` prints the raw string, not via `dateLocale()` (inconsistent with the app).
+  5. **Rows not keyboard-accessible** — the clickable `<tr>` has no `tabIndex`/`role`/Enter handler, so the guest
+     journey can't be opened by keyboard (WCAG 2.1).
+  6. *(Minor)* verify the headers + "never" / "No guests found." / the search placeholder are keyed in `ar.ts`.
