@@ -506,17 +506,10 @@ no overflow._
      `["Pending","In Progress","Done","Verified"]` (+ added `ar.ts` "In Progress"/"Verified"). Frontend-only, no
      doctype change. Committed separately as a page-2 defect repair.
   3. *Optional:* no `boardNav` (Rooms has one) — add for cross-navigation consistency.
-- **Guests** (`Guests.tsx`, custom screen — the biggest gaps):
-  1. **No loading state** — first paint renders "No guests found." while the `guests_with_stats` fetch is in
-     flight (false empty). Add a loading flag + skeleton (same pattern as ResourceScreen/Calendar/Tape).
-  2. **No error handling** — the fetch has no `.catch`; a failure leaves the table blank/stuck. Add error + retry.
-  3. **Pagination is dead** — `page`/`PAGE`/`slice` exist but **no prev/next controls are rendered**, so only the
-     first 25 guests are ever visible (silent truncation once a property has >25 guests). Either render
-     pagination controls or drop the slice.
-  4. **Dates raw** — `last_stay` prints the raw string, not via `dateLocale()` (inconsistent with the app).
-  5. **Rows not keyboard-accessible** — the clickable `<tr>` has no `tabIndex`/`role`/Enter handler, so the guest
-     journey can't be opened by keyboard (WCAG 2.1).
-  6. *(Minor)* verify the headers + "never" / "No guests found." / the search placeholder are keyed in `ar.ts`.
+- **Guests** (`Guests.tsx`, custom screen) — **all items below FIXED** (see the "Guests screen" entry after this
+  section). Was: no loading state (false-empty flash), no `.catch` (blank/stuck on failure), **dead pagination**
+  (`page`/`slice` present but no controls → only first 25 of up to 200 ever shown), raw `last_stay` dates, and
+  non-keyboard rows (WCAG).
 
 ### Cross-cutting notes from the pages 5–7 pass (recorded, not fixed)
 - **Board filter state isn't deep-linkable.** Calendar's room-type filter and Tape's room-type/floor/housekeeping
@@ -549,3 +542,18 @@ conversion-critical guest page — **no redesign, no booking/pricing change, nav
 - Verified live both viewports (390/1440) + AR/EN: bar shows/updates, Continue opens Sheet & bar hides (no
   z-fight), desktop unaffected (bar `display:none`, rail intact), no overflow, **0 console errors**. Sheet was
   opened + closed only — the public path creates real reservations, so no test booking was submitted.
+
+### Guests screen UX fixes (`screens/Guests.tsx`)
+Actioned the recorded audit gaps (highest-value internal item; `guests_with_stats` returns up to `LIMIT 200`):
+- **Loading** — added `loading` flag + skeleton rows; the empty "No guests found." now shows only when
+  `!loading && !error && rows.length===0` (was flashing during the in-flight fetch).
+- **Error** — added `.catch(serverError)` + a `Try again` row (`reloadKey`); verified live via a forced
+  `guests_with_stats` failure → error + Try again → recovery.
+- **Pagination** — the dead `page`/`slice` logic now has real **Previous / Next** controls + "Showing X–Y of Z"
+  (shown only when `pageCount > 1`); up to 200 guests are reachable (was silently capped at the first 25). Not
+  visually exercised — demo has 13 guests (`pageCount===1`, controls correctly hidden) — but logic verified.
+- **Dates** — `last_stay` now via `dateLocale()` (e.g. "٤ سبتمبر ٢٠٢٦") instead of the raw ISO string.
+- **Keyboard a11y** — rows are now `role="button"` + `tabIndex=0` + Enter/Space handler + `aria-label` + focus
+  ring (WCAG 2.1 — were mouse-only).
+- Added `ar.ts` "Bookings"/"Showing". Verified live (Hotel Admin): rows keyboard-accessible, dates formatted,
+  error/empty/recovery all work, 0 console errors.

@@ -2,8 +2,10 @@ import { useEffect, useState } from "react"
 import { Search, Star } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { call } from "../lib/api"
+import { serverError } from "../lib/resource"
 import { Badge } from "../components/ui/badge"
-import { cur, moneyLocale } from "../lib/money"
+import { Button } from "../components/ui/button"
+import { cur, moneyLocale, dateLocale } from "../lib/money"
 import {
   Card,
   CardContent,
@@ -31,22 +33,40 @@ export default function Guests() {
   const [rows, setRows] = useState<GuestRow[]>([])
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
   const PAGE = 25
   const navigate = useNavigate()
 
   useEffect(() => {
+    setLoading(true)
+    setError(null)
     const t = setTimeout(() => {
       call<GuestRow[]>("hotelpms.api.guests_with_stats", {
         search: search || undefined,
-      }).then((r) => {
-        setRows(r)
-        setPage(0)
       })
+        .then((r) => {
+          setRows(r)
+          setPage(0)
+        })
+        .catch((e) => setError(serverError(e)))
+        .finally(() => setLoading(false))
     }, 250)
     return () => clearTimeout(t)
-  }, [search])
+  }, [search, reloadKey])
 
+  const total = rows.length
+  const pageCount = Math.max(1, Math.ceil(total / PAGE))
   const visible = rows.slice(page * PAGE, page * PAGE + PAGE)
+  const openGuest = (name: string) =>
+    navigate(`/guests/${encodeURIComponent(name)}`)
+  const fmtDate = (d: string) =>
+    new Date(d).toLocaleDateString(dateLocale(), {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })
 
   return (
     <Card>
@@ -89,8 +109,17 @@ export default function Guests() {
               {visible.map((g) => (
                 <tr
                   key={g.name}
-                  className="cursor-pointer hover:bg-zinc-50"
-                  onClick={() => navigate(`/guests/${encodeURIComponent(g.name)}`)}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Open ${g.full_name}`}
+                  className="cursor-pointer transition hover:bg-zinc-50 focus:bg-zinc-50 focus:outline-2 focus:-outline-offset-2 focus:outline-brand-600"
+                  onClick={() => openGuest(g.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      openGuest(g.name)
+                    }
+                  }}
                 >
                   <td className="py-2.5 pr-4">
                     <span className="font-medium">{g.full_name}</span>
@@ -112,14 +141,37 @@ export default function Guests() {
                   </td>
                   <td className="py-2.5 pr-4 text-zinc-500">
                     {g.last_stay ? (
-                      g.last_stay
+                      fmtDate(g.last_stay)
                     ) : (
                       <Badge tone="zinc">never</Badge>
                     )}
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && (
+              {loading &&
+                rows.length === 0 &&
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={`sk-${i}`}>
+                    <td colSpan={7} className="py-2.5">
+                      <div className="h-5 animate-pulse rounded bg-zinc-100" />
+                    </td>
+                  </tr>
+                ))}
+              {!loading && error && (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-sm">
+                    <p className="font-medium text-rose-700">{error}</p>
+                    <Button
+                      variant="outline"
+                      className="mt-3"
+                      onClick={() => setReloadKey((k) => k + 1)}
+                    >
+                      Try again
+                    </Button>
+                  </td>
+                </tr>
+              )}
+              {!loading && !error && rows.length === 0 && (
                 <tr>
                   <td
                     colSpan={7}
@@ -132,6 +184,30 @@ export default function Guests() {
             </tbody>
           </table>
         </div>
+        {pageCount > 1 && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-500">
+            <span>
+              <span>Showing</span> {page * PAGE + 1}–
+              {Math.min((page + 1) * PAGE, total)} <span>of</span> {total}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                disabled={page === 0}
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                disabled={page >= pageCount - 1}
+                onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

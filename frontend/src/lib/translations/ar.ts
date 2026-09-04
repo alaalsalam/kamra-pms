@@ -379,6 +379,8 @@ export const AR: Record<string, string> = {
   "Nights": "الليالي",
   "Stay": "الإقامة",
   "Stays": "الإقامات",
+  "Bookings": "الحجوزات",
+  "Showing": "عرض",
   "Guest name": "اسم الضيف",
   "Guest Name": "اسم الضيف",
   "Full name": "الاسم الكامل",
