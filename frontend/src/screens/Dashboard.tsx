@@ -3,8 +3,9 @@ import { Link, useOutletContext } from "react-router-dom"
 import { useRealtime } from "../lib/realtime"
 import {
   BedDouble, LogIn, LogOut, Users, SaudiRiyal, Wallet, Building2, Brush, Receipt,
-  PieChart, ArrowUpRight, CircleAlert, Sparkles,
+  PieChart, CircleAlert, Sparkles,
 } from "lucide-react"
+import { QueueCard } from "../components/QueueCard"
 import { call, getCurrentProperty } from "../lib/api"
 import { serverError } from "../lib/resource"
 import { useAuth } from "../lib/auth"
@@ -114,45 +115,6 @@ function DashboardSkeleton() {
       </div>
     </div>
   )
-}
-
-function AttentionCard({
-  icon: Icon,
-  title,
-  detail,
-  action,
-  to,
-  urgent = false,
-}: {
-  icon: React.ComponentType<{ className?: string }>
-  title: string
-  detail: string
-  action: string
-  to?: string
-  urgent?: boolean
-}) {
-  const body = (
-    <>
-      <span className={urgent
-        ? "grid size-10 shrink-0 place-items-center rounded-xl bg-gold-100 text-gold-700"
-        : "grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"}
-      >
-        <Icon className="size-5" aria-hidden />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-sm font-bold text-zinc-900">{title}</span>
-        <span className="mt-0.5 block text-xs leading-5 text-zinc-500">{detail}</span>
-      </span>
-      {to && (
-        <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-brand-700">
-          {action}
-          <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
-        </span>
-      )}
-    </>
-  )
-  const cls = "group flex min-h-24 items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 text-start shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
-  return to ? <Link to={to} className={cls}>{body}</Link> : <div className={cls}>{body}</div>
 }
 
 export default function Dashboard() {
@@ -270,7 +232,7 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="grid gap-3 lg:grid-cols-3">
-              <AttentionCard
+              <QueueCard
                 icon={LogIn}
                 title={`${prop.arrivals} ${t("arrivals today")}`}
                 detail={prop.arrivals
@@ -279,25 +241,25 @@ export default function Dashboard() {
                 action={t("Open today")}
                 to={linkTo("/")}
               />
-              <AttentionCard
+              <QueueCard
                 icon={prop.housekeeping.overdue_tasks ? CircleAlert : Brush}
+                tone={prop.housekeeping.overdue_tasks > 0 ? "amber" : "teal"}
                 title={`${prop.housekeeping.open_tasks} ${t("open housekeeping tasks")}`}
                 detail={prop.housekeeping.overdue_tasks
                   ? `${prop.housekeeping.overdue_tasks} ${t("overdue tasks need action")}`
                   : t("Rooms are moving through the cleaning cycle.")}
                 action={t("Open board")}
-                to={linkTo("/housekeeping", "?status=Open")}
-                urgent={prop.housekeeping.overdue_tasks > 0}
+                to={linkTo("/housekeeping", "?status=Pending")}
               />
-              <AttentionCard
+              <QueueCard
                 icon={prop.finance.outstanding ? Wallet : Sparkles}
+                tone={prop.finance.outstanding > 0 ? "amber" : "teal"}
                 title={`${cur()}${inr(prop.finance.outstanding)} ${t("outstanding")}`}
                 detail={prop.finance.outstanding
                   ? t("Review open balances before the next shift.")
                   : t("No outstanding balance needs action.")}
                 action={t("Open billing")}
                 to={linkTo("/billing")}
-                urgent={prop.finance.outstanding > 0}
               />
             </div>
           </section>

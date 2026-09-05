@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { qty } from "../lib/i18n"
+import { qty, useT } from "../lib/i18n"
 import {
   BedDouble,
   LogIn,
@@ -8,7 +8,10 @@ import {
   Wallet,
   ListChecks,
   PieChart,
+  CircleAlert,
+  Sparkles,
 } from "lucide-react"
+import { QueueCard } from "../components/QueueCard"
 import { useNavigate, useOutletContext } from "react-router-dom"
 import {
   call,
@@ -265,7 +268,29 @@ function InHouseTable({
   )
 }
 
+function TodaySkeleton() {
+  return (
+    <div className="space-y-6" aria-busy="true" aria-label="Loading today">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-24 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100" />
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-[92px] animate-pulse rounded-xl border border-zinc-200 bg-zinc-100" />
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-5">
+        <div className="h-64 animate-pulse rounded-xl border border-zinc-200 bg-zinc-100 lg:col-span-2" />
+        <div className="h-64 animate-pulse rounded-xl border border-zinc-200 bg-zinc-100 lg:col-span-3" />
+      </div>
+    </div>
+  )
+}
+
 export default function Today() {
+  const { t } = useT()
   const { refreshKey } = useOutletContext<ShellContext>()
   const navigate = useNavigate()
   const { roles } = useAuth()
@@ -400,15 +425,79 @@ export default function Today() {
       })
     : ""
 
+  // "Needs your attention now" — real, permission-aware, most urgent first.
+  const departuresDue = (snap?.departures ?? []).filter(
+    (r) => Number(r.balance_due ?? 0) > 0,
+  )
+  const dueTotal = departuresDue.reduce(
+    (s, r) => s + Number(r.balance_due ?? 0),
+    0,
+  )
+  const unassignedArrivals = (snap?.arrivals ?? []).filter((r) => !r.room)
+  type Q = {
+    key: string
+    icon: React.ComponentType<{ className?: string }>
+    tone: "teal" | "amber" | "danger"
+    title: string
+    detail: string
+    to?: string
+    action?: string
+    onClick?: () => void
+  }
+  const queue: Q[] = []
+  if (departuresDue.length)
+    queue.push({
+      key: "due",
+      icon: Wallet,
+      tone: "amber",
+      title: `${departuresDue.length} ${t("departures with a balance")}`,
+      detail: `${cur()}${inr0(dueTotal)} ${t("to collect before checkout")}`,
+      onClick: scrollTo("today-departures"),
+    })
+  if (overdueN)
+    queue.push({
+      key: "overdue",
+      icon: CircleAlert,
+      tone: "danger",
+      title: `${overdueN} ${t("overdue tasks")}`,
+      detail: t("Rooms are past their cleaning SLA"),
+      to: linkTo("/housekeeping", "?status=Pending"),
+      action: t("Open board"),
+    })
+  if (unassignedArrivals.length)
+    queue.push({
+      key: "unassigned",
+      icon: BedDouble,
+      tone: "teal",
+      title: `${unassignedArrivals.length} ${t("arrivals need a room")}`,
+      detail: t("Assign a room before check-in"),
+      onClick: scrollTo("today-arrivals"),
+    })
+  if (arrivalsN)
+    queue.push({
+      key: "arrivals",
+      icon: LogIn,
+      tone: "teal",
+      title: `${arrivalsN} ${t("arrivals expected today")}`,
+      detail: t("Prepare the next check-ins"),
+      onClick: scrollTo("today-arrivals"),
+    })
+  const queueShown = queue.slice(0, 3)
+
   return (
     <div>
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">
-            Front Desk Overview
-          </h1>
-          <p className="mt-0.5 text-sm text-zinc-500">
-            {greeting}. Here's what's happening today.
+          <div className="mb-1.5 inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[11px] font-semibold text-brand-700">
+            <span className="size-1.5 rounded-full bg-brand-500" aria-hidden /> {t("All systems live")}
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{t(greeting)}</h1>
+          <p className="mt-1 text-[13px] text-zinc-500">
+            {snap
+              ? queueShown.length
+                ? `${queue.length} ${t("tasks need you now")}`
+                : t("You're all caught up — nothing urgent right now")
+              : t("Here's what's happening today")}
           </p>
         </div>
         <div className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium tabular-nums text-zinc-600">
@@ -421,6 +510,44 @@ export default function Today() {
           {error}
         </div>
       )}
+
+      {!snap && !error && <TodaySkeleton />}
+
+      {snap && (
+        <>
+      <section aria-labelledby="attn-title" className="mb-6">
+        <div className="mb-3 flex items-center gap-2">
+          <h2 id="attn-title" className="text-[13px] font-bold text-zinc-900">
+            Needs your attention now
+          </h2>
+          <span className="rounded-lg bg-zinc-100 px-2 py-1 text-[10px] font-semibold text-zinc-500">
+            Priority order
+          </span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {queueShown.length ? (
+            queueShown.map((q) => (
+              <QueueCard
+                key={q.key}
+                icon={q.icon}
+                tone={q.tone}
+                title={q.title}
+                detail={q.detail}
+                to={q.to}
+                action={q.action}
+                onClick={q.onClick}
+              />
+            ))
+          ) : (
+            <QueueCard
+              icon={Sparkles}
+              tone="teal"
+              title="All clear"
+              detail="Arrivals, departures and housekeeping are on track."
+            />
+          )}
+        </div>
+      </section>
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <StatCard
@@ -471,7 +598,7 @@ export default function Today() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-5">
-        <div className="space-y-4 lg:col-span-2">
+        <div className="space-y-4 min-w-0 lg:col-span-2">
           <Card id="today-arrivals" className="scroll-mt-20">
             <CardHeader>
               <CardTitle>Arrivals</CardTitle>
@@ -516,7 +643,7 @@ export default function Today() {
           </Card>
         </div>
 
-        <div className="space-y-4 lg:col-span-3">
+        <div className="space-y-4 min-w-0 lg:col-span-3">
           <Card>
             <CardHeader>
               <CardTitle>Room board</CardTitle>
@@ -606,6 +733,8 @@ export default function Today() {
           </Card>
         </div>
       </div>
+        </>
+      )}
       {checkingIn && (
         <CheckInDialog
           reservation={checkingIn}
