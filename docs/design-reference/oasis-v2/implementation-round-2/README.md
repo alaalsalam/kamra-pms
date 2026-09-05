@@ -39,8 +39,8 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
 ### Phase 2 — Inventory & housekeeping
 | Route | Component | Status | Commit | Notes |
 |---|---|---|---|---|
-| `/rooms` | ResourceScreen(roomsConfig) | Pending | — | occupancy × readiness dual badges |
-| `/room-types` | ResourceScreen(roomTypesConfig) | Pending | — | |
+| `/rooms` | ResourceScreen(roomsConfig) | **Tested** | (this commit) | already carried the occupancy × housekeeping dual badges + was fully keyed from r1 — verified only (no code change). 390/768/1024/1440 AR-RTL + EN: no overflow, no leaks |
+| `/room-types` | ResourceScreen(roomTypesConfig) | **Tested** | (this commit) | made 3 currency/tax column headers translatable — `Base ${cur()}/night`→`Base / night`, `Extra adult ${cur()}`→`Extra adult` (the embedded `cur()` defeated the observer), + AR keys for those and `VAT %` / `Code (e.g. DLX)`. Verified 390/768/1024/1440 AR-RTL + EN: no overflow, headers translated |
 | `/calendar` | CalendarView | Pending | — | date nav, filters(url), click cell→booking |
 | `/tape` | TapeChart | Pending | — | click-to-edit (no drag unless API-safe), legend, now-line |
 | `/housekeeping` | ResourceScreen(housekeepingConfig) | Pending | — | task board, priority/owner/SLA |

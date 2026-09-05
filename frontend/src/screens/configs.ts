@@ -47,9 +47,9 @@ export const roomTypesConfig: ScreenConfig = {
     { field: "room_type_name", label: "Name", bilingual: true },
     { field: "room_type_code", label: "Code", badge: true },
     { field: "room_category", label: "Category" },
-    { field: "base_price", label: `Base ${cur()}/night` },
+    { field: "base_price", label: "Base / night" },
     { field: "base_occupancy", label: "Base occ." },
-    { field: "extra_adult_price", label: `Extra adult ${cur()}` },
+    { field: "extra_adult_price", label: "Extra adult" },
     { field: "tax_percent", label: `${taxLabel()} %` },
   ],
   form: [
