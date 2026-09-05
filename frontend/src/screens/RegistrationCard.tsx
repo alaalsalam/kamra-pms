@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, type ReactNode } from "react"
 import {
   Camera, ArrowLeft, Plus, Printer, Trash2 } from "lucide-react"
 import { Link, useParams } from "react-router-dom"
@@ -7,6 +7,7 @@ import { toFullPath } from "../lib/routing"
 import EditableNationality from "../components/EditableNationality"
 import { Button } from "../components/ui/button"
 import { cur, moneyLocale, taxLabel } from "../lib/money"
+import { useT, qty } from "../lib/i18n"
 
 /** Printable Guest Registration Card (GRC) - sign at check-in. */
 
@@ -77,7 +78,7 @@ interface Grc {
 const inr = (n: number) =>
   n.toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
 
-function Row(props: { label: string; value?: string | null }) {
+function Row(props: { label: string; value?: ReactNode }) {
   return (
     <div className="flex border-b border-zinc-200 py-1.5 text-sm">
       <span className="w-40 shrink-0 text-zinc-500">{props.label}</span>
@@ -282,10 +283,10 @@ function ActualTimeRow(props: {
           <button className="text-xs text-zinc-400" onClick={() => setEditing(false)}>✕</button>
         </span>
       ) : (
-        <span className="text-right font-medium">
-          {shown}
+        <span className="text-end font-medium">
+          <bdi dir="ltr" className="tabular-nums">{shown}</bdi>
           <button
-            className="ml-2 text-xs font-medium text-brand-700 hover:underline print:hidden"
+            className="ms-2 text-xs font-medium text-brand-700 hover:underline print:hidden"
             onClick={() => {
               setVal((props.value || new Date().toISOString()).slice(0, 16))
               setEditing(true)
@@ -319,25 +320,46 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export default function RegistrationCard() {
   const { name } = useParams()
+  const { t } = useT()
   const [d, setD] = useState<Grc | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    if (name)
-      call<Grc>("hotelpms.api.registration_card", { reservation: name }).then(setD)
+    if (!name) return
+    setError(null)
+    call<Grc>("hotelpms.api.registration_card", { reservation: name })
+      .then(setD)
+      .catch(() => setError("Could not load this registration card."))
   }, [name])
 
   useEffect(load, [load])
 
-  if (!d) return <p className="py-10 text-center text-zinc-400">Loading…</p>
+  if (error)
+    return (
+      <div className="mx-auto max-w-2xl">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {t(error)}
+          <button
+            className="ms-3 font-medium underline hover:no-underline"
+            onClick={load}
+          >
+            {t("Try again")}
+          </button>
+        </div>
+      </div>
+    )
+  if (!d) return <p className="py-10 text-center text-zinc-400">{t("Loading…")}</p>
+
+  const money = (n: number) => `${cur()}${inr(n)}`
 
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-4 flex items-center justify-between print:hidden">
         <Link to="/" className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800">
-          <ArrowLeft className="size-4" aria-hidden /> Today
+          <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden /> {t("Today")}
         </Link>
         <Button onClick={() => window.print()}>
-          <Printer className="size-4" aria-hidden /> Print GRC
+          <Printer className="size-4" aria-hidden /> {t("Print GRC")}
         </Button>
       </div>
 
@@ -347,13 +369,20 @@ export default function RegistrationCard() {
             <h1 className="text-lg font-bold">{d.property.property_name}</h1>
             <p className="text-xs text-zinc-500">{d.property.address}</p>
             <p className="text-xs text-zinc-500">
-              {d.property.gstin && <>{taxLabel() === "VAT" ? "VAT Registration No." : "GSTIN"} {d.property.gstin} · </>}
-              {d.property.phone}
+              {d.property.gstin && (
+                <>
+                  {taxLabel() === "VAT" ? "VAT Registration No." : "GSTIN"}{" "}
+                  <bdi dir="ltr">{d.property.gstin}</bdi> ·{" "}
+                </>
+              )}
+              <bdi dir="ltr">{d.property.phone}</bdi>
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-end">
             <p className="text-sm font-semibold">GUEST REGISTRATION CARD</p>
-            <p className="text-xs text-zinc-500">{d.reservation.name}</p>
+            <p className="text-xs text-zinc-500">
+              <bdi dir="ltr">{d.reservation.name}</bdi>
+            </p>
           </div>
         </div>
 
@@ -361,8 +390,8 @@ export default function RegistrationCard() {
           <div>
             <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-zinc-400">Guest</h2>
             <Row label="Name" value={d.guest.full_name} />
-            <Row label="Phone" value={d.guest.phone} />
-            <Row label="Email" value={d.guest.email} />
+            <Row label="Phone" value={d.guest.phone ? <bdi dir="ltr">{d.guest.phone}</bdi> : null} />
+            <Row label="Email" value={d.guest.email ? <bdi dir="ltr">{d.guest.email}</bdi> : null} />
             {d.guest.guest_id ? (
               <EditableNationality
                 guestId={d.guest.guest_id}
@@ -379,7 +408,7 @@ export default function RegistrationCard() {
             ) : (
               <Row label="Nationality" value={d.guest.nationality} />
             )}
-            <Row label="ID" value={d.guest.id_type ? `${d.guest.id_type} · ${d.guest.id_number ?? ""}` : null} />
+            <Row label="ID" value={d.guest.id_type ? <bdi dir="ltr">{d.guest.id_type} · {d.guest.id_number ?? ""}</bdi> : null} />
             <div className="mt-2 grid grid-cols-2 gap-3 print:grid-cols-2">
               {([["id", "ID document", d.guest.id_file],
                  ["address", "Address proof", d.guest.address_proof_file]] as const).map(([kind, label, url]) => (
@@ -417,25 +446,53 @@ export default function RegistrationCard() {
           </div>
           <div>
             <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-zinc-400">Stay</h2>
-            <Row label="Room" value={`${d.reservation.room} · ${d.reservation.room_type}`} />
-            <Row label="Check-in" value={`${d.reservation.check_in_date} (${d.property.checkin_time.slice(0, 5)})`} />
-            <Row label="Check-out" value={`${d.reservation.check_out_date} (${d.property.checkout_time.slice(0, 5)})`} />
+            <Row label="Room" value={<bdi dir="ltr">{d.reservation.room} · {d.reservation.room_type}</bdi>} />
+            <Row label="Check-in" value={<bdi dir="ltr" className="tabular-nums">{d.reservation.check_in_date} ({d.property.checkin_time.slice(0, 5)})</bdi>} />
+            <Row label="Check-out" value={<bdi dir="ltr" className="tabular-nums">{d.reservation.check_out_date} ({d.property.checkout_time.slice(0, 5)})</bdi>} />
             <ActualTimeRow label="Actual check-in" reservation={d.reservation.name}
               field="actual_check_in" value={d.reservation.actual_check_in} onSaved={load} />
             <ActualTimeRow label="Actual check-out" reservation={d.reservation.name}
               field="actual_check_out" value={d.reservation.actual_check_out} onSaved={load} />
-            <Row label="Nights" value={String(d.reservation.nights)} />
-            <Row label="Guests" value={`${d.reservation.adults} adult(s)${d.reservation.children ? ` + ${d.reservation.children} child` : ""}`} />
-            <Row label="Stay total" value={`${cur()}${inr(d.reservation.rate_total)} (incl. ${taxLabel()})`} />
-            <Row label="Advance paid" value={`${cur()}${inr(d.reservation.advance_paid)}`} />
+            <Row label="Nights" value={qty(d.reservation.nights, "night")} />
+            <Row
+              label="Guests"
+              value={
+                <>
+                  {qty(d.reservation.adults, "adult")}
+                  {d.reservation.children > 0 && (
+                    <> + {qty(d.reservation.children, "child", "children")}</>
+                  )}
+                </>
+              }
+            />
+            <Row
+              label="Stay total"
+              value={
+                <>
+                  <bdi dir="ltr" className="tabular-nums">{money(d.reservation.rate_total)}</bdi>{" "}
+                  <span className="text-zinc-400">({t("incl.")} {taxLabel()})</span>
+                </>
+              }
+            />
+            <Row label="Advance paid" value={<bdi dir="ltr" className="tabular-nums">{money(d.reservation.advance_paid)}</bdi>} />
             {d.money && (
               <>
-                <Row label="Ledger" value={`Paid ${cur()}${inr(d.money.paid_total)} · Balance ${cur()}${inr(d.money.balance)}` +
-                  (d.money.deposit_held ? ` · Deposit held ${cur()}${inr(d.money.deposit_held)}` : "")} />
+                <Row label="Paid" value={<bdi dir="ltr" className="tabular-nums">{money(d.money.paid_total)}</bdi>} />
+                <Row
+                  label="Balance"
+                  value={
+                    <bdi dir="ltr" className={"tabular-nums " + (d.money.balance > 0 ? "font-semibold text-gold-700" : "")}>
+                      {money(d.money.balance)}
+                    </bdi>
+                  }
+                />
+                {d.money.deposit_held > 0 && (
+                  <Row label="Deposit held" value={<bdi dir="ltr" className="tabular-nums">{money(d.money.deposit_held)}</bdi>} />
+                )}
                 <div className="print:hidden">
                   <a className="text-sm font-medium text-brand-700 hover:underline"
                     href={toFullPath(`/billing/${encodeURIComponent(d.money.folio)}`)}>
-                    Open folio — collect advance / deposit, settle & generate the invoice →
+                    {t("Open folio — collect advance / deposit, settle & generate the invoice →")}
                   </a>
                 </div>
               </>
@@ -454,21 +511,21 @@ export default function RegistrationCard() {
           </h2>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-300 text-left text-[11px] uppercase tracking-wider text-zinc-400">
-                <th className="py-1 pr-3 font-medium">Name</th>
-                <th className="py-1 pr-3 font-medium">Age</th>
-                <th className="py-1 pr-3 font-medium">Gender</th>
-                <th className="py-1 pr-3 font-medium">Nationality</th>
+              <tr className="border-b border-zinc-300 text-start text-[11px] uppercase tracking-wider text-zinc-400">
+                <th className="py-1 pe-3 font-medium">Name</th>
+                <th className="py-1 pe-3 font-medium">Age</th>
+                <th className="py-1 pe-3 font-medium">Gender</th>
+                <th className="py-1 pe-3 font-medium">Nationality</th>
                 <th className="py-1 font-medium">ID</th>
               </tr>
             </thead>
             <tbody>
               {d.occupants.map((o, i) => (
                 <tr key={i} className="border-b border-zinc-200">
-                  <td className="py-1.5 pr-3 font-medium">{o.full_name}</td>
-                  <td className="py-1.5 pr-3">{o.age ?? "-"}</td>
-                  <td className="py-1.5 pr-3">{o.gender || "-"}</td>
-                  <td className="py-1.5 pr-3">{o.nationality || "-"}</td>
+                  <td className="py-1.5 pe-3 font-medium">{o.full_name}</td>
+                  <td className="py-1.5 pe-3">{o.age ?? "-"}</td>
+                  <td className="py-1.5 pe-3">{o.gender || "-"}</td>
+                  <td className="py-1.5 pe-3">{o.nationality || "-"}</td>
                   <td className="py-1.5">
                     {o.id_type ? `${o.id_type} · ${o.id_number ?? ""}` : "-"}
                   </td>

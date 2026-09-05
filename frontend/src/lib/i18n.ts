@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { createElement, Fragment, useEffect, useState, type ReactNode } from "react"
 import { getLang, type Lang } from "./dir"
 import { AR } from "./translations/ar"
 
@@ -21,6 +21,8 @@ const UNIT: Record<string, string> = {
   adults: "بالغون",
   booking: "حجز",
   bookings: "حجوزات",
+  child: "طفل",
+  children: "أطفال",
   departure: "مغادرة",
   departures: "حالات مغادرة",
   day: "يوم",
@@ -164,6 +166,29 @@ export function t(source: string): string {
  */
 export function qty(n: number, singular: string, plural = singular + "s"): string {
   return `${n} ${n === 1 ? singular : plural}`
+}
+
+/**
+ * Interpolate a *translated* template that contains `{name}` placeholders,
+ * returning ReactNode[] so a compound sentence stays translatable as ONE
+ * dictionary key (correct Arabic grammar/word-order) while each substituted
+ * value is bidi-isolated. Pass an already-wrapped node (e.g. a guest name that
+ * may be Arabic) to keep its own direction; bare strings/numbers — dates,
+ * refs, amounts — are wrapped `<bdi dir="ltr">` so they read correctly inside
+ * an RTL sentence. Usage: `fill(t("… {ref} … {ci} to {co} …"), { ref, ci, co })`.
+ */
+export function fill(
+  template: string,
+  values: Record<string, ReactNode>,
+): ReactNode[] {
+  return template.split(/(\{[a-zA-Z0-9_]+\})/).map((part, i) => {
+    const m = /^\{([a-zA-Z0-9_]+)\}$/.exec(part)
+    if (!m) return part
+    const v = values[m[1]]
+    if (typeof v === "string" || typeof v === "number")
+      return createElement("bdi", { key: i, dir: "ltr" }, v)
+    return createElement(Fragment, { key: i }, v)
+  })
 }
 
 /** Subscribe a component to language changes and return a bound translator. */

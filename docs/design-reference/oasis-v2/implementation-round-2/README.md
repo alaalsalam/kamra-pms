@@ -28,8 +28,8 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
 | `/` (index) | Today | **Tested** | (this commit) | operations-centre: pulse+greeting header, real permission-aware needs-now queue, KPI tiles, room board + arrivals/departures/in-house w/ actions, loading skeleton. Day-timeline/live-feed deferred (net-new, data-heavy) |
 | `/dashboard` | Dashboard | **Tested** (rechecked) | (this commit) | now uses shared `QueueCard`; fixed leftover `?status=Open`→`Pending` |
 | `/reservations` | ResourceScreen(reservationsConfig) + ReservationSummary/ContextPanel + ReservationDetail | **Tested** | (this commit) | 5-col scannable table (guest+ref/source, stay+nights, room-or-amber "No room", status, amber balance); row/keyboard opens 372px ContextPanel (glance: stay/room/source/total/advance/balance + amber "collect balance" callout + Check-in/Check-out/Reg-card/Full-details actions), "Full details" still opens the wide ReservationDetail editor unchanged; existing URL filters kept (no duplicate filter system). Verified 390/768/1024 × AR-RTL/EN-LTR: no overflow, console-clean. Fixes: date-range filter now wraps (was +42px mobile overflow); mobile panel z-[60] over bottom-nav so all actions hittable |
-| `/grc/:name` | RegistrationCard | Pending | — | print-safe |
-| `/cancelled/:name` | CancellationLetter | Pending | — | print-safe |
+| `/grc/:name` | RegistrationCard | **Tested** | (this commit) | print-safe AR/EN. Backend untouched (registration_card + update_occupants/upload_*/set_actual_times all preserved). i18n leaks fixed: `2 adults + 1 child` (qty + child/children added to UNIT), `(incl. VAT)`, ledger→Oasis money rows (Paid/Balance-amber/Deposit), certification paragraph + folio CTA as whole-string AR keys. Logical props for RTL print (text-end, pe-, ms-, bdi on refs/dates/amounts/phone). error+retry state. Verified real data 1440 AR-RTL/EN-LTR **screen + `print` media**: dir carries, `print:hidden` hides editors/links, no overflow, 0 console errors |
+| `/cancelled/:name` | CancellationLetter | **Tested** | (this commit) | print-safe AR/EN. Backend untouched. Compound letter body → whole-sentence AR keys with `{placeholder}` tokens + new `fill()` helper (bidi-isolated values) so Arabic reads grammatically (`نؤكد أن حجزكم … من {ci} إلى {co} (3 ليالٍ) … قد تم إلغاؤه`); Refund-due in amber. error+retry. **Note:** demo data has no Cancelled reservation, so the body/print was verified via a transient route-mock (real-shaped payload) in AR+EN screen+print (dir carries, print:hidden works, no overflow, amber refund); the live error path was verified against a real non-cancelled reservation. No cancel workflow was run on demo data |
 | (internal) BookingDialog | components/BookingDialog | Pending | — | guest→stay→price→confirm sequence |
 | `/crs` | CRS | Pending | — | |
 | `/guests` | Guests | Pending | — | (r1-improved list; apply Oasis panel) |
@@ -144,7 +144,25 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
     390 in RTL); mobile panel `z-[60]` so all 3 footer actions are hittable over the bottom-nav.
   - Tests: `npm build` ✓; MCP live Front Desk → **390/768/1024 × AR-RTL/EN-LTR no overflow, 0 console errors**,
     panel full-screen+actions-hittable on mobile, 372px side panel + visible list on desktop, "Full details"
-    opens the wide editor. Hotel-Admin persona + `e2e/auth-isolation.spec.ts` pending at batch close.
+    opens the wide editor. Hotel-Admin persona verified (12 rows, role-appropriate actions). 1440 + Hotel-Admin
+    below. `e2e/auth-isolation.spec.ts` pending at batch close.
+- **GRC (`/grc/:name`)** + **Cancellation letter (`/cancelled/:name`)** — Phase 1, print-safe AR/EN.
+  - New i18n primitives in `lib/i18n.ts`: `fill(template, values)` interpolates a *translated* template's
+    `{name}` tokens into ReactNode[] with bidi-isolated values (so a compound Arabic sentence stays ONE
+    dictionary key = correct grammar/word-order); `child`/`children` added to the UNIT map for `qty()`.
+  - GRC: fixed every compound i18n leak (guests `2 adults + 1 child`, `(incl. VAT)`, ledger → Oasis money rows
+    with amber balance), whole-string AR keys for the certification paragraph + folio CTA + occupant-register
+    copy, converted physical→logical CSS (text-end / pe- / ms-) and `bdi` on refs/dates/amounts/phone for RTL
+    print, added error+retry. Backend calls all preserved; ID-type list + `Indian` default left alone (backend
+    surface). Widened `Row` value to ReactNode.
+  - Cancellation: rebuilt the letter body + closing as whole-sentence AR keys + `fill()`; amber Refund-due;
+    error+retry; logical props + bidi.
+  - New AR keys (~34) added under the GRC/Cancellation section of `ar.ts` (grepped for dupes first).
+  - Tests: `tsc --noEmit` ✓ + `npm build` ✓. MCP live as Hotel Admin, **`screen` + emulated `print` media**,
+    AR-RTL + EN-LTR: GRC on a real reservation and the letter on a real-shaped route-mock — dir carries into
+    print, `print:hidden` hides all editors/links, no overflow, no UI-label leaks (only stored data/proper
+    nouns remain English), 0 real console errors (only benign socket.io). Letter's live error path verified
+    against a real non-cancelled reservation. After-shots: `after/grc`, `after/cancellation`.
 
 ## Amber-discipline hit-list (`btn-gold`/`text-gold` → teal unless attention/money/VIP)
 _grep results + per-screen reclassification, filled as reached_

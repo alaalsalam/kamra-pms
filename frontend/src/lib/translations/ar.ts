@@ -908,6 +908,49 @@ export const AR: Record<string, string> = {
   "Cancellation number": "رقم الإلغاء",
   "Confirm cancel": "تأكيد الإلغاء",
   "Keep the booking": "الإبقاء على الحجز",
+  // Registration card (GRC) — print-safe AR/EN
+  "GUEST REGISTRATION CARD": "بطاقة تسجيل النزيل",
+  "ID": "الهوية",
+  "ID document": "وثيقة الهوية",
+  "Not on file": "غير مُرفقة",
+  "Capture / upload": "التقاط / رفع",
+  "Replace with newer": "استبدال بأحدث",
+  "Actual check-in": "الوصول الفعلي",
+  "Actual check-out": "المغادرة الفعلية",
+  "Stay total": "إجمالي الإقامة",
+  "incl.": "شامل",
+  "Deposit held": "التأمين المحتجز",
+  "Requests:": "الطلبات:",
+  "Front desk (name & sign)": "موظف الاستقبال (الاسم والتوقيع)",
+  "edit": "تعديل",
+  "Open folio — collect advance / deposit, settle & generate the invoice →":
+    "فتح الحساب — تحصيل العربون / التأمين والتسوية وإصدار الفاتورة ←",
+  "I certify the above details are correct. I agree to the hotel's policies on check-out time, damage to property and applicable taxes, and consent to my details being kept in the guest register as required by law.":
+    "أقر بأن البيانات المذكورة أعلاه صحيحة، وأوافق على سياسات الفندق بشأن وقت المغادرة والأضرار التي تلحق بالممتلكات والضرائب المطبقة، وأوافق على حفظ بياناتي في سجل النزلاء وفقًا لما يقتضيه النظام.",
+  "Everyone staying in the room - required for the hotel register. Saved occupants print on the GRC above.":
+    "كل من يقيم في الغرفة - مطلوب لسجل الفندق. تُطبع أسماء النزلاء المحفوظين على بطاقة التسجيل أعلاه.",
+  "Capture ID": "التقاط الهوية",
+  "ID ✓ Replace": "الهوية ✓ استبدال",
+  "save row → ID": "احفظ الصف ← الهوية",
+  "Save register": "حفظ السجل",
+  "Male": "ذكر",
+  "Female": "أنثى",
+  "Could not load this registration card.":
+    "تعذّر تحميل بطاقة التسجيل هذه.",
+  // Cancellation letter — print-safe AR/EN
+  "Could not load this cancellation.": "تعذّر تحميل هذا الإلغاء.",
+  "Print letter": "طباعة الخطاب",
+  "Cancellation fee": "رسوم الإلغاء",
+  "Warm regards,": "مع خالص التحية،",
+  "Dear {guest},": "عزيزنا {guest}،",
+  "This confirms that your reservation {ref} — {roomType}, {ci} to {co} ({nights}) — has been cancelled.":
+    "نؤكد أن حجزكم {ref} — {roomType}، من {ci} إلى {co} ({nights}) — قد تم إلغاؤه.",
+  "Please keep the cancellation number {num} for your records.":
+    "يرجى الاحتفاظ برقم الإلغاء {num} في سجلاتكم.",
+  "We would love to host you again — call {phone} and we will find you a room.":
+    "يسعدنا استضافتكم مرة أخرى — اتصلوا على {phone} وسنجد لكم غرفة.",
+  "We would love to host you again — reach out any time and we will find you a room.":
+    "يسعدنا استضافتكم مرة أخرى — تواصلوا معنا في أي وقت وسنجد لكم غرفة.",
 
   // Settings, administration, integrations and AI
   "Settings, AI assistant": "الإعدادات ومساعد الذكاء الاصطناعي",
