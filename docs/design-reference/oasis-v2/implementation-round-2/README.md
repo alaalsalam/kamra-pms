@@ -191,6 +191,13 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
   - Tests: `tsc --noEmit` ✓ + `npm build` ✓. MCP live 390px AR-RTL + EN-LTR across all three: no overflow,
     frontend labels translated, timeline RTL rail correct, guest-row navigation works. After-shots:
     `after/guests`, `after/journey`, `after/roomblocks`.
+- **Phase 1 batch-close sweep** — completed the full `1440/1024/768/390 × AR/EN` matrix the legend requires
+  (each group had been verified at a subset when first committed): GRC + Cancellation (route-mock) at
+  390/768/1024 AR; BookingDialog + CRS at 768/1024/1440 AR (incl. the `lg:` breakpoint where the Quote aside
+  moves beside the form); Guests/Journey/Room Blocks at 768/1024/1440 AR — **all no overflow, no frontend
+  leaks**, EN spot-checked. Front Desk `/grc/:name` loads clean (permission spot-check on a new surface).
+  **`frontend/e2e/auth-isolation.spec.ts` → 1 passed** (Finance vs POS session isolation, role routing, and
+  the New-booking / nav gating all intact). Phase 1 is fully Tested.
 
 ## Amber-discipline hit-list (`btn-gold`/`text-gold` → teal unless attention/money/VIP)
 _grep results + per-screen reclassification, filled as reached_
