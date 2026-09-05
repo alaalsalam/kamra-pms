@@ -80,11 +80,11 @@ export default function Guests() {
         </div>
         <div className="relative">
           <Search
-            className="pointer-events-none absolute left-2.5 top-2 size-4 text-zinc-400"
+            className="pointer-events-none absolute start-2.5 top-2 size-4 text-zinc-400"
             aria-hidden
           />
           <input
-            className="rounded-lg border border-zinc-300 py-1.5 pl-8 pr-3 text-sm focus:outline-2 focus:outline-brand-600"
+            className="rounded-lg border border-zinc-300 py-1.5 pe-3 ps-8 text-sm focus:outline-2 focus:outline-brand-600"
             placeholder="Name or phone…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -95,14 +95,14 @@ export default function Guests() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <th className="py-2 pr-4">Guest</th>
-                <th className="py-2 pr-4">Phone</th>
-                <th className="py-2 pr-4">Bookings</th>
-                <th className="py-2 pr-4">Stays</th>
-                <th className="py-2 pr-4">Nights</th>
-                <th className="py-2 pr-4">Lifetime {cur()}</th>
-                <th className="py-2 pr-4">Last stay</th>
+              <tr className="border-b border-zinc-200 text-start text-xs font-medium uppercase tracking-wider text-zinc-500">
+                <th className="py-2 pe-4">Guest</th>
+                <th className="py-2 pe-4">Phone</th>
+                <th className="py-2 pe-4">Bookings</th>
+                <th className="py-2 pe-4">Stays</th>
+                <th className="py-2 pe-4">Nights</th>
+                <th className="py-2 pe-4">Lifetime {cur()}</th>
+                <th className="py-2 pe-4">Last stay</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -121,25 +121,25 @@ export default function Guests() {
                     }
                   }}
                 >
-                  <td className="py-2.5 pr-4">
+                  <td className="py-2.5 pe-4">
                     <span className="font-medium">{g.full_name}</span>
                     {Boolean(g.vip) && (
                       <Star
-                        className="ml-1.5 inline size-3.5 fill-amber-400 text-amber-400"
+                        className="ms-1.5 inline size-3.5 fill-amber-400 text-amber-400"
                         aria-label="VIP"
                       />
                     )}
                   </td>
-                  <td className="py-2.5 pr-4 text-zinc-500" dir="ltr">
+                  <td className="py-2.5 pe-4 text-zinc-500" dir="ltr">
                     {g.phone ?? "-"}
                   </td>
-                  <td className="py-2.5 pr-4">{g.bookings}</td>
-                  <td className="py-2.5 pr-4">{g.stays}</td>
-                  <td className="py-2.5 pr-4">{g.nights}</td>
-                  <td className="py-2.5 pr-4 font-medium">
-                    {cur()}{inr(g.lifetime_value)}
+                  <td className="py-2.5 pe-4">{g.bookings}</td>
+                  <td className="py-2.5 pe-4">{g.stays}</td>
+                  <td className="py-2.5 pe-4">{g.nights}</td>
+                  <td className="py-2.5 pe-4 font-medium">
+                    <bdi dir="ltr" className="tabular-nums">{cur()}{inr(g.lifetime_value)}</bdi>
                   </td>
-                  <td className="py-2.5 pr-4 text-zinc-500">
+                  <td className="py-2.5 pe-4 text-zinc-500">
                     {g.last_stay ? (
                       fmtDate(g.last_stay)
                     ) : (

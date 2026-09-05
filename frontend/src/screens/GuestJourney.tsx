@@ -136,19 +136,19 @@ function StayStrip({ rows }: { rows: ResRow[] }) {
       </div>
       <div className="mt-1.5 flex gap-3 text-[10px] text-zinc-400">
         <span>
-          <span className="mr-1 inline-block size-2 rounded-sm bg-brand-600 align-middle" />
+          <span className="me-1 inline-block size-2 rounded-sm bg-brand-600 align-middle" />
           stayed
         </span>
         <span>
-          <span className="mr-1 inline-block size-2 rounded-sm bg-emerald-500 align-middle" />
+          <span className="me-1 inline-block size-2 rounded-sm bg-emerald-500 align-middle" />
           in-house
         </span>
         <span>
-          <span className="mr-1 inline-block size-2 rounded-sm bg-sky-400 align-middle" />
+          <span className="me-1 inline-block size-2 rounded-sm bg-sky-400 align-middle" />
           upcoming
         </span>
         <span>
-          <span className="mr-1 inline-block size-2 rounded-sm bg-rose-300 align-middle" />
+          <span className="me-1 inline-block size-2 rounded-sm bg-rose-300 align-middle" />
           cancelled
         </span>
       </div>
@@ -205,11 +205,11 @@ function MergePanel(props: {
             {hits.map((h) => (
               <li key={h.name}>
                 <button
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-zinc-50"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-start text-sm hover:bg-zinc-50"
                   onClick={() => setPicked(h)}
                 >
                   <span className="font-medium">{h.full_name}</span>
-                  <span className="ml-auto text-xs text-zinc-400">
+                  <span className="ms-auto text-xs text-zinc-400">
                     {h.phone ? `${h.phone} · ` : ""}
                     {qty(h.stays, "stay")}
                   </span>
@@ -254,7 +254,9 @@ function MergePanel(props: {
 function StatCell(props: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-lg font-semibold leading-tight">{props.value}</div>
+      <div className="text-lg font-semibold leading-tight">
+        <bdi dir="ltr" className="tabular-nums">{props.value}</bdi>
+      </div>
       <div className="text-[10px] font-medium uppercase tracking-widest text-zinc-400">
         {props.label}
       </div>
@@ -337,7 +339,7 @@ export default function GuestJourney() {
                 {guest.phone && (
                   <span className="inline-flex items-center gap-1">
                     <Phone className="size-3.5" aria-hidden />
-                    {guest.phone}
+                    <bdi dir="ltr">{guest.phone}</bdi>
                   </span>
                 )}
                 {guest.email && (
@@ -355,7 +357,7 @@ export default function GuestJourney() {
                 {guest.id_type && (
                   <span className="inline-flex items-center gap-1">
                     <Fingerprint className="size-3.5" aria-hidden />
-                    {guest.id_type} {guest.id_number ?? ""}
+                    <bdi dir="ltr">{guest.id_type} {guest.id_number ?? ""}</bdi>
                   </span>
                 )}
               </p>
@@ -379,7 +381,7 @@ export default function GuestJourney() {
                   Book a stay
                 </Button>
               </div>
-              <div className="flex gap-6 text-right">
+              <div className="flex gap-6 text-end">
                 <StatCell label="Stays" value={String(stats.stays)} />
                 <StatCell label="Nights" value={String(stats.nights)} />
                 <StatCell
@@ -411,16 +413,18 @@ export default function GuestJourney() {
                   className="flex flex-wrap items-center gap-x-4 gap-y-1 py-2 text-sm"
                 >
                   <span className="font-medium">
-                    {r.check_in_date} → {r.check_out_date}
+                    <bdi dir="ltr" className="tabular-nums">
+                      {r.check_in_date} → {r.check_out_date}
+                    </bdi>
                   </span>
                   <span className="text-zinc-500">
-                    {r.room_type?.split("-").pop()}
-                    {r.room ? ` · Room ${r.room.split("-").pop()}` : ""} ·{" "}
+                    <bdi>{r.room_type?.split("-").pop()}</bdi>
+                    {r.room ? <> · <bdi dir="ltr">Room {r.room.split("-").pop()}</bdi></> : ""} ·{" "}
                     {qty(r.nights, "night")}
                   </span>
                   {r.company && <Badge tone="zinc">{r.company}</Badge>}
-                  <span className="ml-auto flex items-center gap-3">
-                    <span>{cur()}{inr(r.amount_after_tax)}</span>
+                  <span className="ms-auto flex items-center gap-3">
+                    <bdi dir="ltr" className="tabular-nums">{cur()}{inr(r.amount_after_tax)}</bdi>
                     <a
                       href={toFullPath(`/grc/${encodeURIComponent(r.name)}`)}
                       className="font-medium text-brand-700 hover:underline"
@@ -449,14 +453,14 @@ export default function GuestJourney() {
                 No activity yet - their story starts with the first booking.
               </p>
             ) : (
-              <ol className="relative ml-3 space-y-5 border-l border-zinc-200 pb-1">
+              <ol className="relative ms-3 space-y-5 border-s border-zinc-200 pb-1">
                 {timeline.map((e, i) => {
                   const Icon = eventIcon[e.type]
                   return (
-                    <li key={i} className="relative pl-8">
+                    <li key={i} className="relative ps-8">
                       <span
                         className={cn(
-                          "absolute -left-[13px] top-0 flex size-[26px] items-center justify-center rounded-full border",
+                          "absolute -start-[13px] top-0 flex size-[26px] items-center justify-center rounded-full border",
                           eventTone[e.type],
                         )}
                       >
@@ -476,12 +480,12 @@ export default function GuestJourney() {
                         )}
                         {e.amount ? (
                           <span className="text-sm text-zinc-500">
-                            {cur()}{inr(e.amount)}
+                            <bdi dir="ltr" className="tabular-nums">{cur()}{inr(e.amount)}</bdi>
                           </span>
                         ) : null}
                         {e.channel && <Badge tone="indigo">{e.channel}</Badge>}
-                        <span className="ml-auto text-xs text-zinc-400">
-                          {e.ts.slice(0, 16)}
+                        <span className="ms-auto text-xs text-zinc-400">
+                          <bdi dir="ltr" className="tabular-nums">{e.ts.slice(0, 16)}</bdi>
                         </span>
                       </div>
                       {e.detail && (

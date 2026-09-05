@@ -32,9 +32,9 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
 | `/cancelled/:name` | CancellationLetter | **Tested** | (this commit) | print-safe AR/EN. Backend untouched. Compound letter body → whole-sentence AR keys with `{placeholder}` tokens + new `fill()` helper (bidi-isolated values) so Arabic reads grammatically (`نؤكد أن حجزكم … من {ci} إلى {co} (3 ليالٍ) … قد تم إلغاؤه`); Refund-due in amber. error+retry. **Note:** demo data has no Cancelled reservation, so the body/print was verified via a transient route-mock (real-shaped payload) in AR+EN screen+print (dir carries, print:hidden works, no overflow, amber refund); the live error path was verified against a real non-cancelled reservation. No cancel workflow was run on demo data |
 | (internal) BookingDialog | components/BookingDialog | **Tested** | (this commit) | pricing/availability/tax/creation/permissions untouched. Presentation only: fixed RTL bidi on the Total-box stay dates (was reversed), fixed compound i18n leaks (capacity `Sleeps up to N adults · M children` via qty, over-capacity warning + `Split into N rooms`, cancellation/no-show policy via `fill()` templates, `Meals`, `/night`, `/adult)`), translated placeholders (`Type to find or create`, `Optional code`). Verified 390 AR-RTL/EN-LTR: no dialog/page overflow, actions reachable, 0 real console errors |
 | `/crs` | CRS | **Tested** | (this commit) | crs_search + create_booking logic untouched. Fixed compound leaks (result summary children grammar, `N rooms · from`, `N left · sleeps M`, `total, taxes in`, `Booked {ref} at {property}`), booking Sheet title `Book {roomType}` + description dates now bidi-isolated (widened shared `Sheet` title/description to ReactNode — backward-compatible). Logical props (ms-/text-end) + bdi on rates/totals. Verified 390 AR-RTL/EN-LTR: no overflow, results + Sheet render, dates correct order |
-| `/guests` | Guests | Pending | — | (r1-improved list; apply Oasis panel) |
-| `/guests/:name` | GuestJourney | Pending | — | |
-| `/room-blocks` | ResourceScreen(roomBlocksConfig) | Pending | — | |
+| `/guests` | Guests | **Tested** | (this commit) | backend untouched. r1 list was already well-keyed; added the `Name or phone…` placeholder key, converted physical→logical CSS (ps-/pe-/ms-/text-start), bdi on the lifetime amount. Row → `/guests/:name` navigation intact. Verified 390 AR-RTL/EN-LTR: no overflow |
+| `/guests/:name` | GuestJourney | **Tested** | (this commit) | backend untouched. Translated all frontend statics (back link, Journey, `events · newest first`, stay-strip legend, Profile actions, Merge/Anonymize + descriptions, placeholders), bidi on all frontend dates/amounts/timestamps/phone/ID, and fixed the timeline RTL layout (`border-s`/`ms-`/`ps-`/`-start-` so the rail + icons sit on the correct side). **Known limit:** timeline event `title`/`detail` come from the `guest_journey` API (data) — they stay English in AR unless the backend is changed (out of scope). Verified 390 AR-RTL/EN-LTR: no overflow, no frontend-label leaks |
+| `/room-blocks` | ResourceScreen(roomBlocksConfig) | **Tested** | (this commit) | uses the round-2 ResourceScreen. Added AR keys for the description + reason/status enums (House Use/VIP Hold/Owner/Released) + form date labels. Verified 390 AR-RTL/EN-LTR: no overflow, description + enums translated |
 
 ### Phase 2 — Inventory & housekeeping
 | Route | Component | Status | Commit | Notes |
@@ -177,6 +177,20 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
   - New AR keys added under the booking + CRS sections (deduped; removed a `Sleeps up to` that already existed).
   - Tests: `tsc --noEmit` ✓ + `npm build` ✓. MCP live, 390px AR-RTL + EN-LTR: no dialog/page overflow, leaks
     gone, dates render in correct order, results + booking Sheet work. After-shots: `after/booking`, `after/crs`.
+- **Guests (`/guests`)** + **GuestJourney (`/guests/:name`)** + **Room Blocks (`/room-blocks`)** — Phase 1,
+  presentation + i18n only (backend contracts untouched).
+  - Guests: r1 list already well-keyed — added the search placeholder key, logical CSS (ps-/pe-/ms-/text-start),
+    bdi on the lifetime amount. Row→journey navigation was already correct (`useNavigate` on a keyboard-operable
+    `role=button` row).
+  - GuestJourney: observer-translated; added AR keys for every frontend static (legend, section titles, profile
+    actions + descriptions, placeholders) + bidi on all frontend dates/amounts/timestamps/phone/ID + logical
+    props fixing the timeline rail side in RTL (`border-s`, `-start-[13px]`, `ms-`, `ps-`). The timeline event
+    `title`/`detail` are `guest_journey` API strings (data) → left as-is (translating them is a backend change).
+  - Room Blocks: pure `ar.ts` additions (ResourceScreen already carries the round-2 behaviour) — description +
+    reason/status enum labels + form date labels.
+  - Tests: `tsc --noEmit` ✓ + `npm build` ✓. MCP live 390px AR-RTL + EN-LTR across all three: no overflow,
+    frontend labels translated, timeline RTL rail correct, guest-row navigation works. After-shots:
+    `after/guests`, `after/journey`, `after/roomblocks`.
 
 ## Amber-discipline hit-list (`btn-gold`/`text-gold` → teal unless attention/money/VIP)
 _grep results + per-screen reclassification, filled as reached_
