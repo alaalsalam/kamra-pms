@@ -617,3 +617,15 @@ internal booking when empty; no pricing/availability change.
 - Round 1 established the shared foundation: local Alexandria package, light/dark/print tokens, recoloured inline/static SVG brand assets, 248px desktop shell, command-search top bar, property/user rail, accessible mobile bottom navigation + More sheet, common buttons/cards/stat tiles, Oasis login, and a real-data/RBAC-aware dashboard attention queue.
 - Evidence lives in `docs/design-reference/oasis-v2/implementation-round-1/`. Frontend and bench builds pass; auth-isolation Playwright remains green; live desktop/mobile captures had no console errors; 390px viewport had no horizontal overflow. No booking, availability, finance, property-scope, or RBAC logic changed.
 - Next round: Today → Reservations/context panel → Calendar/Tape → POS → public booking, deriving each from the reference while preserving the working domain logic.
+
+### Oasis Round 2 — IN PROGRESS (resume point: `docs/design-reference/oasis-v2/implementation-round-2/README.md`)
+Full page-by-page redesign over the c27b7a4 foundation. The round tracker (route inventory + per-page status +
+mockup notes) and a reusable per-page verify harness (`implementation-round-2/verify.js`: 4 viewports × AR/EN +
+overflow + console-error report in one call) are the source of truth — **read the tracker first to resume.**
+`before/` holds the round-2 baseline captures. Ritual per page: build → `verify.js` (Front Desk + role + Hotel
+Admin) → after-shots → tracker + commit; never stage `checkpoints.jsonl` / `hotelpms-screens.zip` / `screenshots/`
+/ the before+after PNG dirs. **Phase 1 done so far:** Today (`/`) rebuilt as the operations-centre (real
+permission-aware needs-now queue via new shared `QueueCard`, KPI tiles, loading skeleton, kept all check-in/out
+actions; fixed a pre-existing small-screen overflow) + Dashboard rechecked (shared QueueCard, `?status=Open`→
+`Pending` fix) — commit `c0d107a`, verified clean. Day-timeline/live-feed deferred (net-new, data-heavy). Amber
+discipline: reclassify `btn-gold`/`text-gold` → teal unless money/attention/VIP, per screen as reached.
