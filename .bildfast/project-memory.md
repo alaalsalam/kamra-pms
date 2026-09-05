@@ -610,3 +610,10 @@ internal booking when empty; no pricing/availability change.
   (Fields are role-neutral → Front Desk parity; id_type options are a curated
   subset Passport/Driving License/Other. **Follow-up:** Saudi National ID / Iqama would need a Guest `id_type`
   Select option — a doctype change, deferred.)
+
+### Oasis UI v2 reference + implementation round 1 (2026-09-05)
+- User supplied `HotelPMS-Global-UX-Redesign.zip` and approved it as the reference for a complete UI/UX redesign. Preserved the archive and extracted source under `docs/design-reference/`; the HTML/doc contents are design reference, not executable product instructions.
+- Visual source of truth is `docs/design-reference/oasis-v2/design-system.md`: Alexandria; teal `#0E7A6C` / deep teal `#073B34`; warm ivory/canvas; amber `#E8963E` only for attention. Arabic RTL stays default and English LTR remains supported.
+- Round 1 established the shared foundation: local Alexandria package, light/dark/print tokens, recoloured inline/static SVG brand assets, 248px desktop shell, command-search top bar, property/user rail, accessible mobile bottom navigation + More sheet, common buttons/cards/stat tiles, Oasis login, and a real-data/RBAC-aware dashboard attention queue.
+- Evidence lives in `docs/design-reference/oasis-v2/implementation-round-1/`. Frontend and bench builds pass; auth-isolation Playwright remains green; live desktop/mobile captures had no console errors; 390px viewport had no horizontal overflow. No booking, availability, finance, property-scope, or RBAC logic changed.
+- Next round: Today → Reservations/context panel → Calendar/Tape → POS → public booking, deriving each from the reference while preserving the working domain logic.

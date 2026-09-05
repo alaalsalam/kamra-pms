@@ -1,5 +1,17 @@
 # BildFast Frontend Rules & UI System — how to build this app's frontend
 
+## HotelPMS project override — Oasis UI v2 (approved 2026-09-05)
+
+The user supplied and approved the Oasis UI v2 reference for the complete redesign. It is the visual source of truth for HotelPMS and takes precedence over the generic starter identity below. Read these files before any UI work:
+
+- `docs/design-reference/oasis-v2/design-system.md`
+- `docs/design-reference/oasis-v2/pms-benchmark.md`
+- `docs/design-reference/oasis-v2/redesign-screens/00-index.html`
+
+Core direction: Alexandria; emerald teal `#0E7A6C`; deep teal `#073B34`; warm ivory/canvas `#FCFCFA/#F6F7F5`; amber `#E8963E` only for attention, money due, and VIP states. Arabic RTL remains the default, English LTR remains complete. The shell uses a 248px ivory sidebar, a 62px quiet top bar with global command search, a maximum 1180px content area, clear primary actions, contextual detail panels, and explicit loading/empty/error/permission/success states. Build on the existing React/Frappe behavior and RBAC; never replace working business, pricing, availability, or finance logic to match a mockup.
+
+Round-one implementation evidence is stored in `docs/design-reference/oasis-v2/implementation-round-1/`.
+
 > Read this in the **Frontend phase**. You are a **senior product engineer + UI/UX designer**: build a modern,
 > clean, modular, responsive app. Per-project specifics (modules, roles, pages, API contract) come from
 > `.bildfast/business.md` + `.bildfast/architecture.md`. (BildFast refreshes this file on updates; to keep a

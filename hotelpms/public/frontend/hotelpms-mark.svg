@@ -2,12 +2,12 @@
   <title id="t">HotelPMS</title>
   <defs>
     <linearGradient id="g" x1="28" y1="22" x2="101" y2="107" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#e6c77f"/>
-      <stop offset=".52" stop-color="#c9a24b"/>
-      <stop offset="1" stop-color="#9d7020"/>
+      <stop offset="0" stop-color="#efbd7f"/>
+      <stop offset=".52" stop-color="#e8963e"/>
+      <stop offset="1" stop-color="#b96a1f"/>
     </linearGradient>
   </defs>
-  <rect x="5" y="5" width="118" height="118" rx="30" fill="#061f45"/>
+  <rect x="5" y="5" width="118" height="118" rx="30" fill="#073b34"/>
   <rect x="7" y="7" width="114" height="114" rx="28" fill="none" stroke="url(#g)" stroke-width="2" opacity=".72"/>
   <path d="M29 96V58c0-15 14-27 35-36 21 9 35 21 35 36v38" fill="none" stroke="url(#g)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M46 93V59M82 93V59M46 73H82" fill="none" stroke="#fffaf0" stroke-width="7" stroke-linecap="round"/>

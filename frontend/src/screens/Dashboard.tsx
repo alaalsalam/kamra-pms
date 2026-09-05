@@ -3,7 +3,7 @@ import { Link, useOutletContext } from "react-router-dom"
 import { useRealtime } from "../lib/realtime"
 import {
   BedDouble, LogIn, LogOut, Users, SaudiRiyal, Wallet, Building2, Brush, Receipt,
-  PieChart,
+  PieChart, ArrowUpRight, CircleAlert, Sparkles,
 } from "lucide-react"
 import { call, getCurrentProperty } from "../lib/api"
 import { serverError } from "../lib/resource"
@@ -15,6 +15,7 @@ import { Bilingual } from "../components/Bilingual"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { StatCard } from "../components/ui/stat-card"
 import { cur, moneyLocale, dateLocale } from "../lib/money"
+import { useT } from "../lib/i18n"
 
 const inr = (n: unknown) =>
   Number(n ?? 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
@@ -115,7 +116,47 @@ function DashboardSkeleton() {
   )
 }
 
+function AttentionCard({
+  icon: Icon,
+  title,
+  detail,
+  action,
+  to,
+  urgent = false,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  title: string
+  detail: string
+  action: string
+  to?: string
+  urgent?: boolean
+}) {
+  const body = (
+    <>
+      <span className={urgent
+        ? "grid size-10 shrink-0 place-items-center rounded-xl bg-gold-100 text-gold-700"
+        : "grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"}
+      >
+        <Icon className="size-5" aria-hidden />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-bold text-zinc-900">{title}</span>
+        <span className="mt-0.5 block text-xs leading-5 text-zinc-500">{detail}</span>
+      </span>
+      {to && (
+        <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-brand-700">
+          {action}
+          <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
+        </span>
+      )}
+    </>
+  )
+  const cls = "group flex min-h-24 items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 text-start shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
+  return to ? <Link to={to} className={cls}>{body}</Link> : <div className={cls}>{body}</div>
+}
+
 export default function Dashboard() {
+  const { t } = useT()
   const [scope, setScope] = useState<"property" | "portfolio">("property")
   const [multi, setMulti] = useState(false)
   const [prop, setProp] = useState<PropDash | null>(null)
@@ -155,7 +196,7 @@ export default function Dashboard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-semibold text-zinc-900">Dashboard</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{t("Operations centre")}</h1>
             {activeDate && (
               <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500">
                 {new Date(activeDate + "T00:00:00").toLocaleDateString(dateLocale(), {
@@ -167,10 +208,10 @@ export default function Dashboard() {
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-500">
+          <p className="mt-1 text-[13px] text-zinc-500">
             {scope === "property"
-              ? "Today at this property, by department."
-              : "The whole portfolio at a glance."}
+              ? t("See what needs attention now, then monitor the whole property.")
+              : t("The whole portfolio at a glance.")}
           </p>
         </div>
         {multi && (
@@ -218,6 +259,48 @@ export default function Dashboard() {
             <Tile icon={Wallet} label="Collections" value={`${cur()}${inr(prop.collections_today)}`}
               sub="today" to={linkTo("/billing")} />
           </div>
+
+          <section aria-labelledby="attention-title">
+            <div className="mb-3 flex items-center gap-2">
+              <h2 id="attention-title" className="text-[13px] font-bold text-zinc-900">
+                {t("Needs your attention now")}
+              </h2>
+              <span className="rounded-lg bg-zinc-100 px-2 py-1 text-[10px] font-semibold text-zinc-500">
+                {t("Priority order")}
+              </span>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-3">
+              <AttentionCard
+                icon={LogIn}
+                title={`${prop.arrivals} ${t("arrivals today")}`}
+                detail={prop.arrivals
+                  ? t("Review assignments and prepare the next arrivals.")
+                  : t("No arrivals are waiting right now.")}
+                action={t("Open today")}
+                to={linkTo("/")}
+              />
+              <AttentionCard
+                icon={prop.housekeeping.overdue_tasks ? CircleAlert : Brush}
+                title={`${prop.housekeeping.open_tasks} ${t("open housekeeping tasks")}`}
+                detail={prop.housekeeping.overdue_tasks
+                  ? `${prop.housekeeping.overdue_tasks} ${t("overdue tasks need action")}`
+                  : t("Rooms are moving through the cleaning cycle.")}
+                action={t("Open board")}
+                to={linkTo("/housekeeping", "?status=Open")}
+                urgent={prop.housekeeping.overdue_tasks > 0}
+              />
+              <AttentionCard
+                icon={prop.finance.outstanding ? Wallet : Sparkles}
+                title={`${cur()}${inr(prop.finance.outstanding)} ${t("outstanding")}`}
+                detail={prop.finance.outstanding
+                  ? t("Review open balances before the next shift.")
+                  : t("No outstanding balance needs action.")}
+                action={t("Open billing")}
+                to={linkTo("/billing")}
+                urgent={prop.finance.outstanding > 0}
+              />
+            </div>
+          </section>
 
           <Card>
             <CardHeader>

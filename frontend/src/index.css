@@ -1,47 +1,51 @@
 @import "tailwindcss";
 
 @theme {
-  /* HotelPMS identity: deep navy for trust, warm champagne gold for
-     hospitality. Two families:
-       brand-*  = accent that INVERTS in dark (readable navy↔sky).
-       navy-*   = fixed chrome; the SAME value in light and dark so headers,
-                  footers and summary panels stay navy in both modes.
-     Adding a step here makes bg-/text-/border- utilities for it automatically. */
-  --color-brand-50: #f2f6fb;
-  --color-brand-100: #e1eaf5;
-  --color-brand-600: #082b5c;
-  --color-brand-700: #06244d;
-  --color-brand-900: #031733;
+  /* Oasis UI v2. Existing semantic utility names remain stable so the new
+     system reaches every screen without a risky page-by-page colour fork. */
+  --color-brand-50: #edf6f4;
+  --color-brand-100: #d9ede9;
+  --color-brand-200: #bce0da;
+  --color-brand-300: #8bcac0;
+  --color-brand-500: #1e9382;
+  --color-brand-600: #0e7a6c;
+  --color-brand-700: #0b655a;
+  --color-brand-800: #0a4f46;
+  --color-brand-900: #073b34;
 
-  /* Fixed navy chrome ramp — never remapped in .dark. */
-  --color-navy-50: #eef3fa;
-  --color-navy-100: #d7e3f2;
-  --color-navy-200: #b0c6e1;
-  --color-navy-300: #7f9fc6;
-  --color-navy-500: #12406f;
-  --color-navy-600: #0e3560;
-  --color-navy-700: #0b2b50;
-  --color-navy-800: #082b5c;
-  --color-navy-900: #061f45;
-  --color-navy-950: #04152f;
+  /* Legacy navy tokens now express the deep Oasis chrome. */
+  --color-navy-50: #edf6f4;
+  --color-navy-100: #d9ede9;
+  --color-navy-200: #bce0da;
+  --color-navy-300: #8bcac0;
+  --color-navy-500: #1e9382;
+  --color-navy-600: #0e7a6c;
+  --color-navy-700: #0b655a;
+  --color-navy-800: #0a4f46;
+  --color-navy-900: #073b34;
+  --color-navy-950: #052e29;
 
-  /* Champagne gold ramp. gold-500 is the CTA fill (navy text on it ≈ 5.8:1
-     AA). gold-700 is the safe gold for text on light; gold-300/400 for text
-     on navy. */
-  --color-gold-50: #fbf6ea;
-  --color-gold-100: #f6e9cb;
-  --color-gold-200: #edd7a4;
-  --color-gold-300: #e0bf79;
-  --color-gold-400: #d3ab58;
-  --color-gold-500: #c9a24b;
-  --color-gold-600: #a9822f;
-  --color-gold-700: #866527;
+  /* Legacy gold tokens now express the restrained attention amber. */
+  --color-gold-50: #fdf7ee;
+  --color-gold-100: #fbedDC;
+  --color-gold-200: #f3ddbe;
+  --color-gold-300: #efbd7f;
+  --color-gold-400: #eba458;
+  --color-gold-500: #e8963e;
+  --color-gold-600: #b96a1f;
+  --color-gold-700: #8f5312;
 
-  /* Neutrals carry a faint warm bias so the greys read as chosen, not the
-     stock cool zinc. Dark mode + print remap these below. */
-  --color-zinc-50: #f8f7f5;
-  --color-zinc-100: #f1efec;
-  --color-zinc-200: #e6e3de;
+  --color-zinc-50: #f6f7f5;
+  --color-zinc-100: #eff2ef;
+  --color-zinc-200: #e6e9e6;
+  --color-zinc-300: #c9d1cc;
+  --color-zinc-400: #89938e;
+  --color-zinc-500: #57625d;
+  --color-zinc-600: #46514b;
+  --color-zinc-700: #34413b;
+  --color-zinc-800: #26312c;
+  --color-zinc-900: #1b2420;
+  --color-zinc-950: #111713;
 }
 
 html {
@@ -50,7 +54,7 @@ html {
 }
 
 body {
-  font-family: "Manrope Variable", "Segoe UI", Arial, sans-serif;
+  font-family: "Alexandria Variable", "Alexandria", "Segoe UI", Tahoma, sans-serif;
 }
 
 /* Arabic is a first-class product direction, not just translated labels.
@@ -58,7 +62,7 @@ body {
    few physical Tailwind utilities used for sidebars, popovers and input
    icons. Numbers and technical identifiers deliberately stay LTR. */
 html[dir="rtl"] body {
-  font-family: "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif;
+  font-family: "Alexandria Variable", "Alexandria", "Segoe UI", Tahoma, sans-serif;
   letter-spacing: normal;
 }
 
@@ -178,25 +182,25 @@ html[dir="rtl"] input[type="url"] {
    use bg-black so they stay dark in both themes. */
 .dark {
   color-scheme: dark;
-  /* Surfaces carry a faint navy tint so the dark theme reads as the same
-     brand, not a generic charcoal. Text steps (400+) stay neutral. */
-  --color-white: #111722;
-  --color-zinc-50: #0b0f16;
-  --color-zinc-100: #172030;
-  --color-zinc-200: #222c3d;
-  --color-zinc-300: #33405a;
-  --color-zinc-400: #8a8a93;
-  --color-zinc-500: #a7a7b0;
-  --color-zinc-600: #c6c6cd;
-  --color-zinc-700: #dadade;
-  --color-zinc-800: #ebebee;
-  --color-zinc-900: #f6f6f7;
+  /* Deep green-black surfaces keep Oasis recognisable after dark. */
+  --color-white: #111b18;
+  --color-zinc-50: #0c1412;
+  --color-zinc-100: #17231f;
+  --color-zinc-200: #24312d;
+  --color-zinc-300: #364640;
+  --color-zinc-400: #8d9994;
+  --color-zinc-500: #abb5b0;
+  --color-zinc-600: #c7cfcb;
+  --color-zinc-700: #dce2df;
+  --color-zinc-800: #edf1ef;
+  --color-zinc-900: #f8faf9;
   --color-zinc-950: #ffffff;
-  --color-brand-50: #102b4f;
-  --color-brand-100: #173b68;
-  --color-brand-600: #7399ca;
-  --color-brand-700: #9cbbdf;
-  --color-brand-900: #d8e7fa;
+  --color-brand-50: #11352f;
+  --color-brand-100: #17473f;
+  --color-brand-200: #245f55;
+  --color-brand-600: #5bc0ae;
+  --color-brand-700: #8fd5c8;
+  --color-brand-900: #d9ede9;
   /* Gold background steps go deep+warm on dark so cream chips/badges don't
      glare. gold-300/400/500 (accents & text on navy) stay bright. */
   --color-gold-50: #241c0e;
@@ -233,25 +237,25 @@ html[dir="rtl"] input[type="url"] {
   .dark {
     color-scheme: light;
     --color-white: #ffffff;
-    --color-zinc-50: #fafafa;
-    --color-zinc-100: #f4f4f5;
-    --color-zinc-200: #e4e4e7;
-    --color-zinc-300: #d4d4d8;
-    --color-zinc-400: #a1a1aa;
-    --color-zinc-500: #71717a;
-    --color-zinc-600: #52525b;
-    --color-zinc-700: #3f3f46;
-    --color-zinc-800: #27272a;
-    --color-zinc-900: #18181b;
-    --color-zinc-950: #09090b;
-    --color-brand-50: #f2f6fb;
-    --color-brand-100: #e1eaf5;
-    --color-brand-600: #082b5c;
-    --color-brand-700: #06244d;
-    --color-brand-900: #031733;
-    --color-gold-50: #fbf6ea;
-    --color-gold-100: #f6e9cb;
-    --color-gold-200: #edd7a4;
+    --color-zinc-50: #f6f7f5;
+    --color-zinc-100: #eff2ef;
+    --color-zinc-200: #e6e9e6;
+    --color-zinc-300: #c9d1cc;
+    --color-zinc-400: #89938e;
+    --color-zinc-500: #57625d;
+    --color-zinc-600: #46514b;
+    --color-zinc-700: #34413b;
+    --color-zinc-800: #26312c;
+    --color-zinc-900: #1b2420;
+    --color-zinc-950: #111713;
+    --color-brand-50: #edf6f4;
+    --color-brand-100: #d9ede9;
+    --color-brand-600: #0e7a6c;
+    --color-brand-700: #0b655a;
+    --color-brand-900: #073b34;
+    --color-gold-50: #fdf7ee;
+    --color-gold-100: #fbeddc;
+    --color-gold-200: #f3ddbe;
     --color-rose-50: #fff1f2;
     --color-rose-200: #fecdd3;
     --color-rose-500: #f43f5e;
@@ -281,6 +285,17 @@ html[dir="rtl"] input[type="url"] {
 
 body {
   @apply bg-zinc-50 text-zinc-900 antialiased;
+  line-height: 1.65;
+}
+
+::selection {
+  background: var(--color-brand-100);
+  color: var(--color-brand-900);
+}
+
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
 }
 
 /* ---- HotelPMS brand helpers -------------------------------------------- */
@@ -297,10 +312,10 @@ body {
     var(--color-gold-400),
     var(--color-gold-600)
   );
-  color: var(--color-navy-950);
+  color: #3a2405;
   font-weight: 600;
   box-shadow:
-    0 1px 2px rgba(6, 31, 69, 0.22),
+    0 4px 12px rgba(232, 150, 62, 0.26),
     inset 0 1px 0 rgba(255, 255, 255, 0.28);
   transition:
     filter 0.15s ease,
@@ -346,9 +361,9 @@ body {
 .hero-scrim {
   background: linear-gradient(
     180deg,
-    rgba(4, 21, 47, 0.12) 0%,
-    rgba(4, 21, 47, 0.5) 52%,
-    rgba(4, 21, 47, 0.86) 100%
+    rgba(7, 59, 52, 0.1) 0%,
+    rgba(7, 59, 52, 0.52) 52%,
+    rgba(5, 46, 41, 0.9) 100%
   );
 }
 
@@ -357,7 +372,7 @@ body {
   background-color: var(--color-white);
   border: 1px solid var(--color-zinc-200);
   border-radius: 1rem;
-  box-shadow: 0 1px 2px rgba(6, 31, 69, 0.05), 0 8px 24px -18px rgba(6, 31, 69, 0.28);
+  box-shadow: 0 1px 2px rgba(27, 36, 32, 0.05), 0 8px 24px -18px rgba(27, 36, 32, 0.28);
 }
 
 /* Off-screen deferral for long marketing pages (rooms lists, catalogues). */

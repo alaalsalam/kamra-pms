@@ -11,7 +11,7 @@ import { useT } from "../lib/i18n"
 const inputCls =
   "w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm shadow-sm " +
   "text-zinc-900 placeholder:text-zinc-400 " +
-  "transition focus:border-gold-500 focus:outline-none focus:ring-4 focus:ring-gold-500/10"
+  "transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10"
 
 const DEMO_ACCOUNTS = [
   { label: "System Admin", usr: "admin@hotelpms.local", pwd: "HotelPMSAdmin1!" },
@@ -60,31 +60,31 @@ export default function Login(props: { onSuccess: () => void }) {
   const sessionEnded = sessionStorage.getItem("hotelpms_session_ended") === "1"
 
   return (
-    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[#f6f4ef] px-4 py-8 sm:px-6">
+    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-zinc-50 px-4 py-8 sm:px-6">
       <div
         className="pointer-events-none absolute inset-0 opacity-90"
         aria-hidden
         style={{
           background:
-            "radial-gradient(56rem 34rem at 8% 0%, rgba(201,162,75,.16), transparent 64%), radial-gradient(60rem 42rem at 100% 100%, rgba(8,43,92,.12), transparent 62%)",
+            "radial-gradient(56rem 34rem at 8% 0%, rgba(232,150,62,.12), transparent 64%), radial-gradient(60rem 42rem at 100% 100%, rgba(14,122,108,.13), transparent 62%)",
         }}
       />
-      <div className="fixed inset-x-0 top-0 z-20 h-1 bg-gradient-to-r from-navy-900 via-gold-500 to-navy-900" aria-hidden />
+      <div className="fixed inset-x-0 top-0 z-20 h-1 bg-gradient-to-r from-brand-900 via-brand-500 to-gold-500" aria-hidden />
 
       <div className="fixed end-4 top-4 z-30 sm:end-6 sm:top-5">
         <UtilityControls tone="light" />
       </div>
 
-      <div className="relative z-10 grid w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-[0_32px_90px_rgba(8,43,92,.18)] lg:grid-cols-[1.05fr_.95fr]">
+      <div className="relative z-10 grid w-full max-w-6xl overflow-hidden rounded-[1.5rem] border border-zinc-200 bg-white shadow-[0_24px_70px_rgba(27,36,32,.13)] lg:grid-cols-[1.05fr_.95fr]">
         <aside className="relative hidden min-h-[720px] flex-col justify-between overflow-hidden bg-navy-950 p-10 text-white lg:flex xl:p-14">
-          <div className="absolute -end-24 -top-28 h-80 w-80 rounded-full border border-gold-400/20" aria-hidden />
-          <div className="absolute -end-8 -top-12 h-56 w-56 rounded-full border border-gold-400/20" aria-hidden />
+          <div className="absolute -end-24 -top-28 h-80 w-80 rounded-full border border-brand-200/20" aria-hidden />
+          <div className="absolute -end-8 -top-12 h-56 w-56 rounded-full border border-gold-400/25" aria-hidden />
           <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/20 to-transparent" aria-hidden />
 
           <BrandLogo size={46} tone="dark" tagline />
 
           <div className="relative max-w-lg">
-            <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold-300/25 bg-gold-300/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-gold-200">
+            <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-200/25 bg-white/[.07] px-3 py-1.5 text-xs font-semibold text-brand-100">
               <BadgeCheck size={15} />
               {t("Built for Saudi hospitality")}
             </span>
@@ -123,8 +123,8 @@ export default function Login(props: { onSuccess: () => void }) {
             </div>
 
             <div className="mb-7">
-              <p className="mb-2 text-xs font-bold uppercase tracking-[.22em] text-gold-700">{t("Secure staff access")}</p>
-              <h2 className="text-3xl font-semibold tracking-tight text-navy-950">{t("Welcome back")}</h2>
+              <p className="mb-2 text-xs font-bold text-brand-700">{t("Secure staff access")}</p>
+              <h2 className="text-3xl font-bold tracking-tight text-zinc-950">{t("Welcome back")}</h2>
               <p className="mt-2 text-sm leading-6 text-zinc-500">{t("Sign in to continue to your hotel workspace.")}</p>
             </div>
 
@@ -146,7 +146,7 @@ export default function Login(props: { onSuccess: () => void }) {
 
               {error && <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
 
-              <Button variant="navy" className="group w-full justify-center rounded-xl py-3 shadow-lg shadow-navy-900/15" disabled={busy || !usr || !pwd} type="submit">
+              <Button variant="primary" className="group w-full py-3" disabled={busy || !usr || !pwd} type="submit">
                 {busy ? t("Signing in...") : t("Sign in")}
                 {!busy && <ArrowRight size={16} className="ms-1 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />}
               </Button>
@@ -163,8 +163,8 @@ export default function Login(props: { onSuccess: () => void }) {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {DEMO_ACCOUNTS.map((a) => (
-                    <button key={a.usr} type="button" disabled={busy} onClick={() => submit(a.usr, a.pwd)} className="group rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 py-2.5 text-start transition hover:border-gold-400 hover:bg-gold-50/40 disabled:opacity-60">
-                      <span className="block text-xs font-semibold text-zinc-800 group-hover:text-navy-900">{t(a.label)}</span>
+                    <button key={a.usr} type="button" disabled={busy} onClick={() => submit(a.usr, a.pwd)} className="group rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 py-2.5 text-start transition hover:border-brand-300 hover:bg-brand-50 disabled:opacity-60">
+                      <span className="block text-xs font-semibold text-zinc-800 group-hover:text-brand-800">{t(a.label)}</span>
                       <span className="mt-0.5 block truncate text-[10px] text-zinc-400" dir="ltr">{a.usr}</span>
                     </button>
                   ))}

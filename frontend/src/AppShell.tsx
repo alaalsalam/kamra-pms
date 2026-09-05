@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { LayoutGrid, Plus, SaudiRiyal, Search } from "lucide-react"
+import { Building2, LayoutGrid, LogOut, Menu, Plus, SaudiRiyal, Search, X } from "lucide-react"
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { BookingDialog } from "./components/BookingDialog"
 import { BrandLogo } from "./components/BrandLogo"
@@ -47,18 +47,19 @@ export interface ShellContext {
 }
 
 function SearchShortcut() {
+  const { t } = useT()
   const isMac = /Mac|iP(hone|ad|od)/.test(navigator.platform)
   const combo = isMac ? "⌘K" : "Ctrl+K"
   return (
     <button
       onClick={() => window.dispatchEvent(new Event("hotelpms:open-palette"))}
-      title={`Search: find a guest or booking, or jump anywhere - press ${isMac ? "⌘ Command" : "Ctrl"} + K`}
-      aria-label="Open search"
-      className="flex w-full items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50/70 px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+      title={`${t("Search reservations, guests, rooms…")} — ${combo}`}
+      aria-label={t("Open search")}
+      className="flex min-h-10 w-full items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 text-[13px] text-zinc-400 shadow-sm transition hover:border-zinc-300 hover:text-zinc-600"
     >
       <Search className="size-4" aria-hidden />
-      <span>Search reservations, guests, rooms…</span>
-      <kbd className="ml-auto hidden rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500 md:inline">
+      <span>{t("Search reservations, guests, rooms…")}</span>
+      <kbd className="ms-auto hidden rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold text-zinc-500 md:inline" dir="ltr">
         {combo}
       </kbd>
     </button>
@@ -156,6 +157,7 @@ export default function AppShell() {
   const [demoMode, setDemoMode] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [signOutError, setSignOutError] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   useEffect(() => {
     myProperties().then((props) => {
@@ -171,6 +173,8 @@ export default function AppShell() {
   }, [])
 
   useEffect(() => subscribeRealtime(() => setRefreshKey((k) => k + 1)), [])
+
+  useEffect(() => setMobileNavOpen(false), [location.pathname])
 
   // currency symbol + number locale follow the property's country pack
   useEffect(() => {
@@ -221,7 +225,7 @@ export default function AppShell() {
         href={item.href}
         target="_blank"
         rel="noreferrer"
-        className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
+        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium text-zinc-600 hover:bg-zinc-100"
       >
         <item.icon className="size-4" aria-hidden />
         {t(item.label)}
@@ -233,10 +237,10 @@ export default function AppShell() {
         end={item.to === "/"}
         className={({ isActive }) =>
           cn(
-            "flex items-center gap-2.5 rounded-lg border-s-2 px-2.5 py-2 text-sm font-medium",
+            "relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-colors after:absolute after:inset-y-2 after:start-0 after:w-[3px] after:rounded-full",
             isActive
-              ? "border-gold-500 bg-brand-50 font-semibold text-brand-700"
-              : "border-transparent text-zinc-600 hover:bg-zinc-100",
+              ? "bg-brand-50 font-semibold text-brand-800 after:bg-brand-600"
+              : "text-zinc-600 after:bg-transparent hover:bg-zinc-100 hover:text-zinc-900",
           )
         }
       >
@@ -246,9 +250,9 @@ export default function AppShell() {
     )
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-zinc-50">
       {demoMode && !kiosk && (
-        <div className="bg-amber-500 px-4 py-1.5 text-center text-xs font-medium text-amber-950">
+        <div className="bg-gold-500 px-4 py-1.5 text-center text-xs font-semibold text-[#3a2405]">
           {t("HotelPMS demo — data is restored every night.")}
           {" "}
           <a
@@ -261,38 +265,62 @@ export default function AppShell() {
       )}
       <div className="flex min-h-0 flex-1">
       {!kiosk && (
-      <aside className="hidden w-52 shrink-0 border-r border-zinc-200 bg-white px-3 py-5 sm:sticky sm:top-0 sm:block sm:h-screen sm:overflow-y-auto">
-        <div className="mb-5 px-1">
-          <BrandLogo size={30} />
+      <aside className="hidden w-[248px] shrink-0 border-e border-zinc-200 bg-[#fcfcfa] px-3 py-4 sm:sticky sm:top-0 sm:flex sm:h-screen sm:flex-col sm:overflow-y-auto">
+        <div className="mb-4 border-b border-zinc-200 px-2 pb-4">
+          <BrandLogo size={36} />
         </div>
 
         {currentApp && (
-          <div className="mb-2 flex items-center gap-2 rounded-lg px-2 py-1.5">
+          <div className="mb-2 flex items-center gap-2 rounded-xl px-3 py-2">
             <span
               className={cn(
-                "flex size-6 items-center justify-center rounded-md",
+                "flex size-8 items-center justify-center rounded-xl",
                 currentApp.tint,
               )}
             >
-              <currentApp.icon className="size-3.5" aria-hidden />
+              <currentApp.icon className="size-4" aria-hidden />
             </span>
-            <span className="text-sm font-semibold text-zinc-800">
+            <span className="text-[13px] font-bold text-zinc-800">
               {t(currentApp.name)}
             </span>
           </div>
         )}
 
-        <nav className="space-y-0.5">{items.map(renderItem)}</nav>
+        <nav className="flex-1 space-y-0.5">{items.map(renderItem)}</nav>
+
+        <div className="mt-5 space-y-2 border-t border-zinc-200 pt-3">
+          <div className="flex items-center gap-2.5 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 shadow-sm">
+            <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+              <Building2 className="size-4" aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-xs font-semibold text-zinc-800">
+                {properties.find((p) => p.name === property)?.property_name ?? t("Property")}
+              </span>
+              <span className="block truncate text-[10px] text-zinc-400">{user}</span>
+            </span>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="grid size-8 place-items-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+              title={t(signingOut ? "Signing out..." : "Sign out")}
+              aria-label={t(signingOut ? "Signing out..." : "Sign out")}
+            >
+              <LogOut className="size-4" aria-hidden />
+            </button>
+          </div>
+        </div>
       </aside>
       )}
 
       <div className="min-w-0 flex-1">
         {!kiosk && (
-        <header className="sticky top-0 z-40 flex flex-wrap items-center gap-2 border-b border-zinc-200 bg-white px-4 py-2.5">
+        <header className="sticky top-0 z-40 flex min-h-[62px] flex-wrap items-center gap-2 bg-gradient-to-b from-zinc-50 via-zinc-50/95 to-zinc-50/75 px-4 py-2 backdrop-blur-md lg:px-7">
           <AppSwitcher apps={apps} current={currentApp} />
           {properties.length > 1 ? (
             <select
-              className="max-w-[13rem] truncate rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-medium focus:outline-2 focus:outline-brand-600 lg:max-w-none"
+              className="max-w-[13rem] truncate rounded-full border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold shadow-sm focus:outline-2 focus:outline-brand-600 lg:max-w-none"
               value={property}
               onChange={(e) => switchProperty(e.target.value)}
               aria-label="Property"
@@ -305,30 +333,19 @@ export default function AppShell() {
               ))}
             </select>
           ) : (
-            <span className="text-sm font-medium text-zinc-600">
+            <span className="hidden text-xs font-semibold text-zinc-600 lg:inline">
               {properties[0]?.property_name ?? ""}
             </span>
           )}
           <div className="flex flex-1 justify-center px-2">
-            <div className="hidden w-full max-w-md md:block">
+            <div className="hidden w-full max-w-[380px] md:block">
               <SearchShortcut />
             </div>
           </div>
           <div className="flex items-center gap-3">
             <UtilityControls tone="light" />
-            <span className="hidden text-xs text-zinc-500 md:inline">
-              {user}
-            </span>
-            <button
-              onClick={handleSignOut}
-              disabled={signingOut}
-              title={signOutError ? t("Could not sign out. Please try again.") : undefined}
-              className="text-xs font-medium text-zinc-400 hover:text-zinc-700"
-            >
-              {t(signingOut ? "Signing out..." : "Sign out")}
-            </button>
             {canCreateBooking && (
-              <Button variant="gold" onClick={() => setBooking({})}>
+              <Button variant="primary" onClick={() => setBooking({})}>
                 <Plus className="size-4" aria-hidden />
                 New booking
               </Button>
@@ -353,7 +370,7 @@ export default function AppShell() {
                     ? "h-[100dvh] overflow-hidden p-0"
                     : "min-h-[calc(100dvh-3.5rem)] overflow-auto p-3",
                 )
-              : "mx-auto max-w-6xl px-4 py-6"
+              : "mx-auto w-full max-w-[1180px] px-4 pb-24 pt-5 sm:py-6 lg:px-7 lg:py-7"
           }
         >
           <Outlet
@@ -368,6 +385,82 @@ export default function AppShell() {
           />
         </main>
       </div>
+
+      {!kiosk && !floor && (
+        <>
+          <nav
+            aria-label={t("Mobile navigation")}
+            className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-5 gap-1 rounded-2xl border border-zinc-200 bg-white/95 p-1.5 shadow-[0_16px_40px_rgba(27,36,32,.18)] backdrop-blur-xl sm:hidden"
+          >
+            {items.slice(0, 4).map((item) => {
+              const cls = "flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-semibold"
+              if (item.href) {
+                return (
+                  <a key={item.href} href={item.href} className={`${cls} text-zinc-500 hover:bg-zinc-100`}>
+                    <item.icon className="size-4" aria-hidden />
+                    <span className="max-w-full truncate">{t(item.label)}</span>
+                  </a>
+                )
+              }
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to!}
+                  end={item.to === "/"}
+                  className={({ isActive }) => `${cls} ${isActive ? "bg-brand-50 text-brand-800" : "text-zinc-500 hover:bg-zinc-100"}`}
+                >
+                  <item.icon className="size-4" aria-hidden />
+                  <span className="max-w-full truncate">{t(item.label)}</span>
+                </NavLink>
+              )
+            })}
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(true)}
+              className="flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-semibold text-zinc-500 hover:bg-zinc-100"
+              aria-expanded={mobileNavOpen}
+            >
+              <Menu className="size-4" aria-hidden />
+              <span>{t("More")}</span>
+            </button>
+          </nav>
+
+          {mobileNavOpen && (
+            <div className="fixed inset-0 z-[60] sm:hidden" role="dialog" aria-modal="true" aria-label={t("More navigation")}>
+              <button
+                type="button"
+                className="absolute inset-0 bg-black/35"
+                onClick={() => setMobileNavOpen(false)}
+                aria-label={t("Close")}
+              />
+              <div className="animate-fade-in absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-[1.5rem] border border-zinc-200 bg-white p-4 shadow-2xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-zinc-900">{currentApp ? t(currentApp.name) : t("Navigation")}</p>
+                    <p className="mt-0.5 text-xs text-zinc-500">{t("Choose where you want to go")}</p>
+                  </div>
+                  <button type="button" onClick={() => setMobileNavOpen(false)} className="grid size-10 place-items-center rounded-xl bg-zinc-100 text-zinc-600" aria-label={t("Close")}>
+                    <X className="size-5" aria-hidden />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {items.map((item) => item.href ? (
+                    <a key={item.href} href={item.href} className="flex min-h-14 items-center gap-3 rounded-xl border border-zinc-200 px-3 text-xs font-semibold text-zinc-700">
+                      <item.icon className="size-5 text-brand-600" aria-hidden />
+                      {t(item.label)}
+                    </a>
+                  ) : (
+                    <NavLink key={item.to} to={item.to!} end={item.to === "/"} className={({ isActive }) => `flex min-h-14 items-center gap-3 rounded-xl border px-3 text-xs font-semibold ${isActive ? "border-brand-200 bg-brand-50 text-brand-800" : "border-zinc-200 text-zinc-700"}`}>
+                      <item.icon className="size-5 text-brand-600" aria-hidden />
+                      {t(item.label)}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       <HelpPanel />
       <CommandPalette />

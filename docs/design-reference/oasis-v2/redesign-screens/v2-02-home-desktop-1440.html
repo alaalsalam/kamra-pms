@@ -1,0 +1,364 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>HotelPMS v2 — الرئيسية</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><style>/* HotelPMS v2 — «واحة Oasis UI» */
+:root{
+  --teal-900:#073B34;--teal-800:#0A4F46;--teal-700:#0B655A;--teal-600:#0E7A6C;
+  --teal-500:#1E9382;--teal-200:#BCE0DA;--teal-100:#D9EDE9;--teal-50:#EDF6F4;
+  --amber-700:#8F5312;--amber-600:#B96A1F;--amber-500:#E8963E;--amber-100:#FBEDDC;--amber-50:#FDF7EE;
+  --ink:#1B2420;--sub:#57625D;--faint:#89938E;
+  --line:#E6E9E6;--line-strong:#C9D1CC;
+  --canvas:#F6F7F5;--card:#FFFFFF;--inset:#EFF2EF;--ivory:#FCFCFA;
+  --success:#178A50;--success-bg:#E8F5EE;--success-bd:#BFE4CE;
+  --warning:#A96208;--warning-bg:#FCF1DF;--warning-bd:#F0D9AC;
+  --danger:#C03B2E;--danger-bg:#FBECEA;--danger-bd:#F2C6C0;
+  --info:#2B6CB0;--info-bg:#EAF2FA;--info-bd:#C6DBEF;
+  --occ:#123F38;--hk-inspected:#0B7285;
+  --r-md:12px;--r-lg:16px;--r-xl:22px;
+  --sh-sm:0 1px 2px rgba(27,36,32,.05);
+  --sh-md:0 6px 20px rgba(27,36,32,.07);
+  --sh-lg:0 18px 44px rgba(27,36,32,.13);
+  --font:"Alexandria","Segoe UI",Tahoma,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:14px}
+body{font-family:var(--font);color:var(--ink);background:var(--canvas);line-height:1.65;-webkit-font-smoothing:antialiased;font-weight:400}
+a{color:var(--teal-700);text-decoration:none;font-weight:500}
+b,strong{font-weight:600}
+.num{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+.muted{color:var(--sub)}.faint{color:var(--faint)}.small{font-size:12px}
+svg.ic{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:1fr 248px;min-height:100vh;min-width:1440px}
+.main{grid-column:1;min-width:0;display:flex;flex-direction:column}
+.sidebar{grid-column:2;background:var(--ivory);border-inline-start:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.s-logo{display:flex;align-items:center;gap:10px;padding:20px 20px 16px}
+.logo-mark{width:36px;height:36px;border-radius:11px;background:linear-gradient(140deg,var(--teal-700),var(--teal-500));display:grid;place-items:center;box-shadow:0 4px 10px rgba(14,122,108,.25)}
+.logo-mark svg{width:19px;height:19px;stroke:#fff}
+.logo-word{font-size:16.5px;font-weight:700;color:var(--ink);letter-spacing:.2px}
+.logo-word span{color:var(--teal-600)}
+.s-nav{flex:1;overflow:auto;padding:4px 12px}
+.s-group{margin:16px 10px 6px;font-size:10.5px;font-weight:600;color:var(--faint);letter-spacing:.4px}
+.s-item{display:flex;align-items:center;gap:11px;padding:8.5px 11px;border-radius:11px;color:var(--sub);font-size:13px;font-weight:500;position:relative;margin-bottom:1px;cursor:pointer}
+.s-item svg.ic{width:18px;height:18px}
+.s-item:hover{background:var(--inset);color:var(--ink)}
+.s-item.on{background:var(--teal-50);color:var(--teal-800);font-weight:600}
+.s-item.on svg.ic{stroke:var(--teal-600)}
+.s-item.on::before{content:"";position:absolute;inset-inline-start:-12px;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--teal-600)}
+.s-item .cnt{margin-inline-start:auto;background:var(--inset);color:var(--sub);font-size:10.5px;font-weight:600;border-radius:999px;padding:1px 7px}
+.s-item.on .cnt{background:var(--teal-100);color:var(--teal-800)}
+.s-item .cnt.hot{background:var(--amber-100);color:var(--amber-700)}
+.s-bottom{border-top:1px solid var(--line);padding:12px;display:grid;gap:8px}
+.s-prop{display:flex;gap:10px;align-items:center;padding:9px 11px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer}
+.s-prop b{font-size:12px;display:block;line-height:1.4}
+.s-prop span{font-size:10.5px;color:var(--faint)}
+.s-user{display:flex;gap:10px;align-items:center;padding:4px 6px}
+.s-user b{font-size:12.5px;display:block}
+.s-user span{font-size:10.5px;color:var(--faint)}
+/* topbar */
+.topbar{height:62px;display:flex;align-items:center;gap:14px;padding:0 28px;position:sticky;top:0;z-index:40;background:linear-gradient(180deg,var(--canvas) 70%,rgba(246,247,245,0))}
+.gsearch{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 16px;color:var(--faint);font-size:12.5px;width:380px;box-shadow:var(--sh-sm)}
+.gsearch:hover{border-color:var(--line-strong)}
+.gsearch .kbd{margin-inline-start:auto}
+.kbd{background:var(--inset);border-radius:6px;font-size:10.5px;padding:1px 7px;color:var(--sub);font-weight:600;direction:ltr;unicode-bidi:isolate}
+.top-end{margin-inline-start:auto;display:flex;align-items:center;gap:10px}
+.datechip{font-size:12px;color:var(--sub);background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;display:flex;gap:8px;align-items:center}
+.iconbtn{width:38px;height:38px;border-radius:999px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;color:var(--sub);position:relative;cursor:pointer}
+.iconbtn:hover{background:var(--inset);color:var(--ink)}
+.iconbtn .dot{position:absolute;top:8px;inset-inline-end:9px;width:7px;height:7px;border-radius:99px;background:var(--amber-500);border:2px solid #fff}
+.avatar{width:36px;height:36px;border-radius:999px;background:var(--teal-100);color:var(--teal-800);display:grid;place-items:center;font-weight:700;font-size:12.5px;flex:none}
+.avatar.amber{background:var(--amber-100);color:var(--amber-700)}
+.avatar.deep{background:var(--teal-800);color:#D9EDE9}
+/* page */
+.page{padding:6px 28px 36px;max-width:1180px;width:100%;margin:0 auto}
+.page-head{display:flex;align-items:flex-end;gap:16px;margin:10px 0 22px}
+.page-head h1{font-size:25px;font-weight:700;line-height:1.35;letter-spacing:-.2px}
+.page-head .sub{color:var(--sub);font-size:12.5px;margin-top:3px}
+.page-head .acts{margin-inline-start:auto;display:flex;gap:10px;align-items:center}
+.crumb{font-size:11.5px;color:var(--faint);display:flex;gap:6px;align-items:center;margin-bottom:2px}
+/* ---------- primitives ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 18px;border-radius:12px;border:1px solid transparent;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .12s,box-shadow .12s}
+.btn svg.ic{width:16px;height:16px}
+.btn-pri{background:var(--teal-600);color:#fff;box-shadow:0 4px 12px rgba(14,122,108,.24)}
+.btn-pri:hover{background:var(--teal-700)}
+.btn-tonal{background:var(--teal-50);color:var(--teal-800)}
+.btn-tonal:hover{background:var(--teal-100)}
+.btn-sec{background:#fff;border-color:var(--line-strong);color:var(--ink)}
+.btn-sec:hover{background:var(--inset)}
+.btn-ghost{background:transparent;color:var(--teal-700)}
+.btn-ghost:hover{background:var(--teal-50)}
+.btn-amber{background:var(--amber-500);color:#3A2405;box-shadow:0 4px 12px rgba(232,150,62,.3)}
+.btn-danger{background:#fff;border-color:var(--danger-bd);color:var(--danger)}
+.btn-danger:hover{background:var(--danger-bg)}
+.btn-sm{height:32px;padding:0 13px;font-size:12px;border-radius:10px}
+.btn-lg{height:50px;padding:0 24px;font-size:14.5px;border-radius:14px}
+.btn.dis,.btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+.badge{display:inline-flex;align-items:center;gap:5px;height:23px;padding:0 9px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+.badge svg.ic{width:11px;height:11px;stroke-width:2.2}
+.b-success{color:var(--success);background:var(--success-bg);border-color:var(--success-bd)}
+.b-warning{color:var(--warning);background:var(--warning-bg);border-color:var(--warning-bd)}
+.b-danger{color:var(--danger);background:var(--danger-bg);border-color:var(--danger-bd)}
+.b-info{color:var(--info);background:var(--info-bg);border-color:var(--info-bd)}
+.b-neutral{color:var(--sub);background:var(--inset);border-color:var(--line)}
+.b-occ{color:#fff;background:var(--occ);border-color:var(--occ)}
+.b-teal{color:var(--teal-800);background:var(--teal-100);border-color:var(--teal-200)}
+.b-amber{color:var(--amber-700);background:var(--amber-100);border-color:#F3DDBE}
+.b-cyan{color:var(--hk-inspected);background:#E1F1F4;border-color:#B9DFE6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-sm)}
+.card-h{display:flex;align-items:center;gap:10px;padding:15px 20px 13px}
+.card-h h2{font-size:15px;font-weight:700}
+.card-h .lnk{margin-inline-start:auto;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px}
+.card-b{padding:0 20px 18px}
+.hr{height:1px;background:var(--line)}
+/* tiles (KPI v2) */
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px 14px;cursor:pointer;position:relative;transition:box-shadow .15s,border-color .15s;box-shadow:var(--sh-sm)}
+.tile:hover{border-color:var(--teal-200);box-shadow:var(--sh-md)}
+.tile .lbl{font-size:11.5px;font-weight:500;color:var(--sub);display:flex;gap:6px;align-items:center}
+.tile .lbl svg.ic{width:14px;height:14px;color:var(--teal-600)}
+.tile .val{font-size:27px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.tile .val small{font-size:12px;font-weight:600;color:var(--faint)}
+.tile .dl{font-size:11px;font-weight:600;display:flex;gap:5px;align-items:center;margin-top:3px;color:var(--faint)}
+.tile .dl.up{color:var(--success)}.tile .dl.dn{color:var(--danger)}
+.tile .go{position:absolute;top:14px;inset-inline-end:14px;color:var(--faint);opacity:0;transition:.15s}
+.tile:hover .go{opacity:1}
+.tile.hero{background:linear-gradient(150deg,var(--teal-800),var(--teal-600));border:none;color:#fff}
+.tile.hero .lbl{color:var(--teal-100)}.tile.hero .lbl svg.ic{color:#fff}
+.tile.hero .val small,.tile.hero .dl{color:var(--teal-100)}
+.meter{height:6px;background:var(--inset);border-radius:99px;margin-top:10px;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:99px;background:var(--teal-500)}
+.tile.hero .meter{background:rgba(255,255,255,.2)}
+.tile.hero .meter i{background:var(--amber-500)}
+/* chips / filter */
+.fbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line-strong);border-radius:12px;padding:0 13px;height:38px;width:270px;color:var(--faint);font-size:12.5px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer}
+.chip:hover{border-color:var(--line-strong);color:var(--ink)}
+.chip.on{background:var(--teal-800);border-color:var(--teal-800);color:#fff}
+.chip .n{background:var(--inset);border-radius:99px;padding:0 7px;font-size:10.5px;color:var(--sub)}
+.chip.on .n{background:rgba(255,255,255,.2);color:#fff}
+.sel{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 13px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:12.5px;font-weight:500;color:var(--sub);cursor:pointer}
+.fspacer{margin-inline-start:auto}
+.tabs{display:flex;gap:2px;background:var(--inset);border-radius:11px;padding:3px}
+.tab{border-radius:9px;padding:5px 13px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;white-space:nowrap}
+.tab.on{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{color:var(--faint);font-size:10.5px;font-weight:600;text-align:start;padding:8px 16px;border-bottom:1px solid var(--line);white-space:nowrap;letter-spacing:.3px}
+.tbl th.end,.tbl td.end{text-align:end}
+.tbl th.c,.tbl td.c{text-align:center}
+.tbl td{padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr{cursor:pointer}
+.tbl tbody tr:hover{background:var(--ivory)}
+.tbl tbody tr.sel{background:var(--teal-50);box-shadow:inset 3px 0 0 var(--teal-600)}
+.tbl .g{display:flex;align-items:center;gap:10px}
+.tbl .g .nm{font-weight:600;font-size:13px}
+.tbl .g .sb{font-size:10.5px;color:var(--faint)}
+.tfoot{display:flex;align-items:center;gap:10px;padding:11px 18px;color:var(--faint);font-size:11.5px}
+.tfoot .pg{margin-inline-start:auto;display:flex;gap:6px;align-items:center}
+.pgbtn{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;color:var(--sub);cursor:pointer}
+.pgbtn.on{background:var(--teal-800);color:#fff;border-color:var(--teal-800)}
+.pgbtn.dis{opacity:.4}
+.cb{width:16px;height:16px;border:1.5px solid var(--line-strong);border-radius:5px;display:inline-block;background:#fff}
+.cb.on{background:var(--teal-600);border-color:var(--teal-600);position:relative}
+.cb.on::after{content:"";position:absolute;inset:3px 4px 4px;border:solid #fff;border-width:0 0 2px 2px;transform:rotate(-45deg);height:4px}
+/* forms */
+.field label{display:block;font-size:11.5px;font-weight:600;margin-bottom:5px;color:var(--sub)}
+.field .hint{font-size:11px;color:var(--faint);margin-top:4px}
+.field .err{font-size:11px;color:var(--danger);margin-top:4px;font-weight:600;display:flex;gap:4px;align-items:center}
+.input{width:100%;height:42px;border:1px solid var(--line-strong);border-radius:12px;padding:0 13px;font:inherit;font-size:13px;background:#fff;color:var(--ink);display:flex;align-items:center;gap:9px}
+.input .ph{color:var(--faint)}
+.input svg.ic{width:16px;height:16px;color:var(--faint)}
+.input.focus{border-color:var(--teal-600);box-shadow:0 0 0 3px rgba(14,122,108,.16)}
+.input.bad{border-color:var(--danger);box-shadow:0 0 0 3px rgba(192,59,46,.12)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* misc layout */
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:18px;align-items:start}
+.stack{display:grid;gap:16px}
+.row{display:flex;align-items:center;gap:10px}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;border-radius:7px;padding:2px 8px;background:var(--inset);color:var(--sub)}
+.legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--sub)}
+.legend .l{display:flex;gap:6px;align-items:center;font-weight:500}
+.legend .sw{width:11px;height:11px;border-radius:4px}
+.callout{border:1px solid var(--info-bd);background:var(--info-bg);color:var(--info);border-radius:13px;padding:11px 14px;font-size:12px;display:flex;gap:9px;align-items:flex-start}
+.callout.warn{border-color:var(--warning-bd);background:var(--warning-bg);color:var(--warning)}
+.callout.ok{border-color:var(--success-bd);background:var(--success-bg);color:var(--success)}
+.toast{position:fixed;bottom:24px;inset-inline-start:24px;background:var(--ink);color:#fff;border-radius:14px;padding:13px 18px;display:flex;gap:10px;align-items:center;font-size:12.5px;box-shadow:var(--sh-lg);z-index:90}
+.toast svg.ic{color:#5BD48F}
+.toast .u{color:var(--amber-500);font-weight:600;margin-inline-start:10px;cursor:pointer}
+/* queue cards (home) */
+.queue{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;display:grid;gap:10px;box-shadow:var(--sh-sm);position:relative}
+.qcard:hover{box-shadow:var(--sh-md)}
+.qcard .qh{display:flex;gap:10px;align-items:center}
+.qcard .qi{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none}
+.qcard b{font-size:13.5px}
+.qcard .qs{font-size:11.5px;color:var(--sub)}
+.qcard .btn{height:38px}
+/* timeline (home) */
+.tl{position:relative;padding:8px 0 4px}
+.tl-hours{display:grid;grid-template-columns:repeat(10,1fr);border-bottom:1px solid var(--line);margin-bottom:10px}
+.tl-hours span{font-size:10px;color:var(--faint);padding-bottom:6px;text-align:center;font-variant-numeric:tabular-nums}
+.tl-now{position:absolute;top:26px;bottom:6px;width:2px;background:var(--amber-500);border-radius:2px;z-index:5}
+.tl-now::before{content:"الآن";position:absolute;top:-20px;inset-inline-start:-14px;background:var(--amber-500);color:#3A2405;font-size:9.5px;font-weight:700;border-radius:6px;padding:1px 6px}
+.tl-row{display:flex;align-items:center;gap:0;position:relative;height:40px}
+.tl-lbl{width:86px;flex:none;font-size:11px;color:var(--sub);font-weight:600;display:flex;gap:6px;align-items:center}
+.tl-track{flex:1;position:relative;height:100%;border-inline-start:1px solid var(--line)}
+.tl-ev{position:absolute;top:6px;height:28px;border-radius:9px;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:var(--sh-sm)}
+/* rooms & tape */
+.room{border:1px solid var(--line);border-radius:14px;background:#fff;padding:11px 13px;cursor:pointer;min-height:90px;display:flex;flex-direction:column;gap:6px}
+.room:hover{border-color:var(--teal-200);box-shadow:var(--sh-md)}
+.room .no{font-size:16.5px;font-weight:700}
+.mini-badge{display:inline-flex;align-items:center;gap:4px;height:19px;padding:0 7px;border-radius:99px;font-size:10px;font-weight:700;border:1px solid transparent}
+/* side panel */
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--r-xl);box-shadow:var(--sh-lg);overflow:hidden}
+.panel-h{padding:18px 20px 14px;border-bottom:1px solid var(--line);background:var(--ivory)}
+.panel-b{padding:16px 20px;display:grid;gap:14px}
+.kv{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0}
+.kv span:first-child{color:var(--sub)}
+.kv b{font-weight:600}
+/* empty & states */
+.empty{display:grid;place-items:center;text-align:center;padding:40px 20px;gap:4px}
+.empty .eic{width:52px;height:52px;border-radius:16px;background:var(--teal-50);display:grid;place-items:center;color:var(--teal-600);margin-bottom:8px}
+.empty h3{font-size:14.5px;font-weight:700}
+.empty p{color:var(--sub);font-size:12px;max-width:330px}
+.kbds{display:flex;gap:14px;align-items:center;color:var(--faint);font-size:11px;justify-content:center;flex-wrap:wrap}
+.ring{transform:rotate(-90deg)}
+.scroll-x{overflow-x:auto}
+
+
+.hello h1{font-size:27px}
+.hello .pulse{display:inline-flex;gap:7px;align-items:center;font-size:11.5px;color:var(--teal-700);background:var(--teal-50);border:1px solid var(--teal-100);border-radius:999px;padding:4px 12px;font-weight:600}
+.pulse i{width:7px;height:7px;border-radius:99px;background:var(--teal-500);box-shadow:0 0 0 3px rgba(30,147,130,.18)}
+.sec-t{font-size:13px;font-weight:700;color:var(--ink);margin:22px 0 12px;display:flex;gap:8px;align-items:center}
+.sec-t .tag{font-weight:600}
+.rooms-pulse{display:flex;gap:7px;flex-wrap:wrap}
+.rp{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:11px;background:#fff;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer}
+.rp:hover{border-color:var(--teal-200)}
+.rp i{width:9px;height:9px;border-radius:99px}
+.rp small{color:var(--faint);font-weight:500}
+.feed{display:grid}
+.fi{display:flex;gap:11px;padding:11px 20px;border-bottom:1px solid var(--line);font-size:12px;align-items:flex-start}
+.fi:last-child{border-bottom:none}
+.fi .t{color:var(--faint);font-size:10.5px;margin-inline-start:auto;white-space:nowrap}
+.fi .fic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex:none}
+</style></head><body><div class="app"><div class="main"><header class="topbar"><div class="gsearch"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg> ابحث أو نفّذ: ضيف، حجز، غرفة… <span class="kbd">Ctrl K</span></div><div class="top-end"><span class="datechip"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg> الجمعة 4 سبتمبر · <span class="num">14:30</span></span><button class="iconbtn"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button><button class="iconbtn" style="width:auto;padding:0 12px;font-size:11.5px;font-weight:700">EN</button><button class="btn btn-pri"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14"/></svg> حجز جديد</button></div></header><div class="page">
+
+<div class="page-head hello">
+  <div>
+    <div class="row" style="gap:10px;margin-bottom:4px"><span class="pulse"><i></i> كل الأنظمة تعمل · آخر مزامنة قبل دقيقة</span></div>
+    <h1>مساء الخير، سارة</h1>
+    <div class="sub">الجمعة 4 سبتمبر 2026 · 21 ربيع الأول — أمامك <b>4 مهام</b> قبل ذروة الوصول عند <span class="num">17:00</span></div>
+  </div>
+  <div class="acts">
+    <button class="btn btn-sec"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 8V3.5h10V8"/><rect x="4" y="8" width="16" height="8" rx="2"/><rect x="7" y="13.5" width="10" height="7"/></svg> قائمة اليوم</button>
+    <button class="btn btn-tonal"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.8-3.8 3.7-6 7.5-6s6.7 2.2 7.5 6"/></svg> ضيف مباشر</button>
+  </div>
+</div>
+
+<div class="sec-t">يحتاج منك الآن <span class="tag">مرتّب بالأولوية</span></div>
+<div class="queue" style="margin-bottom:6px">
+  <div class="qcard" style="border-color:var(--teal-200)">
+    <div class="qh"><span class="qi" style="background:var(--teal-50);color:var(--teal-700)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12 4 2.3 4.9 5.2.7-3.8 3.7.9 5.2L12 16l-4.6 2.5.9-5.2L4.5 9.6l5.2-.7Z"/></svg></span>
+      <div><b>وصول VIP — مايا رحمن</b><div class="qs">جناح <span class="num">302</span> جاهز · متوقعة <span class="num">15:00</span> · غير مدفوع</div></div>
+    </div>
+    <div class="row" style="gap:8px"><button class="btn btn-pri" style="flex:1">تسجيل الوصول</button><button class="btn btn-sec"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m4 11 16-7-5.5 16-3-6.5Z"/><path d="M11.5 13.5 20 4"/></svg> رابط دفع</button></div>
+  </div>
+  <div class="qcard">
+    <div class="qh"><span class="qi" style="background:var(--danger-bg);color:var(--danger)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg></span>
+      <div><b>مغادرة برصيد — سالم العمري</b><div class="qs">غرفة <span class="num">202</span> · المتبقي <b class="num">610 ر.س</b> · الخروج <span class="num">12:00</span></div></div>
+    </div>
+    <div class="row" style="gap:8px"><button class="btn btn-amber" style="flex:1">تحصيل وتسوية</button><button class="btn btn-sec"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 3.5h11V20l-2-1.4-1.8 1.4-1.7-1.4L10.3 20l-1.8-1.4L6.5 20Z"/><path d="M9.5 8h5M9.5 11.5h5M9.5 15h3"/></svg> الفاتورة</button></div>
+  </div>
+  <div class="qcard">
+    <div class="qh"><span class="qi" style="background:var(--amber-100);color:var(--amber-700)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 7v11M3 14h18v4"/><path d="M3 14v-3h8a4 3 0 0 1 10 0v3"/><circle cx="7" cy="10.5" r="1.6"/></svg></span>
+      <div><b>حجز بلا غرفة — Daniel Lee</b><div class="qs">Booking.com · ليلتان · يقترح النظام الغرفة <b class="num">103</b></div></div>
+    </div>
+    <div class="row" style="gap:8px"><button class="btn btn-tonal" style="flex:1"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg> قبول الاقتراح</button><button class="btn btn-sec">اختيار يدوي</button></div>
+  </div>
+</div>
+
+<div class="sec-t">مؤشرات الليلة</div>
+<div class="tiles">
+  <div class="tile hero">
+    <div class="lbl"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 7v11M3 14h18v4"/><path d="M3 14v-3h8a4 3 0 0 1 10 0v3"/><circle cx="7" cy="10.5" r="1.6"/></svg> الإشغال</div>
+    <div class="val num">36% <small>5 / 14</small></div>
+    <div class="meter"><i style="width:36%"></i></div>
+    <div class="dl">الأحد القادم: <b class="num">64%</b> متوقع</div>
+  </div>
+  <div class="tile"><div class="lbl"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14"/><path d="M4 12h10m0 0-3.5-3.5M14 12l-3.5 3.5"/></svg> الوصول</div><div class="val num">3<small> / 7</small></div><div class="dl">4 متبقون · أقربهم <b class="num">15:00</b></div><span class="go"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></svg></span></div>
+  <div class="tile"><div class="lbl"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11V5a1 1 0 0 1 1-1h6l9 9-7 7-9-9Z"/><circle cx="8.5" cy="8.5" r="1.4"/></svg> متوسط السعر ADR</div><div class="val num">862<small> ر.س</small></div><div class="dl up"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m6 9.5 6 6 6-6"/></svg> <span class="num">‎+6%</span> عن أمس</div><span class="go"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></svg></span></div>
+  <div class="tile"><div class="lbl"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 20V4.5"/><path d="M4.5 20H20"/><path d="M8.5 16v-5M12.5 16V7.5M16.5 16v-3"/></svg> RevPAR</div><div class="val num">308<small> ر.س</small></div><div class="dl up"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m6 9.5 6 6 6-6"/></svg> <span class="num">‎+11%</span></div><span class="go"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></svg></span></div>
+  <div class="tile"><div class="lbl"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg> إيرادات اليوم</div><div class="val num">4,310<small> ر.س</small></div><div class="dl">غرف <span class="num">3,180</span> · مطعم <span class="num">890</span></div><span class="go"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></svg></span></div>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-h"><h2>خط اليوم</h2><span class="muted small">من <span class="num">08:00</span> إلى <span class="num">18:00</span></span><a class="lnk">مخطط الإشغال الكامل <svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></svg></a></div>
+    <div class="card-b tl">
+      <div style="position:relative">
+        <div class="tl-hours"><span>08</span><span>09</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span></div>
+        <span class="tl-now" style="inset-inline-start:65%"></span>
+        <div class="tl-row"><span class="tl-lbl"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14"/><path d="M4 12h10m0 0-3.5-3.5M14 12l-3.5 3.5"/></svg> الوصول</span><span class="tl-track">
+          <span class="tl-ev" style="inset-inline-start:15%;background:var(--teal-100);color:var(--teal-800)">أحمد ✓</span>
+          <span class="tl-ev" style="inset-inline-start:31%;background:var(--teal-100);color:var(--teal-800)">نورة ✓</span>
+          <span class="tl-ev" style="inset-inline-start:49%;background:var(--teal-100);color:var(--teal-800)">عمر ✓</span>
+          <span class="tl-ev" style="inset-inline-start:69%;background:#fff;border:1.5px dashed var(--amber-500);color:var(--amber-700)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12 4 2.3 4.9 5.2.7-3.8 3.7.9 5.2L12 16l-4.6 2.5.9-5.2L4.5 9.6l5.2-.7Z"/></svg> مايا 15:00</span>
+        </span></div>
+        <div class="tl-row"><span class="tl-lbl"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10"/><path d="M20 12H10m0 0 3.5-3.5M10 12l3.5 3.5"/></svg> المغادرة</span><span class="tl-track">
+          <span class="tl-ev" style="inset-inline-start:36%;background:var(--inset);color:var(--sub)">لينا ✓</span>
+          <span class="tl-ev" style="inset-inline-start:41%;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-bd)">سالم · رصيد</span>
+        </span></div>
+        <div class="tl-row"><span class="tl-lbl"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3.5 13.8 8.7 19 10.5l-5.2 1.8L12 17.5l-1.8-5.2L5 10.5l5.2-1.8Z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8Z"/></svg> التدبير</span><span class="tl-track">
+          <span class="tl-ev" style="inset-inline-start:56%;background:var(--info-bg);color:var(--info);border:1px solid var(--info-bd)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg> 203 تُجهَّز</span>
+          <span class="tl-ev" style="inset-inline-start:76%;background:var(--inset);color:var(--sub)">105 التالية</span>
+        </span></div>
+        <div class="tl-row"><span class="tl-lbl"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 3v6a2 2 0 0 1-4 0V3M5 3v18"/><path d="M18.5 3c-2 1-3.5 3-3.5 5.5V13h3.5V21M18.5 3V21"/></svg> المطعم</span><span class="tl-track">
+          <span class="tl-ev" style="inset-inline-start:60%;background:var(--teal-50);color:var(--teal-800)">3 طلبات نشطة</span>
+          <span class="tl-ev" style="inset-inline-start:88%;background:var(--amber-100);color:var(--amber-700)">كيكة F2 · 19:00</span>
+        </span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stack">
+    <div class="card">
+      <div class="card-h"><h2>نبض مباشر</h2><span class="pulse" style="font-size:10px;padding:2px 9px"><i></i> حي</span></div>
+      <div class="feed">
+        <div class="fi"><span class="fic" style="background:var(--teal-50);color:var(--teal-700)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><div>سجّلت وصول <b>خالد السقاف</b> — غرفة <span class="num">103</span></div><span class="t num">14:10</span></div>
+        <div class="fi"><span class="fic" style="background:var(--info-bg);color:var(--info)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3.5 13.8 8.7 19 10.5l-5.2 1.8L12 17.5l-1.8-5.2L5 10.5l5.2-1.8Z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8Z"/></svg></span><div>بدأت أم سعد تجهيز <b class="num">203</b> — وصول سارة جونسون</div><span class="t num">14:12</span></div>
+        <div class="fi"><span class="fic" style="background:var(--amber-100);color:var(--amber-700)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 3.8 5.4 3.8 8.5s-1.2 5.9-3.8 8.5c-2.6-2.6-3.8-5.4-3.8-8.5s1.2-5.9 3.8-8.5Z"/></svg></span><div>حجز جديد من <b>Booking.com</b> — ريم الشمري · ليلتان</div><span class="t num">13:47</span></div>
+        <div class="fi"><span class="fic" style="background:var(--inset);color:var(--sub)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m4 11 16-7-5.5 16-3-6.5Z"/><path d="M11.5 13.5 20 4"/></svg></span><div>أُرسل تأكيد واتساب تلقائي لمايا رحمن</div><span class="t num">13:02</span></div>
+      </div>
+    </div>
+    <div class="callout ok"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5Z"/></svg><span><b>الإغلاق الليلي تلقائي.</b> اكتمل <span class="num">03:12</span> بلا فروقات — لا شيء مطلوب منك.</span></div>
+  </div>
+</div>
+
+<div class="sec-t" style="margin-top:24px">نبض الغرف <span class="tag">انقر غرفة للإجراء السريع</span></div>
+<div class="card card-b" style="padding-top:16px">
+  <div class="rooms-pulse">
+    <span class="rp"><i style="background:var(--occ)"></i><span class="num">101</span><small>أحمد</small></span>
+    <span class="rp"><i style="background:var(--occ)"></i><span class="num">102</span><small>مغادرة</small></span>
+    <span class="rp"><i style="background:var(--success)"></i><span class="num">103</span><small>جاهزة</small></span>
+    <span class="rp"><i style="background:var(--success)"></i><span class="num">104</span><small>وصول علي</small></span>
+    <span class="rp"><i style="background:var(--warning)"></i><span class="num">105</span><small>تنظيف</small></span>
+    <span class="rp"><i style="background:var(--hk-inspected)"></i><span class="num">106</span><small>مفحوصة</small></span>
+    <span class="rp"><i style="background:var(--occ)"></i><span class="num">201</span><small>نورة</small></span>
+    <span class="rp"><i style="background:var(--danger)"></i><span class="num">202</span><small>رصيد</small></span>
+    <span class="rp"><i style="background:var(--info)"></i><span class="num">203</span><small>تُجهَّز</small></span>
+    <span class="rp"><i style="background:var(--warning)"></i><span class="num">204</span><small>تنظيف</small></span>
+    <span class="rp"><i style="background:var(--warning)"></i><span class="num">205</span><small>تنظيف</small></span>
+    <span class="rp"><i style="background:var(--occ)"></i><span class="num">301</span><small>عمر</small></span>
+    <span class="rp"><i style="background:var(--success)"></i><span class="num">302</span><small>VIP</small></span>
+    <span class="rp"><i style="background:var(--danger)"></i><span class="num">303</span><small>صيانة</small></span>
+    <span class="legend" style="margin-inline-start:auto">
+      <span class="l"><span class="sw" style="background:var(--occ)"></span>مشغولة</span>
+      <span class="l"><span class="sw" style="background:var(--success)"></span>جاهزة</span>
+      <span class="l"><span class="sw" style="background:var(--warning)"></span>تنظيف</span>
+      <span class="l"><span class="sw" style="background:var(--danger)"></span>انتباه</span>
+    </span>
+  </div>
+</div>
+
+<div class="kbds" style="margin-top:16px"><span class="kbd">Ctrl K</span> أمر سريع · <span class="kbd">F2</span> حجز جديد · <span class="kbd">F4</span> وصول التالي الجاهز</div>
+</div></div><aside class="sidebar"><div class="s-logo"><div class="logo-mark"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></div><div class="logo-word">Hotel<span>PMS</span></div></div><nav class="s-nav"><div class="s-group">التشغيل</div><div class="s-item on"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg><span>الرئيسية</span><span class="cnt hot">4</span></div><div class="s-item"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>الحجوزات</span></div><div class="s-item"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>مخطط الإشغال</span></div><div class="s-item"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 7v11M3 14h18v4"/><path d="M3 14v-3h8a4 3 0 0 1 10 0v3"/><circle cx="7" cy="10.5" r="1.6"/></svg><span>الغرف والتدبير</span><span class="cnt">3</span></div><div class="s-group">الضيوف والإيراد</div><div class="s-item"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.3.2 4 1.7 4.5 4.3"/></svg><span>الضيوف</span></div><div class="s-item"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11V5a1 1 0 0 1 1-1h6l9 9-7 7-9-9Z"/><circle cx="8.5" cy="8.5" r="1.4"/></svg><span>الأسعار والقنوات</span></div><div class="s-item"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 3v6a2 2 0 0 1-4 0V3M5 3v18"/><path d="M18.5 3c-2 1-3.5 3-3.5 5.5V13h3.5V21M18.5 3V21"/></svg><span>المطعم POS</span></div><div class="s-group">الإدارة</div><div class="s-item"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg><span>المالية والفواتير</span></div><div class="s-item"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 20V4.5"/><path d="M4.5 20H20"/><path d="M8.5 16v-5M12.5 16V7.5M16.5 16v-3"/></svg><span>التقارير</span></div><div class="s-item"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v2.4M12 18.1v2.4M3.5 12h2.4M18.1 12h2.4M6 6l1.7 1.7M16.3 16.3 18 18M18 6l-1.7 1.7M7.7 16.3 6 18"/></svg><span>الإعدادات</span></div></nav><div class="s-bottom"><div class="s-prop"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 21s-6.5-5.4-6.5-10.3A6.4 6.4 0 0 1 12 4a6.4 6.4 0 0 1 6.5 6.7C18.5 15.6 12 21 12 21Z"/><circle cx="12" cy="10.5" r="2.3"/></svg><div style="flex:1"><b>نُزُل الرياض — العليا</b><span>14 غرفة · مباشر</span></div><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m6 9.5 6 6 6-6"/></svg></div><div class="s-user"><div class="avatar deep">سا</div><div style="flex:1"><b>سارة الشهري</b><span>استقبال · وردية صباحية</span></div><span style="color:var(--faint)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10"/><path d="M20 12H10m0 0 3.5-3.5M10 12l3.5 3.5"/></svg></span></div></div></aside></div></body></html>

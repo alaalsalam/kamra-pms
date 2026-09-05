@@ -42,23 +42,27 @@ export function StatCard({
   const down = delta?.dir === "down"
   const interactive = Boolean(to || onClick)
   const cls = cn(
-    "group flex min-w-0 flex-col rounded-xl border border-zinc-200 bg-white p-4 text-start",
+    "group relative flex min-w-0 flex-col rounded-2xl border border-zinc-200 bg-white p-4 text-start shadow-[0_1px_2px_rgba(27,36,32,.05)]",
+    accent && "border-transparent bg-gradient-to-br from-brand-800 to-brand-600 text-white shadow-[0_10px_24px_rgba(14,122,108,.18)]",
     interactive &&
-      "cursor-pointer transition hover:border-brand-300 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
+      "cursor-pointer transition duration-150 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-[0_8px_24px_rgba(27,36,32,.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
     className,
   )
   const body = (
     <>
       <div className="flex items-center gap-2">
-        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
+        <span className={cn(
+          "grid size-8 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700",
+          accent && "bg-white/14 text-white",
+        )}>
           {icon}
         </span>
-        <span className="truncate text-[13px] font-medium text-zinc-500">
+        <span className={cn("truncate text-xs font-medium text-zinc-500", accent && "text-brand-100")}>
           {label}
         </span>
         {interactive && (
           <ArrowUpRight
-            className="ms-auto size-3.5 shrink-0 text-zinc-300 transition group-hover:text-brand-600"
+            className={cn("ms-auto size-3.5 shrink-0 text-zinc-300 transition group-hover:text-brand-600", accent && "text-white/60 group-hover:text-white")}
             aria-hidden
           />
         )}
@@ -68,13 +72,13 @@ export function StatCard({
           <div
             className={cn(
               "text-2xl font-semibold tracking-tight tabular-nums",
-              accent ? "text-brand-700" : "text-zinc-900",
+              accent ? "text-white" : "text-zinc-900",
             )}
           >
             {value}
           </div>
           {sub ? (
-            <div className="mt-0.5 text-xs text-zinc-400">{sub}</div>
+            <div className={cn("mt-0.5 text-xs text-zinc-400", accent && "text-brand-100")}>{sub}</div>
           ) : null}
         </div>
         {spark ? (
@@ -88,7 +92,7 @@ export function StatCard({
         <div className="mt-3">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
             <div
-              className="h-full rounded-full bg-brand-600"
+              className={cn("h-full rounded-full bg-brand-600", accent && "bg-gold-500")}
               style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
             />
           </div>

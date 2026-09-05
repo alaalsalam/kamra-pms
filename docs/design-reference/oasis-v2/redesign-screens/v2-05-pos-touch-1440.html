@@ -1,0 +1,413 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>HotelPMS v2 — نقطة البيع · مطعم التراس</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><style>/* HotelPMS v2 — «واحة Oasis UI» */
+:root{
+  --teal-900:#073B34;--teal-800:#0A4F46;--teal-700:#0B655A;--teal-600:#0E7A6C;
+  --teal-500:#1E9382;--teal-200:#BCE0DA;--teal-100:#D9EDE9;--teal-50:#EDF6F4;
+  --amber-700:#8F5312;--amber-600:#B96A1F;--amber-500:#E8963E;--amber-100:#FBEDDC;--amber-50:#FDF7EE;
+  --ink:#1B2420;--sub:#57625D;--faint:#89938E;
+  --line:#E6E9E6;--line-strong:#C9D1CC;
+  --canvas:#F6F7F5;--card:#FFFFFF;--inset:#EFF2EF;--ivory:#FCFCFA;
+  --success:#178A50;--success-bg:#E8F5EE;--success-bd:#BFE4CE;
+  --warning:#A96208;--warning-bg:#FCF1DF;--warning-bd:#F0D9AC;
+  --danger:#C03B2E;--danger-bg:#FBECEA;--danger-bd:#F2C6C0;
+  --info:#2B6CB0;--info-bg:#EAF2FA;--info-bd:#C6DBEF;
+  --occ:#123F38;--hk-inspected:#0B7285;
+  --r-md:12px;--r-lg:16px;--r-xl:22px;
+  --sh-sm:0 1px 2px rgba(27,36,32,.05);
+  --sh-md:0 6px 20px rgba(27,36,32,.07);
+  --sh-lg:0 18px 44px rgba(27,36,32,.13);
+  --font:"Alexandria","Segoe UI",Tahoma,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:14px}
+body{font-family:var(--font);color:var(--ink);background:var(--canvas);line-height:1.65;-webkit-font-smoothing:antialiased;font-weight:400}
+a{color:var(--teal-700);text-decoration:none;font-weight:500}
+b,strong{font-weight:600}
+.num{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+.muted{color:var(--sub)}.faint{color:var(--faint)}.small{font-size:12px}
+svg.ic{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:1fr 248px;min-height:100vh;min-width:1440px}
+.main{grid-column:1;min-width:0;display:flex;flex-direction:column}
+.sidebar{grid-column:2;background:var(--ivory);border-inline-start:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.s-logo{display:flex;align-items:center;gap:10px;padding:20px 20px 16px}
+.logo-mark{width:36px;height:36px;border-radius:11px;background:linear-gradient(140deg,var(--teal-700),var(--teal-500));display:grid;place-items:center;box-shadow:0 4px 10px rgba(14,122,108,.25)}
+.logo-mark svg{width:19px;height:19px;stroke:#fff}
+.logo-word{font-size:16.5px;font-weight:700;color:var(--ink);letter-spacing:.2px}
+.logo-word span{color:var(--teal-600)}
+.s-nav{flex:1;overflow:auto;padding:4px 12px}
+.s-group{margin:16px 10px 6px;font-size:10.5px;font-weight:600;color:var(--faint);letter-spacing:.4px}
+.s-item{display:flex;align-items:center;gap:11px;padding:8.5px 11px;border-radius:11px;color:var(--sub);font-size:13px;font-weight:500;position:relative;margin-bottom:1px;cursor:pointer}
+.s-item svg.ic{width:18px;height:18px}
+.s-item:hover{background:var(--inset);color:var(--ink)}
+.s-item.on{background:var(--teal-50);color:var(--teal-800);font-weight:600}
+.s-item.on svg.ic{stroke:var(--teal-600)}
+.s-item.on::before{content:"";position:absolute;inset-inline-start:-12px;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--teal-600)}
+.s-item .cnt{margin-inline-start:auto;background:var(--inset);color:var(--sub);font-size:10.5px;font-weight:600;border-radius:999px;padding:1px 7px}
+.s-item.on .cnt{background:var(--teal-100);color:var(--teal-800)}
+.s-item .cnt.hot{background:var(--amber-100);color:var(--amber-700)}
+.s-bottom{border-top:1px solid var(--line);padding:12px;display:grid;gap:8px}
+.s-prop{display:flex;gap:10px;align-items:center;padding:9px 11px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer}
+.s-prop b{font-size:12px;display:block;line-height:1.4}
+.s-prop span{font-size:10.5px;color:var(--faint)}
+.s-user{display:flex;gap:10px;align-items:center;padding:4px 6px}
+.s-user b{font-size:12.5px;display:block}
+.s-user span{font-size:10.5px;color:var(--faint)}
+/* topbar */
+.topbar{height:62px;display:flex;align-items:center;gap:14px;padding:0 28px;position:sticky;top:0;z-index:40;background:linear-gradient(180deg,var(--canvas) 70%,rgba(246,247,245,0))}
+.gsearch{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 16px;color:var(--faint);font-size:12.5px;width:380px;box-shadow:var(--sh-sm)}
+.gsearch:hover{border-color:var(--line-strong)}
+.gsearch .kbd{margin-inline-start:auto}
+.kbd{background:var(--inset);border-radius:6px;font-size:10.5px;padding:1px 7px;color:var(--sub);font-weight:600;direction:ltr;unicode-bidi:isolate}
+.top-end{margin-inline-start:auto;display:flex;align-items:center;gap:10px}
+.datechip{font-size:12px;color:var(--sub);background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;display:flex;gap:8px;align-items:center}
+.iconbtn{width:38px;height:38px;border-radius:999px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;color:var(--sub);position:relative;cursor:pointer}
+.iconbtn:hover{background:var(--inset);color:var(--ink)}
+.iconbtn .dot{position:absolute;top:8px;inset-inline-end:9px;width:7px;height:7px;border-radius:99px;background:var(--amber-500);border:2px solid #fff}
+.avatar{width:36px;height:36px;border-radius:999px;background:var(--teal-100);color:var(--teal-800);display:grid;place-items:center;font-weight:700;font-size:12.5px;flex:none}
+.avatar.amber{background:var(--amber-100);color:var(--amber-700)}
+.avatar.deep{background:var(--teal-800);color:#D9EDE9}
+/* page */
+.page{padding:6px 28px 36px;max-width:1180px;width:100%;margin:0 auto}
+.page-head{display:flex;align-items:flex-end;gap:16px;margin:10px 0 22px}
+.page-head h1{font-size:25px;font-weight:700;line-height:1.35;letter-spacing:-.2px}
+.page-head .sub{color:var(--sub);font-size:12.5px;margin-top:3px}
+.page-head .acts{margin-inline-start:auto;display:flex;gap:10px;align-items:center}
+.crumb{font-size:11.5px;color:var(--faint);display:flex;gap:6px;align-items:center;margin-bottom:2px}
+/* ---------- primitives ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 18px;border-radius:12px;border:1px solid transparent;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .12s,box-shadow .12s}
+.btn svg.ic{width:16px;height:16px}
+.btn-pri{background:var(--teal-600);color:#fff;box-shadow:0 4px 12px rgba(14,122,108,.24)}
+.btn-pri:hover{background:var(--teal-700)}
+.btn-tonal{background:var(--teal-50);color:var(--teal-800)}
+.btn-tonal:hover{background:var(--teal-100)}
+.btn-sec{background:#fff;border-color:var(--line-strong);color:var(--ink)}
+.btn-sec:hover{background:var(--inset)}
+.btn-ghost{background:transparent;color:var(--teal-700)}
+.btn-ghost:hover{background:var(--teal-50)}
+.btn-amber{background:var(--amber-500);color:#3A2405;box-shadow:0 4px 12px rgba(232,150,62,.3)}
+.btn-danger{background:#fff;border-color:var(--danger-bd);color:var(--danger)}
+.btn-danger:hover{background:var(--danger-bg)}
+.btn-sm{height:32px;padding:0 13px;font-size:12px;border-radius:10px}
+.btn-lg{height:50px;padding:0 24px;font-size:14.5px;border-radius:14px}
+.btn.dis,.btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+.badge{display:inline-flex;align-items:center;gap:5px;height:23px;padding:0 9px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+.badge svg.ic{width:11px;height:11px;stroke-width:2.2}
+.b-success{color:var(--success);background:var(--success-bg);border-color:var(--success-bd)}
+.b-warning{color:var(--warning);background:var(--warning-bg);border-color:var(--warning-bd)}
+.b-danger{color:var(--danger);background:var(--danger-bg);border-color:var(--danger-bd)}
+.b-info{color:var(--info);background:var(--info-bg);border-color:var(--info-bd)}
+.b-neutral{color:var(--sub);background:var(--inset);border-color:var(--line)}
+.b-occ{color:#fff;background:var(--occ);border-color:var(--occ)}
+.b-teal{color:var(--teal-800);background:var(--teal-100);border-color:var(--teal-200)}
+.b-amber{color:var(--amber-700);background:var(--amber-100);border-color:#F3DDBE}
+.b-cyan{color:var(--hk-inspected);background:#E1F1F4;border-color:#B9DFE6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-sm)}
+.card-h{display:flex;align-items:center;gap:10px;padding:15px 20px 13px}
+.card-h h2{font-size:15px;font-weight:700}
+.card-h .lnk{margin-inline-start:auto;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px}
+.card-b{padding:0 20px 18px}
+.hr{height:1px;background:var(--line)}
+/* tiles (KPI v2) */
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px 14px;cursor:pointer;position:relative;transition:box-shadow .15s,border-color .15s;box-shadow:var(--sh-sm)}
+.tile:hover{border-color:var(--teal-200);box-shadow:var(--sh-md)}
+.tile .lbl{font-size:11.5px;font-weight:500;color:var(--sub);display:flex;gap:6px;align-items:center}
+.tile .lbl svg.ic{width:14px;height:14px;color:var(--teal-600)}
+.tile .val{font-size:27px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.tile .val small{font-size:12px;font-weight:600;color:var(--faint)}
+.tile .dl{font-size:11px;font-weight:600;display:flex;gap:5px;align-items:center;margin-top:3px;color:var(--faint)}
+.tile .dl.up{color:var(--success)}.tile .dl.dn{color:var(--danger)}
+.tile .go{position:absolute;top:14px;inset-inline-end:14px;color:var(--faint);opacity:0;transition:.15s}
+.tile:hover .go{opacity:1}
+.tile.hero{background:linear-gradient(150deg,var(--teal-800),var(--teal-600));border:none;color:#fff}
+.tile.hero .lbl{color:var(--teal-100)}.tile.hero .lbl svg.ic{color:#fff}
+.tile.hero .val small,.tile.hero .dl{color:var(--teal-100)}
+.meter{height:6px;background:var(--inset);border-radius:99px;margin-top:10px;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:99px;background:var(--teal-500)}
+.tile.hero .meter{background:rgba(255,255,255,.2)}
+.tile.hero .meter i{background:var(--amber-500)}
+/* chips / filter */
+.fbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line-strong);border-radius:12px;padding:0 13px;height:38px;width:270px;color:var(--faint);font-size:12.5px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer}
+.chip:hover{border-color:var(--line-strong);color:var(--ink)}
+.chip.on{background:var(--teal-800);border-color:var(--teal-800);color:#fff}
+.chip .n{background:var(--inset);border-radius:99px;padding:0 7px;font-size:10.5px;color:var(--sub)}
+.chip.on .n{background:rgba(255,255,255,.2);color:#fff}
+.sel{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 13px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:12.5px;font-weight:500;color:var(--sub);cursor:pointer}
+.fspacer{margin-inline-start:auto}
+.tabs{display:flex;gap:2px;background:var(--inset);border-radius:11px;padding:3px}
+.tab{border-radius:9px;padding:5px 13px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;white-space:nowrap}
+.tab.on{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{color:var(--faint);font-size:10.5px;font-weight:600;text-align:start;padding:8px 16px;border-bottom:1px solid var(--line);white-space:nowrap;letter-spacing:.3px}
+.tbl th.end,.tbl td.end{text-align:end}
+.tbl th.c,.tbl td.c{text-align:center}
+.tbl td{padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr{cursor:pointer}
+.tbl tbody tr:hover{background:var(--ivory)}
+.tbl tbody tr.sel{background:var(--teal-50);box-shadow:inset 3px 0 0 var(--teal-600)}
+.tbl .g{display:flex;align-items:center;gap:10px}
+.tbl .g .nm{font-weight:600;font-size:13px}
+.tbl .g .sb{font-size:10.5px;color:var(--faint)}
+.tfoot{display:flex;align-items:center;gap:10px;padding:11px 18px;color:var(--faint);font-size:11.5px}
+.tfoot .pg{margin-inline-start:auto;display:flex;gap:6px;align-items:center}
+.pgbtn{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;color:var(--sub);cursor:pointer}
+.pgbtn.on{background:var(--teal-800);color:#fff;border-color:var(--teal-800)}
+.pgbtn.dis{opacity:.4}
+.cb{width:16px;height:16px;border:1.5px solid var(--line-strong);border-radius:5px;display:inline-block;background:#fff}
+.cb.on{background:var(--teal-600);border-color:var(--teal-600);position:relative}
+.cb.on::after{content:"";position:absolute;inset:3px 4px 4px;border:solid #fff;border-width:0 0 2px 2px;transform:rotate(-45deg);height:4px}
+/* forms */
+.field label{display:block;font-size:11.5px;font-weight:600;margin-bottom:5px;color:var(--sub)}
+.field .hint{font-size:11px;color:var(--faint);margin-top:4px}
+.field .err{font-size:11px;color:var(--danger);margin-top:4px;font-weight:600;display:flex;gap:4px;align-items:center}
+.input{width:100%;height:42px;border:1px solid var(--line-strong);border-radius:12px;padding:0 13px;font:inherit;font-size:13px;background:#fff;color:var(--ink);display:flex;align-items:center;gap:9px}
+.input .ph{color:var(--faint)}
+.input svg.ic{width:16px;height:16px;color:var(--faint)}
+.input.focus{border-color:var(--teal-600);box-shadow:0 0 0 3px rgba(14,122,108,.16)}
+.input.bad{border-color:var(--danger);box-shadow:0 0 0 3px rgba(192,59,46,.12)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* misc layout */
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:18px;align-items:start}
+.stack{display:grid;gap:16px}
+.row{display:flex;align-items:center;gap:10px}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;border-radius:7px;padding:2px 8px;background:var(--inset);color:var(--sub)}
+.legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--sub)}
+.legend .l{display:flex;gap:6px;align-items:center;font-weight:500}
+.legend .sw{width:11px;height:11px;border-radius:4px}
+.callout{border:1px solid var(--info-bd);background:var(--info-bg);color:var(--info);border-radius:13px;padding:11px 14px;font-size:12px;display:flex;gap:9px;align-items:flex-start}
+.callout.warn{border-color:var(--warning-bd);background:var(--warning-bg);color:var(--warning)}
+.callout.ok{border-color:var(--success-bd);background:var(--success-bg);color:var(--success)}
+.toast{position:fixed;bottom:24px;inset-inline-start:24px;background:var(--ink);color:#fff;border-radius:14px;padding:13px 18px;display:flex;gap:10px;align-items:center;font-size:12.5px;box-shadow:var(--sh-lg);z-index:90}
+.toast svg.ic{color:#5BD48F}
+.toast .u{color:var(--amber-500);font-weight:600;margin-inline-start:10px;cursor:pointer}
+/* queue cards (home) */
+.queue{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;display:grid;gap:10px;box-shadow:var(--sh-sm);position:relative}
+.qcard:hover{box-shadow:var(--sh-md)}
+.qcard .qh{display:flex;gap:10px;align-items:center}
+.qcard .qi{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none}
+.qcard b{font-size:13.5px}
+.qcard .qs{font-size:11.5px;color:var(--sub)}
+.qcard .btn{height:38px}
+/* timeline (home) */
+.tl{position:relative;padding:8px 0 4px}
+.tl-hours{display:grid;grid-template-columns:repeat(10,1fr);border-bottom:1px solid var(--line);margin-bottom:10px}
+.tl-hours span{font-size:10px;color:var(--faint);padding-bottom:6px;text-align:center;font-variant-numeric:tabular-nums}
+.tl-now{position:absolute;top:26px;bottom:6px;width:2px;background:var(--amber-500);border-radius:2px;z-index:5}
+.tl-now::before{content:"الآن";position:absolute;top:-20px;inset-inline-start:-14px;background:var(--amber-500);color:#3A2405;font-size:9.5px;font-weight:700;border-radius:6px;padding:1px 6px}
+.tl-row{display:flex;align-items:center;gap:0;position:relative;height:40px}
+.tl-lbl{width:86px;flex:none;font-size:11px;color:var(--sub);font-weight:600;display:flex;gap:6px;align-items:center}
+.tl-track{flex:1;position:relative;height:100%;border-inline-start:1px solid var(--line)}
+.tl-ev{position:absolute;top:6px;height:28px;border-radius:9px;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:var(--sh-sm)}
+/* rooms & tape */
+.room{border:1px solid var(--line);border-radius:14px;background:#fff;padding:11px 13px;cursor:pointer;min-height:90px;display:flex;flex-direction:column;gap:6px}
+.room:hover{border-color:var(--teal-200);box-shadow:var(--sh-md)}
+.room .no{font-size:16.5px;font-weight:700}
+.mini-badge{display:inline-flex;align-items:center;gap:4px;height:19px;padding:0 7px;border-radius:99px;font-size:10px;font-weight:700;border:1px solid transparent}
+/* side panel */
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--r-xl);box-shadow:var(--sh-lg);overflow:hidden}
+.panel-h{padding:18px 20px 14px;border-bottom:1px solid var(--line);background:var(--ivory)}
+.panel-b{padding:16px 20px;display:grid;gap:14px}
+.kv{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0}
+.kv span:first-child{color:var(--sub)}
+.kv b{font-weight:600}
+/* empty & states */
+.empty{display:grid;place-items:center;text-align:center;padding:40px 20px;gap:4px}
+.empty .eic{width:52px;height:52px;border-radius:16px;background:var(--teal-50);display:grid;place-items:center;color:var(--teal-600);margin-bottom:8px}
+.empty h3{font-size:14.5px;font-weight:700}
+.empty p{color:var(--sub);font-size:12px;max-width:330px}
+.kbds{display:flex;gap:14px;align-items:center;color:var(--faint);font-size:11px;justify-content:center;flex-wrap:wrap}
+.ring{transform:rotate(-90deg)}
+.scroll-x{overflow-x:auto}
+
+
+body{overflow:hidden}
+.pos{display:grid;grid-template-columns:296px 1fr 376px;grid-template-rows:60px 1fr 54px;height:100vh;min-width:1440px;background:var(--canvas)}
+.pos-top{grid-column:1/-1;background:var(--teal-900);color:#fff;display:flex;align-items:center;gap:14px;padding:0 18px}
+.pos-top .ttl{font-weight:700;font-size:14.5px;display:flex;gap:10px;align-items:center}
+.pos-top .st{display:flex;gap:6px;align-items:center;font-size:11.5px;color:var(--teal-200)}
+.pos-top .st b{color:#fff}
+.okdot{width:8px;height:8px;border-radius:99px;background:#69D9A3;box-shadow:0 0 0 3px rgba(105,217,163,.2)}
+.oc{flex:none;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:5px 13px;font-size:11px;color:#E8F3F1;display:flex;gap:8px;align-items:center;cursor:pointer}
+.oc b{font-variant-numeric:tabular-nums}
+.pane{background:#fff;display:flex;flex-direction:column;min-height:0}
+.pane.tables{border-inline-end:1px solid var(--line)}
+.pane.cart{border-inline-start:1px solid var(--line)}
+.seg{display:flex;background:var(--inset);border-radius:12px;padding:4px;gap:4px}
+.seg span{flex:1;text-align:center;padding:9px 0;font-size:12px;font-weight:600;color:var(--sub);border-radius:9px;cursor:pointer}
+.seg .on{background:var(--teal-800);color:#fff}
+.zoneh{font-size:10.5px;font-weight:700;color:var(--faint);margin:13px 2px 7px}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.tbtn{border:1.5px solid var(--line);border-radius:14px;padding:9px 6px;text-align:center;cursor:pointer;background:#fff;min-height:62px;display:grid;place-content:center;gap:2px}
+.tbtn b{font-size:14.5px;font-variant-numeric:tabular-nums}
+.tbtn span{font-size:10px;color:var(--faint);font-weight:600}
+.tbtn.busy{background:var(--teal-800);border-color:var(--teal-800);color:#fff}
+.tbtn.busy span{color:var(--teal-200)}
+.tbtn.cur{background:var(--amber-500);border-color:var(--amber-500);color:#3A2405}
+.tbtn.cur span{color:#6B4512}
+.tbtn.hold{background:var(--amber-50);border-color:var(--amber-500)}
+.cats{display:flex;gap:8px;padding:14px 16px 6px;flex-wrap:wrap}
+.cat{height:42px;padding:0 18px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:13px;font-weight:700;color:var(--sub);display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.cat.on{background:var(--teal-800);border-color:var(--teal-800);color:#fff}
+.items{flex:1;overflow:auto;padding:10px 16px 16px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-content:start}
+.item{border:1.5px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer;min-height:148px;display:flex;flex-direction:column;background:#fff;transition:transform .1s,border-color .1s}
+.item:active{transform:scale(.97)}
+.item:hover{border-color:var(--teal-500)}
+.item .img{height:74px;display:grid;place-items:center;position:relative}
+.item .img svg.ic{width:25px;height:25px;opacity:.65}
+.item .qty{position:absolute;top:8px;inset-inline-start:8px;background:var(--teal-700);color:#fff;font-weight:700;border-radius:99px;min-width:23px;height:23px;display:grid;place-items:center;font-size:12px}
+.item .nfo{padding:9px 12px;display:flex;flex-direction:column;gap:2px;flex:1}
+.item .nm{font-size:12.5px;font-weight:700;line-height:1.4}
+.item .pr{margin-top:auto;font-size:13px;font-weight:700;color:var(--teal-800);font-variant-numeric:tabular-nums}
+.cart-h{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;background:var(--ivory)}
+.cart-h .t b{font-size:14.5px}
+.lines{flex:1;overflow:auto}
+.line{display:flex;gap:10px;align-items:center;padding:11px 16px;border-bottom:1px solid var(--line)}
+.line .nm{flex:1;min-width:0}
+.line .nm b{font-size:13px;display:block}
+.line .nm span{font-size:10.5px;color:var(--faint)}
+.stepper{display:flex;align-items:center;border:1.5px solid var(--line-strong);border-radius:12px;overflow:hidden}
+.stepper button{width:37px;height:37px;border:none;background:#fff;display:grid;place-items:center;color:var(--teal-700);cursor:pointer}
+.stepper button:active{background:var(--teal-50)}
+.stepper b{width:32px;text-align:center;font-size:13.5px;font-variant-numeric:tabular-nums}
+.line .amt{width:74px;text-align:end;font-weight:700;font-variant-numeric:tabular-nums;font-size:13px}
+.line.new{background:var(--amber-50)}
+.totals{border-top:1px solid var(--line);padding:12px 18px;display:grid;gap:6px;background:var(--ivory)}
+.totals .r{display:flex;justify-content:space-between;font-size:12.5px}
+.totals .r.gt{font-size:18.5px;font-weight:700;padding-top:9px;border-top:1px dashed var(--line-strong);margin-top:4px}
+.cart-acts{padding:12px 16px 16px;display:grid;gap:10px;background:var(--ivory)}
+.cart-acts .r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cart-acts .btn{height:56px;font-size:15px;border-radius:15px}
+.cart-acts .mini{display:flex;gap:8px}
+.cart-acts .mini .btn{flex:1;height:42px;font-size:12px;border-radius:12px}
+.fnbar{grid-column:1/-1;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:22px;font-size:11.5px;color:var(--faint)}
+</style></head><body>
+
+<div class="pos">
+  <div class="pos-top">
+    <div class="ttl"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 3v6a2 2 0 0 1-4 0V3M5 3v18"/><path d="M18.5 3c-2 1-3.5 3-3.5 5.5V13h3.5V21M18.5 3V21"/></svg> مطعم التراس <span class="st" style="margin-inline-start:6px">· نُزُل الرياض</span></div>
+    <div class="st"><span class="okdot"></span> طابعة المطبخ <b>متصلة</b></div>
+    <div class="oc" style="margin-inline-start:auto;background:var(--amber-500);color:#3A2405;border-color:var(--amber-500)"><b>T4</b> · <b class="num">285.20</b></div>
+    <div class="oc"><b>T1</b> · <b class="num">138</b></div>
+    <div class="oc" style="border-color:rgba(232,150,62,.6);color:#F6C27E"><b>T6</b> · لم يُرسل</div>
+    <div class="oc"><b>سفري 12</b> · <b class="num">62</b></div>
+    <div class="oc"><b>غرفة 201</b> · <b class="num">96</b></div>
+    <div class="st"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.8-3.8 3.7-6 7.5-6s6.7 2.2 7.5 6"/></svg> <b>فهد</b></div>
+    <div class="st num">14:32</div>
+  </div>
+
+  <div class="pane tables">
+    <div style="padding:14px;display:grid;gap:12px;overflow:auto">
+      <div class="seg"><span class="on">الصالة</span><span>الغرف</span><span>سفري</span><span>توصيل</span></div>
+      <div>
+        <div class="zoneh">الصالة الرئيسية</div>
+        <div class="tgrid">
+          <div class="tbtn cur"><b>T4</b><span>ضيفان · <span class="num">42</span> د</span></div>
+          <div class="tbtn busy"><b>T1</b><span class="num">138 ر.س</span></div>
+          <div class="tbtn hold"><b>T6</b><span>لم يُرسل</span></div>
+          <div class="tbtn"><b>T2</b><span>4 مقاعد</span></div>
+          <div class="tbtn"><b>T3</b><span>4 مقاعد</span></div>
+          <div class="tbtn"><b>T5</b><span>6 مقاعد</span></div>
+        </div>
+        <div class="zoneh">جلسات العائلات</div>
+        <div class="tgrid">
+          <div class="tbtn busy"><b>F2</b><span class="num">96 ر.س</span></div>
+          <div class="tbtn"><b>F1</b><span>6 مقاعد</span></div>
+          <div class="tbtn"><b>F3</b><span>8 مقاعد</span></div>
+        </div>
+        <div class="zoneh">التراس</div>
+        <div class="tgrid">
+          <div class="tbtn"><b>P1</b><span>مقعدان</span></div>
+          <div class="tbtn"><b>P2</b><span>مقعدان</span></div>
+          <div class="tbtn"><b>P3</b><span>4 مقاعد</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:auto;border-top:1px solid var(--line);padding:12px 16px" class="small">
+      <div class="spread"><span class="faint">فواتير مفتوحة</span><b class="num">5 · 577.20 ر.س</b></div>
+      <div class="spread" style="margin-top:4px"><span class="faint">في المطبخ الآن</span><b class="num">3 طلبات</b></div>
+    </div>
+  </div>
+
+  <div class="pane" style="background:transparent">
+    <div class="cats">
+      <span class="cat on">الكل</span>
+      <span class="cat"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 3v6a2 2 0 0 1-4 0V3M5 3v18"/><path d="M18.5 3c-2 1-3.5 3-3.5 5.5V13h3.5V21M18.5 3V21"/></svg> الرئيسية</span>
+      <span class="cat">المقبلات</span>
+      <span class="cat"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10.5h1.8a2.2 2.2 0 0 1 0 4.4H16M7.5 5.5c.8-.9.8-1.6 0-2.5M11 5.5c.8-.9.8-1.6 0-2.5"/></svg> المشروبات</span>
+      <span class="cat">الحلويات</span>
+      <span class="cat" style="margin-inline-start:auto"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg> بحث <span class="kbd">F3</span></span>
+    </div>
+    <div class="items">
+      <div class="item"><div class="img" style="background:#E8F1EE;color:var(--teal-800)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 3v6a2 2 0 0 1-4 0V3M5 3v18"/><path d="M18.5 3c-2 1-3.5 3-3.5 5.5V13h3.5V21M18.5 3V21"/></svg><span class="qty num">2</span></div><div class="nfo"><span class="nm">كبسة دجاج ملكية</span><span class="pr num">86 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:#EDEAE3;color:#6B5B3E"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 3v6a2 2 0 0 1-4 0V3M5 3v18"/><path d="M18.5 3c-2 1-3.5 3-3.5 5.5V13h3.5V21M18.5 3V21"/></svg></div><div class="nfo"><span class="nm">مندي لحم نجدي</span><span class="pr num">98 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:var(--amber-100);color:var(--amber-700)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3.5c1 2.8 4.5 4.6 4.5 8.5a4.5 4.5 0 0 1-9 0c0-1.4.5-2.6 1.3-3.7.4 1 1.1 1.7 2 2.2-.3-2.6.2-5 1.2-7Z"/><path d="M12 21c-3.5 0-6-2.2-6-5.5"/></svg></div><div class="nfo"><span class="nm">شكشوكة نجدية</span><span class="pr num">42 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:#E1F1F4;color:var(--hk-inspected)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 3v6a2 2 0 0 1-4 0V3M5 3v18"/><path d="M18.5 3c-2 1-3.5 3-3.5 5.5V13h3.5V21M18.5 3V21"/></svg></div><div class="nfo"><span class="nm">أرز صيادية بالخضار</span><span class="pr num">62 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:var(--success-bg);color:var(--success)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3.5 13.8 8.7 19 10.5l-5.2 1.8L12 17.5l-1.8-5.2L5 10.5l5.2-1.8Z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8Z"/></svg><span class="qty num">1</span></div><div class="nfo"><span class="nm">سلطة روكا والبرغل</span><span class="pr num">28 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:#F4E8F0;color:#8A4A73"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3.5 13.8 8.7 19 10.5l-5.2 1.8L12 17.5l-1.8-5.2L5 10.5l5.2-1.8Z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8Z"/></svg></div><div class="nfo"><span class="nm">حمص بالشمندر</span><span class="pr num">38 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:var(--danger-bg);color:var(--danger)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10.5h1.8a2.2 2.2 0 0 1 0 4.4H16M7.5 5.5c.8-.9.8-1.6 0-2.5M11 5.5c.8-.9.8-1.6 0-2.5"/></svg><span class="qty num">2</span></div><div class="nfo"><span class="nm">موهيتو ليمون ونعناع</span><span class="pr num">24 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:#EFE6D8;color:#7A5B2A"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10.5h1.8a2.2 2.2 0 0 1 0 4.4H16M7.5 5.5c.8-.9.8-1.6 0-2.5M11 5.5c.8-.9.8-1.6 0-2.5"/></svg></div><div class="nfo"><span class="nm">قهوة سعودية — دلة</span><span class="pr num">26 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:var(--amber-50);color:var(--amber-600)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10.5h1.8a2.2 2.2 0 0 1 0 4.4H16M7.5 5.5c.8-.9.8-1.6 0-2.5M11 5.5c.8-.9.8-1.6 0-2.5"/></svg></div><div class="nfo"><span class="nm">عصير برتقال طازج</span><span class="pr num">18 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:#EEE9E2;color:#6E5A3F"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12 4 2.3 4.9 5.2.7-3.8 3.7.9 5.2L12 16l-4.6 2.5.9-5.2L4.5 9.6l5.2-.7Z"/></svg></div><div class="nfo"><span class="nm">تشيزكيك التمر</span><span class="pr num">36 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:var(--amber-100);color:var(--amber-700)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12 4 2.3 4.9 5.2.7-3.8 3.7.9 5.2L12 16l-4.6 2.5.9-5.2L4.5 9.6l5.2-.7Z"/></svg></div><div class="nfo"><span class="nm">كنافة بالقشطة</span><span class="pr num">34 ر.س</span></div></div>
+      <div class="item"><div class="img" style="background:var(--inset);color:var(--sub)"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 10.5h1.8a2.2 2.2 0 0 1 0 4.4H16M7.5 5.5c.8-.9.8-1.6 0-2.5M11 5.5c.8-.9.8-1.6 0-2.5"/></svg></div><div class="nfo"><span class="nm">ماء معدني</span><span class="pr num">6 ر.س</span></div></div>
+    </div>
+  </div>
+
+  <div class="pane cart">
+    <div class="cart-h">
+      <div class="t"><b>طاولة T4 — الصالة</b><div class="small faint">فاتورة <span class="num">#128</span> · ضيفان · فهد</div></div>
+      <span class="badge b-info" style="margin-inline-start:auto"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg> أُرسل جزء <span class="num">14:05</span></span>
+    </div>
+    <div class="lines">
+      <div class="line">
+        <div class="nm"><b>كبسة دجاج ملكية</b><span>أُرسلت · بدون بصل</span></div>
+        <div class="stepper"><button><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14"/></svg></button><b class="num">2</b><button><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14"/></svg></button></div>
+        <span class="amt num">172.00</span>
+      </div>
+      <div class="line">
+        <div class="nm"><b>سلطة روكا والبرغل</b><span>أُرسلت</span></div>
+        <div class="stepper"><button><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14"/></svg></button><b class="num">1</b><button><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14"/></svg></button></div>
+        <span class="amt num">28.00</span>
+      </div>
+      <div class="line new">
+        <div class="nm"><b>موهيتو ليمون ونعناع</b><span style="color:var(--amber-700);font-weight:700">جديد — لم يُرسل</span></div>
+        <div class="stepper"><button><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14"/></svg></button><b class="num">2</b><button><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14"/></svg></button></div>
+        <span class="amt num">48.00</span>
+      </div>
+    </div>
+    <div class="totals">
+      <div class="r"><span class="faint">قبل الضريبة</span><span class="num">248.00</span></div>
+      <div class="r"><span class="faint">ضريبة القيمة المضافة <span class="num">15%</span></span><span class="num">37.20</span></div>
+      <div class="r gt"><span>الإجمالي</span><span class="num">285.20 ر.س</span></div>
+    </div>
+    <div class="cart-acts">
+      <div class="r2">
+        <button class="btn btn-sec" style="background:var(--teal-800);color:#fff;border:none"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m4 11 16-7-5.5 16-3-6.5Z"/><path d="M11.5 13.5 20 4"/></svg> للمطبخ <span class="kbd" style="background:rgba(255,255,255,.16);color:#fff">F6</span></button>
+        <button class="btn btn-amber"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg> الدفع <span class="kbd" style="background:rgba(58,36,5,.14);color:#3A2405">F4</span></button>
+      </div>
+      <div class="mini">
+        <button class="btn btn-sec">تعليق</button>
+        <button class="btn btn-sec"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 3.5H4.5V7M16 3.5h3.5V7M8 20.5H4.5V17M16 20.5h3.5V17"/><path d="M12 5v14"/></svg> تقسيم</button>
+        <button class="btn btn-sec"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11V5a1 1 0 0 1 1-1h6l9 9-7 7-9-9Z"/><circle cx="8.5" cy="8.5" r="1.4"/></svg> خصم</button>
+        <button class="btn btn-sec"><svg class="ic" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 8V3.5h10V8"/><rect x="4" y="8" width="16" height="8" rx="2"/><rect x="7" y="13.5" width="10" height="7"/></svg> مبدئية</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fnbar">
+    <span><span class="kbd">F2</span> فاتورة جديدة</span>
+    <span><span class="kbd">F3</span> بحث</span>
+    <span><span class="kbd">F4</span> الدفع</span>
+    <span><span class="kbd">F6</span> إرسال للمطبخ</span>
+    <span><span class="kbd">F8</span> الطاولات</span>
+    <span style="color:var(--line-strong)">|</span>
+    <span>فاتورة ZATCA برمز QR عند الدفع</span>
+  </div>
+</div>
+</body></html>
