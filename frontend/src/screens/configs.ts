@@ -4,6 +4,8 @@ import EventLinks from "../components/EventLinks"
 import GroupControl from "../components/GroupControl"
 import RoomTypeMedia from "../components/RoomTypeMedia"
 import ReservationDetail from "./ReservationDetail"
+import ReservationSummary from "../components/ReservationSummary"
+import { guestCell, stayCell, roomCell, balanceCell } from "./reservationCells"
 import { cur, taxLabel } from "../lib/money"
 
 export const roomsConfig: ScreenConfig = {
@@ -549,23 +551,22 @@ export const reservationsConfig: ScreenConfig = {
     },
   ],
   pageSize: 25,
+  // Oasis: five scannable columns; the rest lives in the context panel.
   columns: [
-    { field: "name", label: "Ref" },
-    { field: "guest_name", label: "Guest" },
-    { field: "room", label: "Room", lookup: { doctype: "Room", labelField: "room_number" } },
-    { field: "check_in_date", label: "In" },
-    { field: "check_out_date", label: "Out" },
+    { field: "guest_name", label: "Guest", render: guestCell },
+    { field: "check_in_date", label: "Stay", render: stayCell },
+    { field: "room", label: "Room", render: roomCell },
     { field: "status", label: "Status", badge: true },
-    { field: "booking_type", label: "Type" },
-    { field: "source", label: "Source" },
-    { field: "amount_after_tax", label: `Total ${cur()}` },
-    { field: "advance_paid", label: `Advance ${cur()}` },
+    { field: "amount_after_tax", label: "Balance", render: balanceCell },
   ],
+  extraFields: ["check_out_date", "advance_paid", "source", "booking_type"],
   // Editing happens in the bespoke detail panel; keep a minimal form as the
   // fallback shape the generic screen still expects.
   form: [
     { field: "special_requests", label: "Special requests", type: "data" },
   ],
+  // Row click → 372px glance panel; its "Full details" opens the rich editor.
+  contextPanel: ReservationSummary,
   detailPanel: ReservationDetail,
 }
 

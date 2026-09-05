@@ -27,7 +27,7 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
 |---|---|---|---|---|
 | `/` (index) | Today | **Tested** | (this commit) | operations-centre: pulse+greeting header, real permission-aware needs-now queue, KPI tiles, room board + arrivals/departures/in-house w/ actions, loading skeleton. Day-timeline/live-feed deferred (net-new, data-heavy) |
 | `/dashboard` | Dashboard | **Tested** (rechecked) | (this commit) | now uses shared `QueueCard`; fixed leftover `?status=Open`→`Pending` |
-| `/reservations` | ResourceScreen(reservationsConfig) + ReservationDetail | Pending | — | table + saved filters + 372px ContextPanel |
+| `/reservations` | ResourceScreen(reservationsConfig) + ReservationSummary/ContextPanel + ReservationDetail | **Tested** | (this commit) | 5-col scannable table (guest+ref/source, stay+nights, room-or-amber "No room", status, amber balance); row/keyboard opens 372px ContextPanel (glance: stay/room/source/total/advance/balance + amber "collect balance" callout + Check-in/Check-out/Reg-card/Full-details actions), "Full details" still opens the wide ReservationDetail editor unchanged; existing URL filters kept (no duplicate filter system). Verified 390/768/1024 × AR-RTL/EN-LTR: no overflow, console-clean. Fixes: date-range filter now wraps (was +42px mobile overflow); mobile panel z-[60] over bottom-nav so all actions hittable |
 | `/grc/:name` | RegistrationCard | Pending | — | print-safe |
 | `/cancelled/:name` | CancellationLetter | Pending | — | print-safe |
 | (internal) BookingDialog | components/BookingDialog | Pending | — | guest→stay→price→confirm sequence |
@@ -124,6 +124,27 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
   - Dashboard recheck: swapped inline `AttentionCard`→ shared `QueueCard`; fixed leftover `?status=Open`→`Pending`.
   - Tests: `npm build` ✓; verify.js Front Desk (Today) + Hotel Admin (Dashboard) → **no overflow, 0 console
     errors, dir ar=rtl/en=ltr across 1440/1024/768/390 × AR/EN**. After-shots in `after/today`, `after/dashboard`.
+- **Reservations (`/reservations`)** — Phase 1.
+  - New `components/ContextPanel.tsx` (generic Oasis contextual panel: 372px inline-end side panel below the
+    top bar on desktop with **no scrim** so the list stays visible — Mews pattern; full-screen sheet + scrim on
+    mobile at `z-[60]` so it clears the `z-50` bottom-nav; Escape closes; saves/restores focus).
+  - New `components/ReservationSummary.tsx` (glance panel built from the row, no extra fetch: ivory guest header
+    w/ status + "No room" badges, stay/room/source/type KV, total/advance/**amber balance** box + "collect
+    balance before checkout" callout when balance>0, actions Check-in/Check-out/Registration-card/Full-details).
+  - New `screens/reservationCells.tsx` (composite cells: guest+ref/source, stay+nights `bdi`, room-or-amber,
+    amber balance) so `configs.ts` stays plain data.
+  - `ResourceScreen.tsx`: opt-in `contextPanel`/column `render`/`extraFields`; row is now a keyboard-operable
+    button that opens the panel (falls back to edit-drawer when no `contextPanel`); selected-row highlight;
+    desktop reserves `lg:pe-[392px]` so the list clears the panel. Generic + opt-in → other screens unchanged.
+  - `configs.ts`: `reservationsConfig` → 5 scannable columns + `contextPanel: ReservationSummary`, kept its
+    existing URL filters + wide `detailPanel: ReservationDetail` (opened via "Full details"). No duplicate filter
+    system; no pricing/availability/permission changes. New `ar.ts` keys (No room / Full details / To be
+    assigned / balance callout).
+  - Fixes (pre-existing mobile defects): the date-range filter group now `flex-wrap`s (was +42px overflow at
+    390 in RTL); mobile panel `z-[60]` so all 3 footer actions are hittable over the bottom-nav.
+  - Tests: `npm build` ✓; MCP live Front Desk → **390/768/1024 × AR-RTL/EN-LTR no overflow, 0 console errors**,
+    panel full-screen+actions-hittable on mobile, 372px side panel + visible list on desktop, "Full details"
+    opens the wide editor. Hotel-Admin persona + `e2e/auth-isolation.spec.ts` pending at batch close.
 
 ## Amber-discipline hit-list (`btn-gold`/`text-gold` → teal unless attention/money/VIP)
 _grep results + per-screen reclassification, filled as reached_

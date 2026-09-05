@@ -8,6 +8,7 @@ import {
 } from "react"
 import { Columns3, Download, Plus, Search, Trash2 } from "lucide-react"
 import { Sheet } from "./ui/sheet"
+import { ContextPanel } from "./ContextPanel"
 import { getCurrentProperty } from "../lib/api"
 import {
   createResource,
@@ -50,7 +51,13 @@ export interface ScreenConfig {
     bilingual?: boolean
     /** Resolve a Link-ID column to a readable label from `doctype`.`labelField`. */
     lookup?: { doctype: string; labelField: string }
+    /** Custom cell renderer (gets the whole row). CSV export still uses the raw
+     *  `field`, so keep `field` meaningful even for composite cells. */
+    render?: (row: Row) => ReactNode
   }[]
+  /** Extra fields to fetch (not shown as columns) — for composite renderers and
+   *  the context panel, e.g. check_out_date/amount_after_tax/source. */
+  extraFields?: string[]
   form: FieldSpec[]
   propertyScoped?: boolean
   allowCreate?: boolean
@@ -82,6 +89,16 @@ export interface ScreenConfig {
     row: Row
     reload: () => void
     onClose: () => void
+  }>
+  /** Oasis contextual summary panel: a row click opens a 372px side panel (no
+   *  scrim, list stays visible) instead of the wide drawer. Its "Full details"
+   *  action opens `detailPanel` via `onOpenDetail`. Opt-in — other screens keep
+   *  the wide-drawer behaviour. */
+  contextPanel?: ComponentType<{
+    row: Row
+    reload: () => void
+    onClose: () => void
+    onOpenDetail: () => void
   }>
 }
 
@@ -206,6 +223,7 @@ export function ResourceScreen({
   const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Row | "new" | null>(null)
+  const [contextRow, setContextRow] = useState<Row | null>(null)
   const [draft, setDraft] = useState<Record<string, unknown>>({})
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -244,7 +262,11 @@ export function ResourceScreen({
   const pageSize = config.pageSize ?? 0
 
   const fields = Array.from(
-    new Set(["name", ...config.columns.map((c) => c.field)]),
+    new Set([
+      "name",
+      ...config.columns.map((c) => c.field),
+      ...(config.extraFields ?? []),
+    ]),
   )
 
   // debounce the search box
@@ -505,7 +527,7 @@ export function ResourceScreen({
   }
 
   return (
-    <div className="space-y-3">
+    <div className={"space-y-3" + (contextRow ? " lg:pe-[392px]" : "")}>
       {config.boardNav && <BoardNav />}
       <Card>
       <CardHeader>
@@ -563,7 +585,7 @@ export function ResourceScreen({
               </select>
             ))}
             {config.dateFilter && (
-              <div className="flex items-center gap-1.5 text-sm text-zinc-500">
+              <div className="flex flex-wrap items-center gap-1.5 text-sm text-zinc-500">
                 <span className="text-xs">{config.dateFilter.label}</span>
                 <input
                   type="date"
@@ -653,8 +675,22 @@ export function ResourceScreen({
               {rows.map((row) => (
                 <tr
                   key={row.name}
-                  className="cursor-pointer hover:bg-zinc-50"
-                  onClick={() => openEdit(row)}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Open ${String(row.name)}`}
+                  className={
+                    "cursor-pointer transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600" +
+                    (contextRow?.name === row.name ? " bg-brand-50" : "")
+                  }
+                  onClick={() =>
+                    config.contextPanel ? setContextRow(row) : openEdit(row)
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      config.contextPanel ? setContextRow(row) : openEdit(row)
+                    }
+                  }}
                 >
                   {visibleCols.map((c) => (
                     <td
@@ -666,7 +702,9 @@ export function ResourceScreen({
                           : "")
                       }
                     >
-                      {c.badge && row[c.field] ? (
+                      {c.render ? (
+                        c.render(row)
+                      ) : c.badge && row[c.field] ? (
                         <Badge
                           tone={BADGE_TONES[String(row[c.field])] ?? "zinc"}
                         >
@@ -820,6 +858,24 @@ export function ResourceScreen({
         )
       })()}
       </Card>
+
+      {contextRow && config.contextPanel && (
+        <ContextPanel
+          label={String(contextRow.name)}
+          onClose={() => setContextRow(null)}
+        >
+          <config.contextPanel
+            row={contextRow}
+            reload={load}
+            onClose={() => setContextRow(null)}
+            onOpenDetail={() => {
+              const r = contextRow
+              setContextRow(null)
+              openEdit(r)
+            }}
+          />
+        </ContextPanel>
+      )}
     </div>
   )
 }
