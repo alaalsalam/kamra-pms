@@ -15,6 +15,7 @@ import { Button } from "./ui/button"
 import { cn } from "../lib/utils"
 import { primaryLabel } from "../lib/dir"
 import { cur, moneyLocale, taxLabel } from "../lib/money"
+import { useT, fill, qty } from "../lib/i18n"
 
 interface ExtraRoom {
   room_type: string
@@ -63,6 +64,7 @@ export function BookingDialog(props: {
   onClose: () => void
   onBooked: () => void
 }) {
+  const { t: tt } = useT()
   const [options, setOptions] = useState<BookingOptions | null>(null)
   const [quote, setQuote] = useState<Quote | null>(null)
   const [quoting, setQuoting] = useState(false)
@@ -718,9 +720,11 @@ export function BookingDialog(props: {
                       selectedRt.children_capacity > 0) &&
                     !overCapacity && (
                       <p className="mt-1.5 text-xs text-zinc-400">
-                        Sleeps up to {selectedRt.adults_capacity} adults
-                        {selectedRt.children_capacity > 0 &&
-                          ` · ${selectedRt.children_capacity} children`}
+                        {tt("Sleeps up to")}{" "}
+                        {qty(selectedRt.adults_capacity, "adult")}
+                        {selectedRt.children_capacity > 0 && (
+                          <> · {qty(selectedRt.children_capacity, "child", "children")}</>
+                        )}
                       </p>
                     )}
                 </Field>
@@ -771,20 +775,21 @@ export function BookingDialog(props: {
 
                 {selectedRt && overCapacity && (
                   <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
-                    {primaryLabel(selectedRt.room_type_name)} sleeps up to{" "}
-                    <strong>{selectedRt.adults_capacity} adults</strong>
+                    <bdi>{primaryLabel(selectedRt.room_type_name)}</bdi>{" "}
+                    {tt("sleeps up to")}{" "}
+                    <strong>{qty(selectedRt.adults_capacity, "adult")}</strong>
                     {selectedRt.children_capacity > 0 && (
                       <>
                         {" · "}
-                        <strong>{selectedRt.children_capacity} children</strong>
+                        <strong>{qty(selectedRt.children_capacity, "child", "children")}</strong>
                       </>
                     )}{" "}
-                    per room.{" "}
+                    {tt("per room.")}{" "}
                     <button
                       className="font-semibold text-brand-700 hover:underline"
                       onClick={distributeParty}
                     >
-                      Split into {roomsNeeded} rooms
+                      {fill(tt("Split into {n} rooms"), { n: roomsNeeded })}
                     </button>
                   </div>
                 )}
@@ -1302,7 +1307,9 @@ export function BookingDialog(props: {
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-zinc-400">
-                        {form.check_in_date} → {checkOut}
+                        <bdi dir="ltr" className="tabular-nums">
+                          {form.check_in_date} → {checkOut}
+                        </bdi>
                       </p>
                       {(options?.property?.deposit_pct ?? 0) > 0 && (
                         <div className="mt-2.5 flex items-baseline justify-between gap-2 border-t border-zinc-100 pt-2.5">
@@ -1326,10 +1333,24 @@ export function BookingDialog(props: {
                     {options?.property && (
                       <p className="pt-1 text-xs leading-relaxed text-zinc-500">
                         {(options.property.cancellation_fee || "None") === "None"
-                          ? "Free cancellation."
-                          : `Free cancellation until ${cancelCutoff}; after that the ${String(options.property.cancellation_fee).toLowerCase()} is charged.`}
-                        {(options.property.no_show_charge || "None") !== "None" &&
-                          ` No-show: ${String(options.property.no_show_charge).toLowerCase()} charged.`}
+                          ? tt("Free cancellation.")
+                          : fill(
+                              tt(
+                                "Free cancellation until {cutoff}; after that the {fee} is charged.",
+                              ),
+                              {
+                                cutoff: cancelCutoff,
+                                fee: String(options.property.cancellation_fee).toLowerCase(),
+                              },
+                            )}
+                        {(options.property.no_show_charge || "None") !== "None" && (
+                          <>
+                            {" "}
+                            {fill(tt("No-show: {charge} charged."), {
+                              charge: String(options.property.no_show_charge).toLowerCase(),
+                            })}
+                          </>
+                        )}
                       </p>
                     )}
                   </div>

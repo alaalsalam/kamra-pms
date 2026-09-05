@@ -7,8 +7,8 @@ import { Button } from "./button"
  * Content scrolls; header and footer stay pinned.
  */
 export function Sheet(props: {
-  title: string
-  description?: string
+  title: React.ReactNode
+  description?: React.ReactNode
   onClose: () => void
   footer?: React.ReactNode
   children: React.ReactNode

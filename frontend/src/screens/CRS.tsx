@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { qty } from "../lib/i18n"
+import { useT, qty, fill } from "../lib/i18n"
 import { Search, BedDouble, MapPin, Loader2 } from "lucide-react"
 import { call } from "../lib/api"
 import { serverError } from "../lib/resource"
@@ -50,6 +50,7 @@ function plusDays(iso: string, n: number) {
 }
 
 export default function CRS() {
+  const { t } = useT()
   const [checkIn, setCheckIn] = useState(isoToday())
   const [nights, setNights] = useState(1)
   const [adults, setAdults] = useState(2)
@@ -63,7 +64,7 @@ export default function CRS() {
     rt: RoomTypeAvail
   } | null>(null)
   const [guest, setGuest] = useState({ name: "", phone: "" })
-  const [done, setDone] = useState<string | null>(null)
+  const [done, setDone] = useState<{ ref: string; property: string } | null>(null)
 
   const checkOut = plusDays(checkIn, Math.max(1, nights))
 
@@ -101,7 +102,7 @@ export default function CRS() {
         children,
         source: "Manual",
       })
-      setDone(`Booked ${r.reservation} at ${booking.property_name}.`)
+      setDone({ ref: r.reservation, property: booking.property_name })
       setData(null)
     } catch (e) {
       setError(serverError(e))
@@ -113,10 +114,11 @@ export default function CRS() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-zinc-800">Central reservations</h1>
+        <h1 className="text-xl font-bold text-zinc-800">{t("Central reservations")}</h1>
         <p className="text-xs text-zinc-500">
-          Find a room across every property you manage, and book into
-          whichever has space.
+          {t(
+            "Find a room across every property you manage, and book into whichever has space.",
+          )}
         </p>
       </div>
 
@@ -145,7 +147,7 @@ export default function CRS() {
           <div className="flex items-end">
             <Button className="w-full" disabled={busy} onClick={search}>
               {busy ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
-              Search
+              {t("Search")}
             </Button>
           </div>
         </CardContent>
@@ -158,21 +160,24 @@ export default function CRS() {
       )}
       {done && (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          {done}
+          {fill(t("Booked {ref} at {property}."), {
+            ref: done.ref,
+            property: <bdi>{done.property}</bdi>,
+          })}
         </div>
       )}
 
       {data && (
         <div className="space-y-3">
           <p className="text-sm text-zinc-500">
-            {qty(data.properties.length, "property", "properties")} with space ·{" "}
+            {qty(data.properties.length, "property", "properties")} {t("with space")} ·{" "}
             {qty(data.nights, "night")},{" "}
             {qty(data.adults, "adult")}
-            {data.children ? `, ${data.children} children` : ""}
+            {data.children > 0 && <>, {qty(data.children, "child", "children")}</>}
           </p>
           {data.properties.length === 0 && (
             <Card><CardContent className="p-8 text-center text-sm text-zinc-400">
-              No rooms across the chain for these dates and party.
+              {t("No rooms across the chain for these dates and party.")}
             </CardContent></Card>
           )}
           {data.properties.map((p) => (
@@ -181,12 +186,13 @@ export default function CRS() {
                 <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                   <div>
                     <span className="text-base font-semibold text-zinc-800">{p.property_name}</span>
-                    <span className="ml-2 inline-flex items-center gap-1 text-xs text-zinc-400">
+                    <span className="ms-2 inline-flex items-center gap-1 text-xs text-zinc-400">
                       <MapPin className="size-3" />{p.city}
                     </span>
                   </div>
                   <span className="text-xs text-zinc-500">
-                    {p.available_rooms} rooms · from {cur()}{inr(p.from_rate)}/night
+                    {qty(p.available_rooms, "room")} · {t("from")}{" "}
+                    <bdi dir="ltr" className="tabular-nums">{cur()}{inr(p.from_rate)}</bdi>{t("/night")}
                   </span>
                 </div>
                 <div className="divide-y divide-zinc-100">
@@ -194,18 +200,22 @@ export default function CRS() {
                     <div key={rt.room_type} className="flex flex-wrap items-center gap-3 py-2.5">
                       <BedDouble className="size-4 shrink-0 text-zinc-400" />
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-zinc-800">{rt.room_type_name}</div>
+                        <div className="text-sm font-medium text-zinc-800"><bdi>{rt.room_type_name}</bdi></div>
                         <div className="text-xs text-zinc-500">
-                          {rt.available} left · sleeps {rt.adults_capacity} · {cur()}{inr(rt.per_night)}/night
+                          {fill(t("{n} left · sleeps {cap}"), {
+                            n: rt.available,
+                            cap: rt.adults_capacity,
+                          })}{" · "}
+                          <bdi dir="ltr" className="tabular-nums">{cur()}{inr(rt.per_night)}</bdi>{t("/night")}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm font-semibold">{cur()}{inr(rt.total)}</div>
-                        <div className="text-[11px] text-zinc-400">total, taxes in</div>
+                      <div className="text-end">
+                        <div className="text-sm font-semibold"><bdi dir="ltr" className="tabular-nums">{cur()}{inr(rt.total)}</bdi></div>
+                        <div className="text-[11px] text-zinc-400">{t("total, taxes in")}</div>
                       </div>
                       <Button variant="outline"
                         onClick={() => { setBooking({ property: p.property, property_name: p.property_name, rt }); setGuest({ name: "", phone: "" }) }}>
-                        Book
+                        {t("Book")}
                       </Button>
                     </div>
                   ))}
@@ -218,26 +228,32 @@ export default function CRS() {
 
       {booking && (
         <Sheet
-          title={`Book ${booking.rt.room_type_name}`}
-          description={`${booking.property_name} · ${checkIn} → ${checkOut} · ${cur()}${inr(booking.rt.total)} total`}
+          title={fill(t("Book {roomType}"), { roomType: <bdi>{booking.rt.room_type_name}</bdi> })}
+          description={
+            <>
+              <bdi>{booking.property_name}</bdi> ·{" "}
+              <bdi dir="ltr" className="tabular-nums">{checkIn} → {checkOut}</bdi> ·{" "}
+              <bdi dir="ltr" className="tabular-nums">{cur()}{inr(booking.rt.total)}</bdi> {t("total")}
+            </>
+          }
           onClose={() => setBooking(null)}
           footer={
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setBooking(null)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setBooking(null)}>{t("Cancel")}</Button>
               <Button disabled={busy || !guest.name.trim()} onClick={() => book().then(() => setBooking(null))}>
-                Confirm booking
+                {t("Confirm booking")}
               </Button>
             </div>
           }
         >
           <div className="space-y-3">
             <label className="block">
-              <span className="mb-1 block text-sm font-medium text-zinc-600">Guest name</span>
+              <span className="mb-1 block text-sm font-medium text-zinc-600">{t("Guest name")}</span>
               <input className={inputCls} value={guest.name} autoFocus
                 onChange={(e) => setGuest({ ...guest, name: e.target.value })} />
             </label>
             <label className="block">
-              <span className="mb-1 block text-sm font-medium text-zinc-600">Phone</span>
+              <span className="mb-1 block text-sm font-medium text-zinc-600">{t("Phone")}</span>
               <input className={inputCls} type="tel" dir="ltr" value={guest.phone}
                 placeholder="+966 5X XXX XXXX"
                 onChange={(e) => setGuest({ ...guest, phone: e.target.value })} />

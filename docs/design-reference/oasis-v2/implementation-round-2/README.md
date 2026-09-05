@@ -30,8 +30,8 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
 | `/reservations` | ResourceScreen(reservationsConfig) + ReservationSummary/ContextPanel + ReservationDetail | **Tested** | (this commit) | 5-col scannable table (guest+ref/source, stay+nights, room-or-amber "No room", status, amber balance); row/keyboard opens 372px ContextPanel (glance: stay/room/source/total/advance/balance + amber "collect balance" callout + Check-in/Check-out/Reg-card/Full-details actions), "Full details" still opens the wide ReservationDetail editor unchanged; existing URL filters kept (no duplicate filter system). Verified 390/768/1024 × AR-RTL/EN-LTR: no overflow, console-clean. Fixes: date-range filter now wraps (was +42px mobile overflow); mobile panel z-[60] over bottom-nav so all actions hittable |
 | `/grc/:name` | RegistrationCard | **Tested** | (this commit) | print-safe AR/EN. Backend untouched (registration_card + update_occupants/upload_*/set_actual_times all preserved). i18n leaks fixed: `2 adults + 1 child` (qty + child/children added to UNIT), `(incl. VAT)`, ledger→Oasis money rows (Paid/Balance-amber/Deposit), certification paragraph + folio CTA as whole-string AR keys. Logical props for RTL print (text-end, pe-, ms-, bdi on refs/dates/amounts/phone). error+retry state. Verified real data 1440 AR-RTL/EN-LTR **screen + `print` media**: dir carries, `print:hidden` hides editors/links, no overflow, 0 console errors |
 | `/cancelled/:name` | CancellationLetter | **Tested** | (this commit) | print-safe AR/EN. Backend untouched. Compound letter body → whole-sentence AR keys with `{placeholder}` tokens + new `fill()` helper (bidi-isolated values) so Arabic reads grammatically (`نؤكد أن حجزكم … من {ci} إلى {co} (3 ليالٍ) … قد تم إلغاؤه`); Refund-due in amber. error+retry. **Note:** demo data has no Cancelled reservation, so the body/print was verified via a transient route-mock (real-shaped payload) in AR+EN screen+print (dir carries, print:hidden works, no overflow, amber refund); the live error path was verified against a real non-cancelled reservation. No cancel workflow was run on demo data |
-| (internal) BookingDialog | components/BookingDialog | Pending | — | guest→stay→price→confirm sequence |
-| `/crs` | CRS | Pending | — | |
+| (internal) BookingDialog | components/BookingDialog | **Tested** | (this commit) | pricing/availability/tax/creation/permissions untouched. Presentation only: fixed RTL bidi on the Total-box stay dates (was reversed), fixed compound i18n leaks (capacity `Sleeps up to N adults · M children` via qty, over-capacity warning + `Split into N rooms`, cancellation/no-show policy via `fill()` templates, `Meals`, `/night`, `/adult)`), translated placeholders (`Type to find or create`, `Optional code`). Verified 390 AR-RTL/EN-LTR: no dialog/page overflow, actions reachable, 0 real console errors |
+| `/crs` | CRS | **Tested** | (this commit) | crs_search + create_booking logic untouched. Fixed compound leaks (result summary children grammar, `N rooms · from`, `N left · sleeps M`, `total, taxes in`, `Booked {ref} at {property}`), booking Sheet title `Book {roomType}` + description dates now bidi-isolated (widened shared `Sheet` title/description to ReactNode — backward-compatible). Logical props (ms-/text-end) + bdi on rates/totals. Verified 390 AR-RTL/EN-LTR: no overflow, results + Sheet render, dates correct order |
 | `/guests` | Guests | Pending | — | (r1-improved list; apply Oasis panel) |
 | `/guests/:name` | GuestJourney | Pending | — | |
 | `/room-blocks` | ResourceScreen(roomBlocksConfig) | Pending | — | |
@@ -163,6 +163,20 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
     print, `print:hidden` hides all editors/links, no overflow, no UI-label leaks (only stored data/proper
     nouns remain English), 0 real console errors (only benign socket.io). Letter's live error path verified
     against a real non-cancelled reservation. After-shots: `after/grc`, `after/cancellation`.
+- **BookingDialog (internal)** + **CRS (`/crs`)** — Phase 1, presentation-only (no pricing/availability/
+  tax/reservation-creation/permission changes).
+  - BookingDialog is observer-translated (no `useT`); added the reactive hook (aliased `tt` to avoid the local
+    `setTimeout t` shadow) only for the compound `fill()` sentences. Fixed the Total-box stay-dates RTL bidi
+    (`<bdi dir="ltr">`, was rendering `co → ci`), the capacity hint + over-capacity warning + `Split into N
+    rooms` (qty/fill), the cancellation/no-show policy lines (fill templates), and translated the guest-search /
+    voucher placeholders + `Meals` / `/night` / `/adult)`.
+  - CRS: added `useT`; templated the result summary + per-property/room-type availability lines + the done
+    banner; booking Sheet now shows a bidi-isolated date range and a translated `Book {roomType}` title — which
+    needed the shared `Sheet` `title`/`description` widened from `string` to `ReactNode` (backward-compatible,
+    no behaviour change; all existing string callers still valid).
+  - New AR keys added under the booking + CRS sections (deduped; removed a `Sleeps up to` that already existed).
+  - Tests: `tsc --noEmit` ✓ + `npm build` ✓. MCP live, 390px AR-RTL + EN-LTR: no dialog/page overflow, leaks
+    gone, dates render in correct order, results + booking Sheet work. After-shots: `after/booking`, `after/crs`.
 
 ## Amber-discipline hit-list (`btn-gold`/`text-gold` → teal unless attention/money/VIP)
 _grep results + per-screen reclassification, filled as reached_
