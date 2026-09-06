@@ -412,21 +412,10 @@ export default function PublicBooking() {
 
   function fetchResults() {
     if (!property) return
-    // Enforce a bookable range at the fetch boundary — NOT per keystroke, which
-    // fights native date-input editing. Correct invalid dates, then re-search.
-    const clean = sanitizeStay(
-      search.check_in_date,
-      search.check_out_date,
-      String(search.adults),
-      String(search.children),
-    )
-    if (
-      clean.check_in_date !== search.check_in_date ||
-      clean.check_out_date !== search.check_out_date
-    ) {
-      setSearch(clean)
-      return
-    }
+    // Only search a bookable range. Skip past / inverted dates — including the
+    // transient values a native date input reports mid-edit. Never rewrite the
+    // inputs here (that fights typing and made the field un-editable).
+    if (search.check_in_date < todayPlus(0) || checkOut <= search.check_in_date) return
     call<StayResult[]>("hotelpms.public_api.search_stay", {
       property,
       check_in_date: search.check_in_date,

@@ -400,6 +400,9 @@ export const AR: Record<string, string> = {
   "Available for your dates": "متاحة لتواريخك",
   "Price is confirmed at booking": "يُؤكَّد السعر عند الحجز",
   "No rooms available for these dates": "لا توجد غرف متاحة لهذه التواريخ",
+  "Check your dates": "تحقّق من تواريخك",
+  "Check-out must be after check-in, and check-in today or later.":
+    "يجب أن يكون تاريخ المغادرة بعد تاريخ الوصول، وتاريخ الوصول اليوم أو بعده.",
   "Try different check-in / check-out dates to find an opening":
     "جرّب تواريخ وصول ومغادرة مختلفة للعثور على توفّر",
   "taxes in": "شامل الضرائب",

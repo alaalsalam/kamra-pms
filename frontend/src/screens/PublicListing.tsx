@@ -280,6 +280,10 @@ export default function PublicListing() {
   const [busy, setBusy] = useState(false)
 
   const checkOut = search.check_out_date
+  // A bookable range: check-in today or later, check-out strictly after it.
+  // False while the guest is mid-edit (a transient past/inverted value) — we
+  // then show a hint instead of searching, but we never touch the inputs.
+  const rangeValid = search.check_in_date >= todayPlus(0) && checkOut > search.check_in_date
 
   const listingSlug = resolved?.listing_slug
   const locationSlug = resolved?.location_slug
@@ -338,23 +342,12 @@ export default function PublicListing() {
 
   function fetchResults() {
     if (!resolved) return
-    // Enforce a bookable range at the fetch boundary — NOT per keystroke, which
-    // fights native date-input editing (a transient segment value snaps back).
-    // If the current dates are invalid (past / inverted), correct the inputs and
-    // let the resulting state change re-search with the clean range.
-    const clean = sanitizeStay(
-      search.check_in_date,
-      search.check_out_date,
-      String(search.adults),
-      String(search.children),
-    )
-    if (
-      clean.check_in_date !== search.check_in_date ||
-      clean.check_out_date !== search.check_out_date
-    ) {
-      setSearch(clean)
-      return
-    }
+    // Only search a bookable range. Skip past / inverted dates — including the
+    // transient values a native date input reports while the guest is still
+    // typing a multi-digit day / month / year. We NEVER rewrite the inputs here:
+    // mutating them mid-edit is exactly what made the field un-editable. The
+    // inline "check your dates" hint guides the guest instead.
+    if (search.check_in_date < todayPlus(0) || checkOut <= search.check_in_date) return
     setSearching(true)
     setSearchError(null)
     call<StayResult[]>("hotelpms.public_api.search_stay", {
@@ -812,13 +805,15 @@ export default function PublicListing() {
                 </label>
               </div>
               <p className="text-center text-xs text-zinc-400">
-                {qty(nightsBetween(search.check_in_date, search.check_out_date), "night")}
+                {rangeValid
+                  ? qty(nightsBetween(search.check_in_date, search.check_out_date), "night")
+                  : "—"}
               </p>
 
               <Button
                 variant={isSite ? "outline" : "gold"}
                 className="w-full justify-center gap-2 py-2.5 text-base"
-                disabled={searching}
+                disabled={searching || (!isSite && !rangeValid)}
                 onClick={() => {
                   fetchResults()
                   document
@@ -838,7 +833,14 @@ export default function PublicListing() {
                   so the guest always sees the next step after checking. */}
               {!isSite && primary && (
                 <div id="avail-result">
-                  {searchError ? (
+                  {!rangeValid ? (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
+                      <p className="font-semibold text-amber-800">Check your dates</p>
+                      <p className="mt-0.5 text-amber-700">
+                        Check-out must be after check-in, and check-in today or later.
+                      </p>
+                    </div>
+                  ) : searchError ? (
                     <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                       <p>Couldn't check availability right now.</p>
                       <button
