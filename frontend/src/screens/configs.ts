@@ -12,6 +12,7 @@ import {
   bookingPageCell,
   experienceStatusCell,
 } from "./experienceCells"
+import { roomHkStatusCell, roomOccupancyCell } from "./roomCells"
 import { MapPin, PackageSearch, Sparkles } from "lucide-react"
 
 export const roomsConfig: ScreenConfig = {
@@ -22,7 +23,7 @@ export const roomsConfig: ScreenConfig = {
   boardNav: true,
   filters: [
     { field: "floor", label: "Floor", optionsFrom: "floor" },
-    { field: "housekeeping_status", label: "Status", options: ["Clean", "Dirty", "Inspected", "Out of Order"] },
+    { field: "housekeeping_status", label: "Status", options: ["Clean", "Ready", "Inspected", "Dirty", "Out of Order"] },
   ],
   pageSize: 25,
   propertyScoped: true,
@@ -31,14 +32,14 @@ export const roomsConfig: ScreenConfig = {
     { field: "room_number", label: "Room" },
     { field: "room_type", label: "Type", lookup: { doctype: "Room Type", labelField: "room_type_name" } },
     { field: "floor", label: "Floor" },
-    { field: "housekeeping_status", label: "Housekeeping", badge: true },
-    { field: "occupancy_status", label: "Occupancy", badge: true },
+    { field: "housekeeping_status", label: "Housekeeping", render: roomHkStatusCell },
+    { field: "occupancy_status", label: "Occupancy", render: roomOccupancyCell },
   ],
   form: [
     { field: "room_number", label: "Room number", type: "data", required: true },
     { field: "room_type", label: "Room type", type: "link", linkDoctype: "Room Type", required: true },
     { field: "floor", label: "Floor", type: "data" },
-    { field: "housekeeping_status", label: "Housekeeping status", type: "select", options: ["Clean", "Dirty", "Inspected", "Out of Order"] },
+    { field: "housekeeping_status", label: "Housekeeping status", type: "select", options: ["Clean", "Ready", "Inspected", "Dirty", "Out of Order"] },
     { field: "notes", label: "Notes", type: "data" },
   ],
 }
