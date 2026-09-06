@@ -66,6 +66,7 @@ import {
   channelManagerConfig,
   channelRoomMappingsConfig,
   mealPlansConfig,
+  experiencesConfig,
   ratePlansConfig,
   reservationsConfig,
   roomBlocksConfig,
@@ -296,6 +297,10 @@ export default function App() {
           <Route
             path="meal-plans"
             element={<ResourceScreen config={mealPlansConfig} />}
+          />
+          <Route
+            path="experiences"
+            element={<ResourceScreen config={experiencesConfig} />}
           />
           <Route path="billing" element={<Billing />} />
           <Route path="billing/:name" element={<FolioView />} />

@@ -7,7 +7,12 @@ import ReservationDetail from "./ReservationDetail"
 import ReservationSummary from "../components/ReservationSummary"
 import { guestCell, stayCell, roomCell, balanceCell } from "./reservationCells"
 import { cur, taxLabel } from "../lib/money"
-import { PackageSearch, Sparkles } from "lucide-react"
+import {
+  experiencePriceCell,
+  bookingPageCell,
+  experienceStatusCell,
+} from "./experienceCells"
+import { MapPin, PackageSearch, Sparkles } from "lucide-react"
 
 export const roomsConfig: ScreenConfig = {
   doctype: "Room",
@@ -182,6 +187,47 @@ export const mealPlansConfig: ScreenConfig = {
     { field: "is_default", label: "Default", type: "check" },
     { field: "disabled", label: "Disabled", type: "check" },
   ],
+}
+
+export const experiencesConfig: ScreenConfig = {
+  doctype: "Experience",
+  title: "Experiences",
+  description:
+    "Activities and add-ons guests can book with their stay — spa, tours, dining and transport.",
+  propertyScoped: true,
+  searchFields: ["experience_name"],
+  filters: [
+    {
+      field: "category",
+      label: "Category",
+      options: ["Spa", "Tour", "Dining", "Activity", "Transport", "Other"],
+    },
+  ],
+  orderBy: "experience_name asc",
+  columns: [
+    { field: "experience_name", label: "Name" },
+    { field: "category", label: "Category", badge: true },
+    { field: "price", label: "Price", render: experiencePriceCell },
+    { field: "show_on_booking_page", label: "On booking page", render: bookingPageCell },
+    { field: "disabled", label: "Status", render: experienceStatusCell },
+  ],
+  form: [
+    { field: "experience_name", label: "Experience name", type: "data", required: true },
+    { field: "category", label: "Category", type: "select", options: ["Spa", "Tour", "Dining", "Activity", "Transport", "Other"] },
+    { field: "price", label: "Price", type: "currency" },
+    { field: "gst_rate", label: `${taxLabel()} %`, type: "float" },
+    { field: "duration", label: "Duration", type: "data" },
+    { field: "description", label: "Description", type: "data" },
+    { field: "image_url", label: "Image URL", type: "data" },
+    { field: "show_on_booking_page", label: "Show on the booking page", type: "check" },
+    { field: "disabled", label: "Disabled", type: "check" },
+  ],
+  onboarding: {
+    icon: MapPin,
+    title: "No experiences yet",
+    message:
+      "Add spa treatments, tours, dining and other add-ons guests can book alongside their stay. Use New above to add the first one.",
+  },
 }
 
 export const travelAgentsConfig: ScreenConfig = {
