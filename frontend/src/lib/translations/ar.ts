@@ -472,6 +472,22 @@ export const AR: Record<string, string> = {
   "No unassigned rooms right now.": "لا توجد غرف غير مُسندة حاليًا.",
   "Tap an occupied room to post minibar or laundry.":
     "اضغط على غرفة مشغولة لتسجيل ميني بار أو غسيل.",
+  // Laundry
+  "No laundry activity yet": "لا يوجد نشاط غسيل بعد",
+  "Guest laundry moves through pickup, processing and delivery here. Set your prices first, then log a guest's pickup to start.":
+    "يمر غسيل الضيوف هنا عبر الاستلام والمعالجة والتسليم. حدّد أسعارك أولًا، ثم سجّل طلب استلام من ضيف للبدء.",
+  "Guest laundry moves through pickup, processing and delivery here. Ask an admin to set the laundry price list, then you can log guest pickups.":
+    "يمر غسيل الضيوف هنا عبر الاستلام والمعالجة والتسليم. اطلب من المدير ضبط قائمة أسعار الغسيل، ثم يمكنك تسجيل طلبات الاستلام.",
+  "Set laundry prices": "ضبط أسعار الغسيل",
+  "Nothing delivered yet.": "لم يُسلَّم شيء بعد.",
+  "No rate card yet — add laundry rates in the Price menu tab.":
+    "لا توجد قائمة أسعار بعد — أضِف أسعار الغسيل في تبويب قائمة الأسعار.",
+  "Per-item prices the app quotes and bills from. Blank express = 1.5× the normal rate.":
+    "أسعار لكل صنف يعتمدها التطبيق في التسعير والفوترة. اترك السريع فارغًا = ١٫٥× السعر العادي.",
+  "— add the first item.": "— أضِف أول صنف.",
+  "Last 30 days": "آخر ٣٠ يومًا",
+  "Billed orders": "الطلبات المفوترة",
+  "Recent laundry billing": "أحدث فواتير الغسيل",
   "Click a day to add a booking, or a booking to edit it.": "انقر على يوم لإضافة حجز، أو على حجز لتعديله.",
   "Jump to date": "انتقل إلى تاريخ",
   "Previous 14 days": "الأيام الـ14 السابقة",

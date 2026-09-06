@@ -418,21 +418,43 @@ export default function Laundry() {
         </p>
       )}
 
-      {tab === "board" && (
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Column
-            title="Pickup requests"
-            orders={requested}
-            empty="No pickups waiting."
-          />
-          <Column
-            title="In hand"
-            orders={inHand}
-            empty="No laundry out right now."
-          />
-          <Column title="Recent" orders={recent} empty="Nothing recent." />
-        </div>
-      )}
+      {tab === "board" &&
+        (open.length === 0 && recent.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50/60 px-6 py-12 text-center">
+            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+              <Shirt className="size-6" aria-hidden />
+            </div>
+            <h3 className="text-base font-semibold text-zinc-800">
+              No laundry activity yet
+            </h3>
+            <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-zinc-500">
+              {canEditRates
+                ? "Guest laundry moves through pickup, processing and delivery here. Set your prices first, then log a guest's pickup to start."
+                : "Guest laundry moves through pickup, processing and delivery here. Ask an admin to set the laundry price list, then you can log guest pickups."}
+            </p>
+            {canEditRates && (
+              <div className="mt-4">
+                <Button variant="outline" onClick={() => setTab("menu")}>
+                  Set laundry prices
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Column
+              title="Pickup requests"
+              orders={requested}
+              empty="No pickups waiting."
+            />
+            <Column
+              title="In hand"
+              orders={inHand}
+              empty="No laundry out right now."
+            />
+            <Column title="Recent" orders={recent} empty="Nothing recent." />
+          </div>
+        ))}
 
       {tab === "menu" && (
         <PriceMenu
@@ -1069,7 +1091,7 @@ function Billing({
       {rev && (
         <Card>
           <CardHeader>
-            <CardTitle>Last {rev.days} days</CardTitle>
+            <CardTitle>{`Last ${rev.days} days`}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
