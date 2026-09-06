@@ -1,9 +1,23 @@
 import { useEffect, useState } from "react"
-import { ChevronDown, Loader2, Megaphone, Plus, Star, Trash2, X } from "lucide-react"
+import {
+  AlertTriangle,
+  Ban,
+  BedDouble,
+  Check,
+  ChevronDown,
+  Loader2,
+  Megaphone,
+  Plus,
+  RotateCw,
+  Star,
+  Trash2,
+  X,
+} from "lucide-react"
 import {
   call,
   createBooking,
   getBookingOptions,
+  getCalendar,
   getCurrentProperty,
   getQuote,
   guestSearch,
@@ -70,6 +84,10 @@ export function BookingDialog(props: {
   const [quoting, setQuoting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // rooms-left per room type across the whole stay - one batched availability
+  // read (min over the stay nights), so the agent picks with full context.
+  const [avail, setAvail] = useState<Record<string, number> | null>(null)
+  const [retryKey, setRetryKey] = useState(0)
   const [done, setDone] = useState<{
     ref: string
     room: string | null
@@ -207,7 +225,37 @@ export function BookingDialog(props: {
     form.meal_plan,
     form.voucher_code,
     checkOut,
+    retryKey,
   ])
+
+  // Availability for the stay dates - a single batched calendar read (no N+1);
+  // rooms-left = the tightest night across the stay. Fails open: an unknown
+  // count never blocks the desk, it just hides the badge.
+  useEffect(() => {
+    let alive = true
+    setAvail(null)
+    const nights = Math.min(31, Math.max(1, form.nights))
+    const t = setTimeout(() => {
+      getCalendar(nights, form.check_in_date)
+        .then((cal) => {
+          if (!alive) return
+          const map: Record<string, number> = {}
+          for (const row of cal.room_types) {
+            map[row.room_type] = row.cells.length
+              ? Math.min(...row.cells.map((c) => c.available))
+              : 0
+          }
+          setAvail(map)
+        })
+        .catch(() => {
+          if (alive) setAvail(null)
+        })
+    }, 300)
+    return () => {
+      alive = false
+      clearTimeout(t)
+    }
+  }, [form.check_in_date, form.nights, retryKey])
 
   // quotes for the additional rooms
   useEffect(() => {
@@ -465,6 +513,37 @@ export function BookingDialog(props: {
     return x && q > 0 ? s + q * x.price * (1 + x.gst_rate / 100) : s
   }, 0)
 
+  // rooms this selection consumes per type (main stay + any extra rooms) - used
+  // to catch a group that asks for more of a type than remains for the dates.
+  const typeUse: Record<string, number> = {}
+  if (form.room_type) typeUse[form.room_type] = 1
+  for (const r of moreRooms) {
+    if (r.room_type) typeUse[r.room_type] = (typeUse[r.room_type] ?? 0) + 1
+  }
+  const overCommitted =
+    !!avail &&
+    Object.entries(typeUse).some(([tp, used]) => used > (avail[tp] ?? 0))
+  const mainSoldOut = !!avail && (avail[form.room_type] ?? 0) <= 0
+
+  // one reason the confirm is blocked, in priority order, shown by the button
+  const blockReason: string | null = !form.guest_name.trim()
+    ? "Enter a guest name to continue"
+    : !form.check_in_date
+      ? "Pick a check-in date"
+      : idError
+        ? "Check the highlighted ID field to continue"
+        : overCapacity
+          ? "Party exceeds the room capacity"
+          : overCommitted
+            ? "No rooms available for these dates"
+            : quoting
+              ? "Getting the latest price…"
+              : !quote
+                ? error
+                  ? "Fix the issue above to continue"
+                  : "Enter stay details to see a price."
+                : null
+
   return (
     <div
       className="fixed inset-0 z-50"
@@ -479,15 +558,21 @@ export function BookingDialog(props: {
         aria-hidden
       />
       <div
-        className="absolute inset-y-0 right-0 flex h-full w-full flex-col bg-white shadow-2xl animate-sheet-in md:w-2/3"
+        className="absolute inset-y-0 end-0 flex h-full w-full flex-col bg-white shadow-2xl animate-sheet-in md:w-2/3"
       >
-        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-200 px-6 py-4 md:px-8">
-          <div className="min-w-0">
+        <header className="flex shrink-0 items-center gap-3 border-b border-zinc-200 px-6 py-4 md:px-8">
+          <span
+            className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-600 text-white shadow-sm"
+            aria-hidden
+          >
+            <BedDouble className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1">
             <h2 className="text-xl font-semibold tracking-tight text-zinc-900">
               New booking
             </h2>
             <p className="mt-0.5 truncate text-sm text-zinc-500">
-              {getCurrentProperty()}
+              {primaryLabel(getCurrentProperty())}
               <span className="text-zinc-300"> · </span>
               Live quote as you type
             </p>
@@ -574,7 +659,7 @@ export function BookingDialog(props: {
                             <li key={h.name}>
                               <button
                                 type="button"
-                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-zinc-50"
+                                className="flex w-full items-center gap-2 px-3 py-2 text-start text-sm hover:bg-zinc-50"
                                 onClick={() => {
                                   setProfile(h)
                                   setHits([])
@@ -592,7 +677,7 @@ export function BookingDialog(props: {
                                     aria-label="VIP"
                                   />
                                 )}
-                                <span className="ml-auto text-xs text-zinc-400">
+                                <span className="ms-auto text-xs text-zinc-400">
                                   {h.phone ? `${h.phone} · ` : ""}
                                   {h.stays} stay{h.stays === 1 ? "" : "s"}
                                 </span>
@@ -632,7 +717,7 @@ export function BookingDialog(props: {
                 <div className="rounded-xl border border-zinc-200 bg-zinc-50/40">
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-left text-sm font-medium text-zinc-700"
+                    className="flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-start text-sm font-medium text-zinc-700"
                     onClick={() => setIdOpen((o) => !o)}
                     aria-expanded={idOpen}
                   >
@@ -702,32 +787,118 @@ export function BookingDialog(props: {
                 <h3 className="-mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
                   Stay &amp; rate
                 </h3>
-                <Field label="Room type">
-                  <select
-                    className={inputCls}
-                    value={form.room_type}
-                    onChange={(e) => set("room_type", e.target.value)}
-                  >
-                    {options?.room_types.map((rt) => (
-                      <option key={rt.name} value={rt.name}>
-                        {primaryLabel(rt.room_type_name)} · {cur()}
-                        {inr(rt.base_price)}/night
-                      </option>
-                    ))}
-                  </select>
-                  {selectedRt &&
-                    (selectedRt.adults_capacity > 0 ||
-                      selectedRt.children_capacity > 0) &&
-                    !overCapacity && (
-                      <p className="mt-1.5 text-xs text-zinc-400">
-                        {tt("Sleeps up to")}{" "}
-                        {qty(selectedRt.adults_capacity, "adult")}
-                        {selectedRt.children_capacity > 0 && (
-                          <> · {qty(selectedRt.children_capacity, "child", "children")}</>
-                        )}
-                      </p>
+                <div>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <span className="block text-sm font-medium text-zinc-600">
+                      Room type
+                      <span className="ms-0.5 text-rose-500" aria-hidden>
+                        *
+                      </span>
+                    </span>
+                    {avail === null && (
+                      <span className="flex items-center gap-1 text-xs text-zinc-400">
+                        <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                        Checking availability
+                      </span>
                     )}
-                </Field>
+                  </div>
+                  <div
+                    role="group"
+                    aria-label="Room type"
+                    className="grid gap-2"
+                  >
+                    {!options &&
+                      [0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className="h-[74px] animate-pulse rounded-xl border border-zinc-200 bg-zinc-100/70"
+                          aria-hidden
+                        />
+                      ))}
+                    {options?.room_types.map((rt) => {
+                      const left = avail ? avail[rt.name] ?? 0 : null
+                      const sold = left !== null && left <= 0
+                      const low = left !== null && left > 0 && left <= 2
+                      const selected = form.room_type === rt.name
+                      return (
+                        <button
+                          key={rt.name}
+                          type="button"
+                          aria-pressed={selected}
+                          disabled={sold}
+                          onClick={() => set("room_type", rt.name)}
+                          className={cn(
+                            "flex items-stretch gap-3 rounded-xl border p-3 text-start transition",
+                            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
+                            selected
+                              ? "border-brand-500 bg-brand-50/70 ring-1 ring-brand-500"
+                              : "border-zinc-200 bg-white hover:border-brand-300 hover:bg-brand-50/30 active:bg-brand-50/60",
+                            sold &&
+                              "cursor-not-allowed opacity-60 hover:border-zinc-200 hover:bg-white",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "grid size-9 shrink-0 place-items-center self-center rounded-lg",
+                              selected
+                                ? "bg-brand-600 text-white"
+                                : "bg-zinc-100 text-zinc-500",
+                            )}
+                            aria-hidden
+                          >
+                            <BedDouble className="size-5" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span className="font-semibold text-zinc-900">
+                                {primaryLabel(rt.room_type_name)}
+                              </span>
+                              {left === null ? null : sold ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                                  <Ban className="size-3" aria-hidden /> Sold out
+                                </span>
+                              ) : low ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                                  <AlertTriangle className="size-3" aria-hidden />
+                                  {`${left} left`}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                  <Check className="size-3" aria-hidden /> Available for
+                                  your dates
+                                </span>
+                              )}
+                            </span>
+                            <span className="mt-0.5 block text-xs text-zinc-500">
+                              {tt("Sleeps up to")} {qty(rt.adults_capacity, "adult")}
+                              {rt.children_capacity > 0 && (
+                                <>
+                                  {" · "}
+                                  {qty(rt.children_capacity, "child", "children")}
+                                </>
+                              )}
+                            </span>
+                            {sold && (
+                              <span className="mt-1 block text-xs font-medium text-rose-600">
+                                No rooms available for these dates
+                              </span>
+                            )}
+                          </span>
+                          <span className="flex shrink-0 flex-col items-end justify-center text-end">
+                            <span className="text-[11px] text-zinc-400">from</span>
+                            <span className="font-semibold tabular-nums text-zinc-900">
+                              <bdi dir="ltr">
+                                {cur()}
+                                {inr(rt.base_price)}
+                              </bdi>
+                            </span>
+                            <span className="text-[11px] text-zinc-400">/night</span>
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <Field label="Check-in">
@@ -842,11 +1013,21 @@ export function BookingDialog(props: {
                         )
                       }
                     >
-                      {options?.room_types.map((rt) => (
-                        <option key={rt.name} value={rt.name}>
-                          {primaryLabel(rt.room_type_name)}
-                        </option>
-                      ))}
+                      {options?.room_types.map((rt) => {
+                        const left = avail ? avail[rt.name] ?? 0 : null
+                        return (
+                          <option
+                            key={rt.name}
+                            value={rt.name}
+                            disabled={left === 0 && rt.name !== r.room_type}
+                          >
+                            {primaryLabel(rt.room_type_name)}
+                            {left !== null && left > 0
+                              ? ` · ${tt(`${left} left`)}`
+                              : ""}
+                          </option>
+                        )
+                      })}
                     </select>
                     <input
                       type="number"
@@ -895,6 +1076,14 @@ export function BookingDialog(props: {
                     >
                       <Trash2 className="size-4" aria-hidden />
                     </button>
+                    {avail &&
+                      r.room_type &&
+                      (typeUse[r.room_type] ?? 0) > (avail[r.room_type] ?? 0) && (
+                        <span className="flex w-full items-center gap-1 text-xs font-medium text-rose-600">
+                          <AlertTriangle className="size-3.5 shrink-0" aria-hidden />
+                          No rooms available for these dates
+                        </span>
+                      )}
                   </div>
                 ))}
 
@@ -920,7 +1109,7 @@ export function BookingDialog(props: {
                 <div className="border-t border-zinc-100 pt-2">
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between py-2 text-left text-sm font-medium text-zinc-700"
+                    className="flex w-full items-center justify-between py-2 text-start text-sm font-medium text-zinc-700"
                     onClick={() => setMoreOpen((o) => !o)}
                     aria-expanded={moreOpen}
                   >
@@ -1213,8 +1402,8 @@ export function BookingDialog(props: {
             </div>
 
             {/* Quote rail — always visible on lg */}
-            <aside className="flex w-full shrink-0 flex-col border-t border-zinc-200 bg-zinc-50 lg:w-80 lg:border-l lg:border-t-0 xl:w-[22rem]">
-              <div className="flex-1 overflow-y-auto px-6 py-5 md:px-7">
+            <aside className="flex w-full shrink-0 flex-col border-t border-zinc-200 bg-zinc-50 lg:w-80 lg:border-s lg:border-t-0 xl:w-[22rem]">
+              <div className="max-h-[42vh] flex-1 overflow-y-auto px-6 py-5 md:px-7 lg:max-h-none">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
                     Quote
@@ -1235,16 +1424,20 @@ export function BookingDialog(props: {
                         {quote.nights === 1 ? "" : "s"}
                       </span>
                       <span className="shrink-0 tabular-nums">
-                        {cur()}
-                        {inr(quote.room_total)}
+                        <bdi dir="ltr">
+                          {cur()}
+                          {inr(quote.room_total)}
+                        </bdi>
                       </span>
                     </div>
                     {quote.meal_total > 0 && (
                       <div className="flex justify-between text-zinc-600">
                         <span>Meals</span>
                         <span className="tabular-nums">
-                          {cur()}
-                          {inr(quote.meal_total)}
+                          <bdi dir="ltr">
+                            {cur()}
+                            {inr(quote.meal_total)}
+                          </bdi>
                         </span>
                       </div>
                     )}
@@ -1252,16 +1445,22 @@ export function BookingDialog(props: {
                       <div className="flex justify-between font-medium text-emerald-700">
                         <span>Voucher</span>
                         <span className="tabular-nums">
-                          −{cur()}
-                          {inr(quote.discount)}
+                          <bdi dir="ltr">
+                            −{cur()}
+                            {inr(quote.discount)}
+                          </bdi>
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between text-zinc-600">
-                      <span>{taxLabel()} {quote.tax_percent}%</span>
+                      <span>
+                        {taxLabel()} <bdi dir="ltr">{quote.tax_percent}%</bdi>
+                      </span>
                       <span className="tabular-nums">
-                        {cur()}
-                        {inr(quote.tax_amount)}
+                        <bdi dir="ltr">
+                          {cur()}
+                          {inr(quote.tax_amount)}
+                        </bdi>
                       </span>
                     </div>
                     {moreQuotes.map((mq, i) =>
@@ -1279,8 +1478,10 @@ export function BookingDialog(props: {
                             )}
                           </span>
                           <span className="shrink-0 tabular-nums">
-                            {cur()}
-                            {inr(mq.amount_after_tax)}
+                            <bdi dir="ltr">
+                              {cur()}
+                              {inr(mq.amount_after_tax)}
+                            </bdi>
                           </span>
                         </div>
                       ) : null,
@@ -1289,8 +1490,10 @@ export function BookingDialog(props: {
                       <div className="flex justify-between text-zinc-600">
                         <span>Add-ons (incl. {taxLabel()})</span>
                         <span className="tabular-nums">
-                          {cur()}
-                          {inr(addonsGross)}
+                          <bdi dir="ltr">
+                            {cur()}
+                            {inr(addonsGross)}
+                          </bdi>
                         </span>
                       </div>
                     )}
@@ -1302,14 +1505,17 @@ export function BookingDialog(props: {
                           {moreRooms.length > 0 ? " · all rooms" : ""}
                         </span>
                         <span className="text-3xl font-semibold tabular-nums tracking-tight text-zinc-900">
-                          {cur()}
-                          {inr(grandTotal)}
+                          <bdi dir="ltr">
+                            {cur()}
+                            {inr(grandTotal)}
+                          </bdi>
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-zinc-400">
                         <bdi dir="ltr" className="tabular-nums">
                           {form.check_in_date} → {checkOut}
-                        </bdi>
+                        </bdi>{" "}
+                        · {qty(quote.nights, "night")}
                       </p>
                       {(options?.property?.deposit_pct ?? 0) > 0 && (
                         <div className="mt-2.5 flex items-baseline justify-between gap-2 border-t border-zinc-100 pt-2.5">
@@ -1321,10 +1527,12 @@ export function BookingDialog(props: {
                             </span>
                           </span>
                           <span className="text-base font-semibold tabular-nums text-zinc-900">
-                            {cur()}
-                            {inr(
-                              (grandTotal * options!.property.deposit_pct) / 100,
-                            )}
+                            <bdi dir="ltr">
+                              {cur()}
+                              {inr(
+                                (grandTotal * options!.property.deposit_pct) / 100,
+                              )}
+                            </bdi>
                           </span>
                         </div>
                       )}
@@ -1364,44 +1572,52 @@ export function BookingDialog(props: {
 
                 {error && (
                   <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-700">
-                    {error}
+                    <p>{error}</p>
+                    <button
+                      type="button"
+                      onClick={() => setRetryKey((k) => k + 1)}
+                      className="mt-2 inline-flex min-h-[36px] items-center gap-1.5 rounded-md border border-rose-300 bg-white px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
+                    >
+                      <RotateCw className="size-3.5" aria-hidden /> Retry
+                    </button>
                   </div>
                 )}
               </div>
 
               <div className="shrink-0 space-y-2 border-t border-zinc-200 bg-white px-6 py-4 md:px-7">
                 <Button
-                  className="w-full justify-center py-2.5 text-base"
-                  disabled={busy || !form.guest_name || !quote || !!idError}
+                  className="min-h-[44px] w-full justify-center py-2.5 text-base"
+                  disabled={busy || !!blockReason}
                   onClick={() => submit()}
                 >
                   {busy ? "Booking…" : "Confirm booking"}
                 </Button>
-                {!busy && (!form.guest_name || !quote || idError) && (
-                  <p className="text-center text-xs text-zinc-400">
-                    {!form.guest_name
-                      ? "Enter a guest name to continue"
-                      : idError
-                        ? "Check the highlighted ID field to continue"
-                        : quoting
-                          ? "Getting the latest price…"
-                          : error
-                            ? "Fix the issue above to continue"
-                            : "Enter stay details to see a price."}
+                {!busy && blockReason && (
+                  <p
+                    className="flex items-center justify-center gap-1.5 text-center text-xs text-zinc-500"
+                    role="status"
+                  >
+                    {(mainSoldOut || overCommitted || overCapacity) && (
+                      <AlertTriangle
+                        className="size-3.5 shrink-0 text-amber-600"
+                        aria-hidden
+                      />
+                    )}
+                    {blockReason}
                   </p>
                 )}
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="outline"
-                    className="justify-center"
+                    className="min-h-[44px] justify-center"
                     onClick={props.onClose}
                   >
                     Cancel
                   </Button>
                   <Button
                     variant="outline"
-                    className="justify-center"
-                    disabled={busy || !form.guest_name}
+                    className="min-h-[44px] justify-center"
+                    disabled={busy || !form.guest_name.trim()}
                     onClick={() => submit(true)}
                     title="Park this stay with no room; promote when inventory frees"
                   >

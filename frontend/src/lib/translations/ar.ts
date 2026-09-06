@@ -379,6 +379,8 @@ export const AR: Record<string, string> = {
   "Booked {ref} at {property}.": "تم حجز {ref} في {property}.",
   "Enter stay details to see a price.": "أدخل تفاصيل الإقامة لعرض السعر.",
   "Enter a guest name to continue": "أدخل اسم الضيف للمتابعة",
+  "Pick a check-in date": "اختر تاريخ الوصول",
+  "Party exceeds the room capacity": "عدد الضيوف يتجاوز سعة الغرفة",
   "Getting the latest price…": "جارٍ جلب أحدث سعر…",
   "Fix the issue above to continue": "عالج المشكلة أعلاه للمتابعة",
   "Fix the issue below to see a price.": "عالج المشكلة أدناه لعرض السعر.",

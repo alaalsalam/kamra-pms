@@ -53,6 +53,14 @@ const hkTone: Record<string, string> = {
   Dirty: "text-amber-700",
 }
 
+// room status on the picker chips: colour + dot + text (never colour alone)
+const hkChip: Record<string, { text: string; dot: string }> = {
+  Clean: { text: "text-emerald-700", dot: "bg-emerald-500" },
+  Inspected: { text: "text-sky-700", dot: "bg-sky-500" },
+  Dirty: { text: "text-amber-700", dot: "bg-amber-500" },
+  _default: { text: "text-zinc-500", dot: "bg-zinc-400" },
+}
+
 function ReadyChip({ ok, label }: { ok: boolean; label: string }) {
   return (
     <span
@@ -121,7 +129,7 @@ export default function CheckInDialog(props: {
       footer={
         <div className="flex w-full items-center gap-3">
           {error && <p className="text-sm text-rose-600">{error}</p>}
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ms-auto flex items-center gap-2">
             <Button variant="outline" onClick={props.onClose}>
               Cancel
             </Button>
@@ -154,7 +162,7 @@ export default function CheckInDialog(props: {
                 href={toFullPath(`/grc/${r.name}`)}
                 target="_blank"
                 rel="noreferrer"
-                className="ml-auto flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline"
+                className="ms-auto flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline"
               >
                 Open GRC <ExternalLink className="size-3.5" aria-hidden />
               </a>
@@ -198,7 +206,7 @@ export default function CheckInDialog(props: {
                 {ctx.room_assigned.housekeeping_status && (
                   <span
                     className={cn(
-                      "ml-2 text-xs font-medium",
+                      "ms-2 text-xs font-medium",
                       hkTone[ctx.room_assigned.housekeeping_status] ??
                         "text-zinc-500",
                     )}
@@ -213,7 +221,7 @@ export default function CheckInDialog(props: {
                   <button
                     onClick={() => setRoom(ctx.suggestion!.room)}
                     className={cn(
-                      "flex w-full items-start gap-2 rounded-xl border p-3 text-left transition",
+                      "flex min-h-[44px] w-full items-start gap-2 rounded-xl border p-3 text-start transition",
                       room === ctx.suggestion.room
                         ? "border-brand-400 bg-brand-50"
                         : "border-zinc-200 hover:border-brand-300",
@@ -231,23 +239,54 @@ export default function CheckInDialog(props: {
                     </span>
                   </button>
                 )}
-                <label className="block">
-                  <span className="mb-1 block text-xs font-medium text-zinc-500">
-                    {ctx.suggestion ? "Or pick another room" : "Pick a room"}
-                  </span>
-                  <select
-                    className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-brand-600"
-                    value={room}
-                    onChange={(e) => setRoom(e.target.value)}
-                  >
-                    <option value="">Choose…</option>
-                    {ctx.rooms.map((x) => (
-                      <option key={x.name} value={x.name}>
-                        {x.room_number} · {x.housekeeping_status}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                {ctx.rooms.length > 0 && (
+                  <div>
+                    <span className="mb-1.5 block text-xs font-medium text-zinc-500">
+                      {ctx.suggestion ? "Or pick another room" : "Pick a room"}
+                    </span>
+                    <div
+                      role="group"
+                      aria-label={ctx.suggestion ? "Or pick another room" : "Pick a room"}
+                      className="grid max-h-56 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3"
+                    >
+                      {ctx.rooms.map((x) => {
+                        const selected = room === x.name
+                        const tone = hkChip[x.housekeeping_status] ?? hkChip._default
+                        return (
+                          <button
+                            key={x.name}
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={() => setRoom(x.name)}
+                            className={cn(
+                              "flex min-h-[44px] flex-col items-start justify-center gap-0.5 rounded-xl border px-3 py-2 text-start transition",
+                              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
+                              selected
+                                ? "border-brand-500 bg-brand-50 ring-1 ring-brand-500"
+                                : "border-zinc-200 bg-white hover:border-brand-300 hover:bg-brand-50/40",
+                            )}
+                          >
+                            <span className="font-semibold text-zinc-900">
+                              <bdi dir="ltr">{x.room_number}</bdi>
+                            </span>
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1 text-xs font-medium",
+                                tone.text,
+                              )}
+                            >
+                              <span
+                                className={cn("size-1.5 rounded-full", tone.dot)}
+                                aria-hidden
+                              />
+                              {x.housekeeping_status}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
                 {ctx.rooms.length === 0 && (
                   <p className="text-sm text-rose-600">
                     No free room of this type for these dates - check the tape
