@@ -103,7 +103,7 @@ function Tile({ icon: Icon, label, value, sub, tone, to }: {
 function DashboardSkeleton() {
   return (
     <div className="space-y-5" aria-busy="true" aria-label="Loading dashboard">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="h-[92px] animate-pulse rounded-xl border border-zinc-200 bg-zinc-100" />
         ))}
@@ -207,7 +207,7 @@ export default function Dashboard() {
 
       {scope === "property" && prop && (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile icon={PieChart} label="Occupancy" value={`${prop.occupancy_pct}%`}
               sub={`${prop.total_rooms} rooms`} tone="text-brand-600" to={linkTo("/tape")} />
             <Tile icon={LogIn} label="Arrivals" value={String(prop.arrivals)}
@@ -320,7 +320,7 @@ export default function Dashboard() {
 
       {scope === "portfolio" && port && (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile icon={Building2} label="Properties" value={String(port.totals.properties)}
               sub={`${port.totals.total_rooms} rooms`} />
             <Tile icon={BedDouble} label="Occupancy" value={`${port.totals.occupancy_pct}%`} tone="text-brand-600" to={linkTo("/tape")} />

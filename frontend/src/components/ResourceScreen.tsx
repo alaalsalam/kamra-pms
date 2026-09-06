@@ -6,7 +6,7 @@ import {
   type ComponentType,
   type ReactNode,
 } from "react"
-import { Columns3, Download, Plus, Search, Trash2, type LucideIcon } from "lucide-react"
+import { Columns3, Download, ListFilter, Plus, Search, Trash2, X, type LucideIcon } from "lucide-react"
 import { Sheet } from "./ui/sheet"
 import { ContextPanel } from "./ContextPanel"
 import { OnboardingEmptyState } from "./OnboardingEmptyState"
@@ -22,7 +22,7 @@ import {
 import { frappeFetch } from "../lib/api"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { Card } from "./ui/card"
 import ImageField from "./ImageField"
 import { Bilingual } from "./Bilingual"
 import { BoardNav } from "./BoardNav"
@@ -551,22 +551,43 @@ export function ResourceScreen({
       dateTo,
   )
   const permissionDenied = errorStatus === 401 || errorStatus === 403
+  const activeFilterCount =
+    Object.values(filterVals).filter(Boolean).length +
+    (dateFrom ? 1 : 0) +
+    (dateTo ? 1 : 0)
+
+  const clearFilters = () => {
+    setSearch("")
+    setFilterVals({})
+    setDateFrom("")
+    setDateTo("")
+  }
 
   return (
-    <div className={"space-y-3" + (contextRow ? " lg:pe-[392px]" : "")}>
-      {config.boardNav && <BoardNav />}
-      <Card>
-      <CardHeader>
-        <div>
-          <CardTitle>{config.title}</CardTitle>
+    <div className={"oasis-resource-screen" + (contextRow ? " lg:pe-[392px]" : "")}>
+      {config.boardNav && <BoardNav className="mb-4" />}
+
+      <div className="oasis-resource-head">
+        <div className="min-w-0">
+          <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-brand-700">
+            <span className="size-1.5 rounded-full bg-gold-500" aria-hidden />
+            HotelPMS · {config.doctype}
+          </div>
+          <h1>{config.title}</h1>
           {config.description && (
-            <p className="mt-0.5 text-xs text-zinc-400">
+            <p>
               {config.description}
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="oasis-resource-actions">
           {headerAction}
+          {!permissionDenied && (
+            <Button variant="outline" onClick={exportCsv}>
+              <Download className="size-4" aria-hidden />
+              Export
+            </Button>
+          )}
           {config.allowCreate !== false && !permissionDenied && (
             <Button onClick={() => openEdit("new")}>
               <Plus className="size-4" aria-hidden />
@@ -574,23 +595,34 @@ export function ResourceScreen({
             </Button>
           )}
         </div>
-      </CardHeader>
-      <CardContent>
+      </div>
+
+      <Card className="oasis-resource-card">
         {error && !editing && !permissionDenied && (
-          <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="m-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
             {error}
           </div>
         )}
-        <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="oasis-filterbar">
+            <div className="oasis-filter-label">
+              <ListFilter className="size-4" aria-hidden />
+              <span>Filters</span>
+              {activeFilterCount > 0 && <b>{activeFilterCount}</b>}
+            </div>
             {config.searchFields?.length ? (
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-2.5 top-2 size-4 text-zinc-400" />
+              <div className="oasis-list-search">
+                <Search className="pointer-events-none size-4 text-zinc-400" aria-hidden />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search…"
-                  className="w-56 rounded-lg border border-zinc-300 bg-white py-1.5 pl-8 pr-3 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-brand-600"
+                  aria-label="Search"
                 />
+                {search && (
+                  <button type="button" onClick={() => setSearch("")} aria-label="Clear search">
+                    <X className="size-3.5" aria-hidden />
+                  </button>
+                )}
               </div>
             ) : null}
             {config.filters?.map((f) => (
@@ -600,7 +632,7 @@ export function ResourceScreen({
                 onChange={(e) =>
                   setFilterVals((v) => ({ ...v, [f.field]: e.target.value }))
                 }
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-brand-600"
+                className="oasis-filter-select"
               >
                 <option value="">{f.label}: all</option>
                 {(f.options ?? dynOptions[f.field] ?? []).map((o) => (
@@ -611,12 +643,12 @@ export function ResourceScreen({
               </select>
             ))}
             {config.dateFilter && (
-              <div className="flex flex-wrap items-center gap-1.5 text-sm text-zinc-500">
+              <div className="oasis-date-filter">
                 <span className="text-xs">{config.dateFilter.label}</span>
                 <input
                   type="date"
                   aria-label={`${config.dateFilter.label} from`}
-                  className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm"
+                  className="oasis-filter-select"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
                 />
@@ -624,7 +656,7 @@ export function ResourceScreen({
                 <input
                   type="date"
                   aria-label={`${config.dateFilter.label} to`}
-                  className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm"
+                  className="oasis-filter-select"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
                 />
@@ -641,27 +673,24 @@ export function ResourceScreen({
                 )}
               </div>
             )}
-            <div className="relative ml-auto flex items-center gap-2">
-              <button
-                onClick={exportCsv}
-                title="Download the current view as CSV (Excel-ready)"
-                aria-label="Export as CSV"
-                className="flex items-center gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-sm text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700"
-              >
-                <Download className="size-4" aria-hidden />
-                Export
-              </button>
+            <div className="relative ms-auto flex items-center gap-2">
+              {isFiltered && (
+                <button type="button" onClick={clearFilters} className="oasis-clear-filters">
+                  <X className="size-3.5" aria-hidden />
+                  Clear all
+                </button>
+              )}
               <button
                 onClick={() => setColsOpen((o) => !o)}
                 title="Choose which columns this table shows"
                 aria-label="Configure table columns"
-                className="flex items-center gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-sm text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700"
+                className="oasis-columns-button"
               >
                 <Columns3 className="size-4" aria-hidden />
                 Columns
               </button>
               {colsOpen && (
-                <div className="absolute right-0 z-30 mt-1 w-56 rounded-xl border border-zinc-200 bg-white p-2 shadow-xl">
+                <div className="absolute end-0 top-11 z-30 w-56 rounded-xl border border-zinc-200 bg-white p-2 shadow-xl">
                   {config.columns.map((c) => (
                     <label
                       key={c.field}
@@ -686,18 +715,24 @@ export function ResourceScreen({
               )}
             </div>
           </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+
+        <div className="oasis-list-meta">
+          <span><b className="tabular-nums text-zinc-800">{rows.length}</b> records in this view</span>
+          {isFiltered && <span>Filtered results</span>}
+        </div>
+
+        <div className="oasis-table-wrap">
+          <table className="oasis-data-table">
             <thead>
-              <tr className="border-b border-zinc-200 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <tr>
                 {visibleCols.map((c) => (
-                  <th key={c.field} className="py-2 pr-4">
+                  <th key={c.field}>
                     {c.label}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody>
               {rows.map((row) => (
                 <tr
                   key={row.name}
@@ -705,8 +740,8 @@ export function ResourceScreen({
                   role="button"
                   aria-label={`Open ${String(row.name)}`}
                   className={
-                    "cursor-pointer transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600" +
-                    (contextRow?.name === row.name ? " bg-brand-50" : "")
+                    "oasis-data-row" +
+                    (contextRow?.name === row.name ? " is-selected" : "")
                   }
                   onClick={() =>
                     config.contextPanel ? setContextRow(row) : openEdit(row)
@@ -722,7 +757,7 @@ export function ResourceScreen({
                     <td
                       key={c.field}
                       className={
-                        "py-2.5 pr-4" +
+                        "" +
                         (typeof row[c.field] === "number"
                           ? " text-right tabular-nums"
                           : "")
@@ -789,7 +824,7 @@ export function ResourceScreen({
           </table>
         </div>
         {pageSize > 0 && (page > 0 || rows.length >= pageSize) && (
-          <div className="mt-3 flex items-center justify-between text-sm text-zinc-500">
+          <div className="oasis-pagination">
             <span>Page {page + 1}</span>
             <div className="flex gap-2">
               <Button
@@ -809,7 +844,7 @@ export function ResourceScreen({
             </div>
           </div>
         )}
-      </CardContent>
+      </Card>
 
       {editing && (() => {
         const useDetail = editing !== "new" && !!config.detailPanel
@@ -896,8 +931,6 @@ export function ResourceScreen({
         </Sheet>
         )
       })()}
-      </Card>
-
       {contextRow && config.contextPanel && (
         <ContextPanel
           label={String(contextRow.name)}
