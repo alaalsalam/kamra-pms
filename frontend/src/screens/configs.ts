@@ -7,7 +7,7 @@ import ReservationDetail from "./ReservationDetail"
 import ReservationSummary from "../components/ReservationSummary"
 import { guestCell, stayCell, roomCell, balanceCell } from "./reservationCells"
 import { cur, taxLabel } from "../lib/money"
-import { Sparkles } from "lucide-react"
+import { PackageSearch, Sparkles } from "lucide-react"
 
 export const roomsConfig: ScreenConfig = {
   doctype: "Room",
@@ -401,6 +401,12 @@ export const lostFoundConfig: ScreenConfig = {
     { field: "returned_on", label: "Returned on", type: "date" },
     { field: "notes", label: "Notes", type: "data" },
   ],
+  onboarding: {
+    icon: PackageSearch,
+    title: "Nothing logged yet",
+    message:
+      "Log a found item and its custody, storage and return are tracked here. Use New above to log the first one.",
+  },
 }
 
 export const shiftsConfig: ScreenConfig = {

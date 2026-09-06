@@ -479,6 +479,20 @@ export const AR: Record<string, string> = {
   "Guest laundry moves through pickup, processing and delivery here. Ask an admin to set the laundry price list, then you can log guest pickups.":
     "يمر غسيل الضيوف هنا عبر الاستلام والمعالجة والتسليم. اطلب من المدير ضبط قائمة أسعار الغسيل، ثم يمكنك تسجيل طلبات الاستلام.",
   "Set laundry prices": "ضبط أسعار الغسيل",
+  // Lost & Found
+  "Kind": "النوع",
+  "Logged": "سُجِّل",
+  "Missing": "مفقود",
+  "Damaged": "تالف",
+  "In Storage": "في الحفظ",
+  "Disposed": "تم التخلص منه",
+  "Logged on": "تاريخ التسجيل",
+  "Logged by": "سجّله",
+  "Guest (if known)": "الضيف (إن عُرف)",
+  "Returned on": "تاريخ الإرجاع",
+  "Nothing logged yet": "لم يُسجّل شيء بعد",
+  "Log a found item and its custody, storage and return are tracked here. Use New above to log the first one.":
+    "سجّل غرضًا موجودًا وتُتابَع هنا عهدته وحفظه وإرجاعه. استخدم «جديد» أعلاه لتسجيل أول غرض.",
   "Nothing delivered yet.": "لم يُسلَّم شيء بعد.",
   "No rate card yet — add laundry rates in the Price menu tab.":
     "لا توجد قائمة أسعار بعد — أضِف أسعار الغسيل في تبويب قائمة الأسعار.",
