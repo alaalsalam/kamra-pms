@@ -28,3 +28,10 @@ Before/after screenshots: `./before/` and `./after/` (1440 / 1024 / 390, AR + EN
     the shared `ScreenHeader`/KPI system already introduced in package 0.
 - Shared component layer emerging: `ScreenHeader` (title + hotel/date context + role-gated action + KPI
   tiles), `roomCells` (semantic status), Legend (icon+text). Reuse across screens.
+
+## Package 1 — Today · Dashboard · Apps launcher (screens only)
+| Screen | Reference | Status | Notes |
+|---|---|---|---|
+| Today `/` (role home) | v2-02 | **done** (1440 AR ✓, build ✓, auth-isolation 5/5, 0 console err) | Task-organised command centre: ScreenHeader + 5 live KPI tiles (arrivals/departures/in-house/occupancy meter/to-clean); priority "Needs attention now" band (arrivals, dirty rooms, overdue tasks) with gated deep-links; arrivals→check-in + departures→check-out worklists (real dialogs); in-house list + room-status pulse strip (colour+icon+text, click→quick action); skeleton/error+retry/permission-denied/onboarding states. Removed fabricated sparklines + revenue tiles (no mock data; revenue is pkg 9). APIs unchanged (front_desk_snapshot, property_dashboard fail-soft, check_in/out, set_housekeeping_status). +15 AR keys. |
+| Dashboard `/dashboard` | v2-02 | _next_ | |
+| Apps launcher `/apps` | — | _pending_ | |
