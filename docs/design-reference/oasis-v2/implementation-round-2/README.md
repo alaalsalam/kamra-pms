@@ -51,8 +51,8 @@ AR/EN captures + console-error + overflow report, one Bash call). `before/` hold
 ### Phase 3 — Restaurant & POS
 | Route | Component | Status | Commit | Notes |
 |---|---|---|---|---|
-| `/pos` | POS | Pending | — | 3 panels no page-scroll; teal send / amber pay 56px |
-| `/kitchen` | Kitchen | Pending | — | KDS live |
+| `/pos` | POS | **In progress** — zero-data onboarding done | (this commit) | **Phase 3 started.** Fixed the broken-blank zero-data screen: when there are no outlets (empty DB), the POS now shows the role-gated `OnboardingEmptyState` (create outlet → `/outlets`, add menu → `/menu-items`) + a first-paint loading guard, instead of a silently-empty 3-panel layout. Live-verified dual-persona 1024 AR: Restaurant POS role → gated note (can't reach admin-only /outlets), gm → CTAs; no overflow; header + F-key legend preserved. Backend (create_order/fire_kot/split/pay/etc.) untouched. **Remaining (populated, mock-only):** full i18n of the bill panel + all controls, bidi on amounts, physical→logical CSS, fixed no-page-scroll shell |
+| `/kitchen` | Kitchen | **In progress** — zero-data onboarding + error handling done | (this commit) | **Phase 3 started.** No-outlet onboarding (distinct from the genuine "kitchen is clear" empty), + fixed the missing error handling: `act()` had no `.catch` (a failed kitchen action was silent) → now surfaces a dismissible error banner; outlets load has a loaded-guard. Live-verified dual-persona 1024 AR: Kitchen role → gated note, gm → CTAs; no overflow. KDS mutations (mark_prepared/accept/recall/etc.) untouched. **Remaining:** Kitchen is 100% observer-i18n — verify/extend AR coverage + bidi on the populated board |
 | `/menu-items` | MenuItems | Pending | — | |
 | `/outlets` | Outlets | Pending | — | |
 | `/inventory` | Inventory | Pending | — | |

@@ -10,6 +10,7 @@ import { serverError } from "../lib/resource"
 import { printThermal, kotHtml, billHtml, type BillData, type KotLine } from "../lib/thermal"
 import { useFloorFullscreen } from "../lib/kiosk"
 import { Button } from "../components/ui/button"
+import { OnboardingEmptyState } from "../components/OnboardingEmptyState"
 import { cur, moneyLocale, taxLabel } from "../lib/money"
 import { useT } from "../lib/i18n"
 
@@ -159,6 +160,7 @@ export default function POS() {
   const { t } = useT()
   const rootRef = useRef<HTMLDivElement>(null)
   const [outlets, setOutlets] = useState<Outlet[]>([])
+  const [outletsLoaded, setOutletsLoaded] = useState(false)
   const [outlet, setOutlet] = useState("")
   const [rooms, setRooms] = useState<{ name: string; room_number: string }[]>([])
   const [cats, setCats] = useState<{ category: string; items: MenuItem[] }[]>([])
@@ -208,6 +210,7 @@ export default function POS() {
     call<Outlet[]>("hotelpms.pos.outlets", { property: getCurrentProperty() })
       .then((o) => { setOutlets(o); if (o[0]) setOutlet(o[0].name) })
       .catch((e) => setError(serverError(e)))
+      .finally(() => setOutletsLoaded(true))
     call<{ room: string; room_number: string }[]>("hotelpms.pos.in_house_rooms", { property: getCurrentProperty() })
       .then((d) => setRooms(d.map((r) => ({ name: r.room, room_number: r.room_number }))))
       .catch(() => {})
@@ -623,6 +626,25 @@ export default function POS() {
             <button className="text-xs font-semibold" onClick={() => setPrintNote(null)}>Dismiss</button>
           </div>
         )}
+        {!outletsLoaded ? (
+          <div className="grid min-h-[40vh] place-items-center">
+            <div
+              className="size-8 animate-spin rounded-full border-2 border-zinc-200 border-t-brand-600"
+              role="status"
+              aria-label="Loading"
+            />
+          </div>
+        ) : outlets.length === 0 ? (
+          <OnboardingEmptyState
+            icon={UtensilsCrossed}
+            title="Set up a restaurant outlet to start selling"
+            message="The POS runs on an outlet and its menu. Create an outlet (with its tables), then add menu items — orders, tables, KOT and payments all flow from here."
+            cta={{ label: "Create an outlet", to: "/outlets" }}
+            secondary={{ label: "Add menu items", to: "/menu-items" }}
+            gatedNote="Ask a hotel administrator to set up the restaurant outlet and menu."
+          />
+        ) : (
+          <>
         <RunningStrip open={open} selected={selected} onOpen={openTab} />
 
         <div className="grid gap-3 lg:grid-cols-12">
@@ -1206,6 +1228,8 @@ export default function POS() {
             </div>
           </div>
         </div>
+        </>
+        )}
 
         {/* shortcut legend */}
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs text-zinc-500">

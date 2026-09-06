@@ -493,6 +493,17 @@ export const AR: Record<string, string> = {
   "Nothing logged yet": "لم يُسجّل شيء بعد",
   "Log a found item and its custody, storage and return are tracked here. Use New above to log the first one.":
     "سجّل غرضًا موجودًا وتُتابَع هنا عهدته وحفظه وإرجاعه. استخدم «جديد» أعلاه لتسجيل أول غرض.",
+  // POS + Kitchen onboarding (no outlet)
+  "Set up a restaurant outlet to start selling": "أنشئ منفذ مطعم لبدء البيع",
+  "The POS runs on an outlet and its menu. Create an outlet (with its tables), then add menu items — orders, tables, KOT and payments all flow from here.":
+    "تعمل نقطة البيع على منفذ وقائمته. أنشئ منفذًا (مع طاولاته)، ثم أضِف أصناف القائمة — ومنه تنطلق الطلبات والطاولات وأوامر المطبخ والمدفوعات.",
+  "Create an outlet": "إنشاء منفذ",
+  "Add menu items": "إضافة أصناف القائمة",
+  "Ask a hotel administrator to set up the restaurant outlet and menu.":
+    "اطلب من مدير الفندق إعداد منفذ المطعم وقائمته.",
+  "No restaurant outlet yet": "لا يوجد منفذ مطعم بعد",
+  "The kitchen display shows fired tickets from your restaurant outlets. Set up an outlet and its menu, then fired orders appear here as tickets.":
+    "تعرض شاشة المطبخ التذاكر المُرسَلة من منافذ مطعمك. أنشئ منفذًا وقائمته، ثم تظهر الطلبات المُرسَلة هنا كتذاكر.",
   "Nothing delivered yet.": "لم يُسلَّم شيء بعد.",
   "No rate card yet — add laundry rates in the Price menu tab.":
     "لا توجد قائمة أسعار بعد — أضِف أسعار الغسيل في تبويب قائمة الأسعار.",

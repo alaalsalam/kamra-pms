@@ -4,6 +4,8 @@ import {
   Martini, CookingPot, Utensils, Bell, BellOff, Play, Inbox, Maximize2, Minimize2,
 } from "lucide-react"
 import { call, getCurrentProperty } from "../lib/api"
+import { serverError } from "../lib/resource"
+import { OnboardingEmptyState } from "../components/OnboardingEmptyState"
 import { subscribeRealtime } from "../lib/realtime"
 import { Button } from "../components/ui/button"
 import { cn } from "../lib/utils"
@@ -479,8 +481,10 @@ export default function Kitchen() {
   const [station, setStation] = useState("")
   const [outlet, setOutlet] = useState("")
   const [outlets, setOutlets] = useState<{ name: string; outlet_name: string }[]>([])
+  const [outletsLoaded, setOutletsLoaded] = useState(false)
   const [orders, setOrders] = useState<KotOrder[]>([])
   const [busy, setBusy] = useState<string | null>(null)
+  const [actError, setActError] = useState<string | null>(null)
   const [openOrder, setOpenOrder] = useState<string | null>(null)
   const [sound, setSound] = useState(() => localStorage.getItem(CHIME_KEY) !== "off")
   const rootRef = useRef<HTMLDivElement>(null)
@@ -493,7 +497,7 @@ export default function Kitchen() {
 
   useEffect(() => {
     call<{ name: string; outlet_name: string }[]>("hotelpms.pos.outlets", { property: getCurrentProperty() })
-      .then(setOutlets).catch(() => {})
+      .then(setOutlets).catch(() => {}).finally(() => setOutletsLoaded(true))
   }, [])
 
   const load = useCallback(() => {
@@ -534,9 +538,12 @@ export default function Kitchen() {
 
   const act = useCallback(async (order: string, fn: string, params: Record<string, unknown>) => {
     setBusy(order + (params.item_row ?? params.course ?? ""))
+    setActError(null)
     try {
       await call(`hotelpms.pos.${fn}`, { order, ...params })
       load()
+    } catch (e) {
+      setActError(serverError(e))
     } finally {
       setBusy(null)
     }
@@ -607,7 +614,24 @@ export default function Kitchen() {
         </div>
       </div>
 
-      {orders.length === 0 ? (
+      {actError && (
+        <div className="flex shrink-0 items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <span>{actError}</span>
+          <button className="shrink-0 font-semibold underline" onClick={() => setActError(null)}>
+            Dismiss
+          </button>
+        </div>
+      )}
+      {outletsLoaded && outlets.length === 0 ? (
+        <OnboardingEmptyState
+          icon={ChefHat}
+          title="No restaurant outlet yet"
+          message="The kitchen display shows fired tickets from your restaurant outlets. Set up an outlet and its menu, then fired orders appear here as tickets."
+          cta={{ label: "Create an outlet", to: "/outlets" }}
+          secondary={{ label: "Add menu items", to: "/menu-items" }}
+          gatedNote="Ask a hotel administrator to set up the restaurant outlet and menu."
+        />
+      ) : orders.length === 0 ? (
         <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-zinc-300 p-12 text-center text-zinc-400">
           No open tickets. The kitchen is clear.
         </div>
