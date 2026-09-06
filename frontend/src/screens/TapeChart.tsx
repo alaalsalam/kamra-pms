@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useOutletContext, useSearchParams } from "react-router-dom"
 import type { ShellContext } from "../AppShell"
-import { ChevronDown, ChevronLeft, ChevronRight, Lock, Sparkles, Star } from "lucide-react"
+import { BedDouble, ChevronDown, ChevronLeft, ChevronRight, Lock, Sparkles, Star } from "lucide-react"
 import { call, getCurrentProperty } from "../lib/api"
 import { listResource, serverError } from "../lib/resource"
 import { Badge } from "../components/ui/badge"
@@ -14,6 +14,7 @@ import { qty } from "../lib/i18n"
 import { Bilingual } from "../components/Bilingual"
 import { Legend } from "../components/Legend"
 import { BoardNav } from "../components/BoardNav"
+import { OnboardingEmptyState } from "../components/OnboardingEmptyState"
 
 /** The tape chart: rooms × dates, bookings as bars. Click a bar to act. */
 
@@ -197,17 +198,24 @@ function InlineRetry({ msg, onRetry }: { msg: string; onRetry: () => void }) {
 }
 
 function BoardEmpty({ filtered, onClear }: { filtered: boolean; onClear: () => void }) {
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-white px-4 py-12 text-center shadow-sm">
-      <p className="text-sm font-medium text-zinc-600">
-        {filtered ? "No rooms match these filters" : "No rooms to show yet"}
-      </p>
-      {filtered && (
+  if (filtered)
+    return (
+      <div className="rounded-xl border border-zinc-200 bg-white px-4 py-12 text-center shadow-sm">
+        <p className="text-sm font-medium text-zinc-600">No rooms match these filters</p>
         <Button variant="outline" className="mt-3" onClick={onClear}>
           Clear filters
         </Button>
-      )}
-    </div>
+      </div>
+    )
+  return (
+    <OnboardingEmptyState
+      icon={BedDouble}
+      title="No rooms to show yet"
+      message="The tape chart maps every room against the days ahead. Add your room types and rooms, then reservations show up as bars you can open and move."
+      cta={{ label: "Create room types", to: "/room-types" }}
+      secondary={{ label: "Add rooms", to: "/rooms" }}
+      gatedNote="Ask a hotel administrator to add room types and rooms."
+    />
   )
 }
 
@@ -489,7 +497,7 @@ export default function TapeChart() {
             {qty(data!.conflicts.length, "changeover conflict")}:
           </span>{" "}
           {data!.conflicts.map((c) => (
-            <span key={c.in_res} className="mr-3 whitespace-nowrap">
+            <span key={c.in_res} className="me-3 whitespace-nowrap">
               Room {c.room_number} on {new Date(c.date).toLocaleDateString(dateLocale(), { day: "numeric", month: "short" })} —
               out {c.etd} ({c.out_guest}) / in {c.eta} ({c.in_guest})
             </span>
@@ -528,10 +536,12 @@ export default function TapeChart() {
             {data?.dates.map((d) => {
               const day = new Date(d)
               const weekend = day.getDay() === 0 || day.getDay() === 6
+              const isToday = d === new Date().toISOString().slice(0, 10)
               return (
                 <div key={d} style={{ width: cellW }}
                   className={cn("shrink-0 border-l border-zinc-100 px-1 py-2 text-center",
-                    weekend && "bg-brand-50 text-brand-700")}>
+                    weekend && "bg-brand-50 text-brand-700",
+                    isToday && "bg-brand-100 font-semibold text-brand-800 ring-1 ring-inset ring-brand-300")}>
                   {day.toLocaleDateString(dateLocale(), { weekday: "short" })}{" "}
                   <span className="font-semibold">{day.getDate()}</span>
                 </div>
@@ -554,7 +564,7 @@ export default function TapeChart() {
                     : p.occupancy >= 80 ? "bg-emerald-50 font-semibold text-emerald-700"
                       : p.occupancy >= 50 ? "text-amber-600" : "text-zinc-400")}>
                 {p.sold}/{p.capacity}
-                {p.premium_pct > 0 && <span className="ml-0.5 text-emerald-600">▲</span>}
+                {p.premium_pct > 0 && <span className="ms-0.5 text-emerald-600">▲</span>}
                 {p.overbooked && " OB"}
               </div>
             ))}
@@ -569,7 +579,7 @@ export default function TapeChart() {
                   <button
                     onClick={() => toggleGroup(g.label)}
                     style={{ minWidth: 130 + DAYS * cellW }}
-                    className="flex w-full items-center gap-2 border-b border-zinc-200 bg-zinc-50/80 px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600 hover:bg-zinc-100"
+                    className="flex w-full items-center gap-2 border-b border-zinc-200 bg-zinc-50/80 px-3 py-1.5 text-start text-xs font-semibold uppercase tracking-wide text-zinc-600 hover:bg-zinc-100"
                   >
                     <ChevronDown
                       className={cn("size-3.5 transition-transform", isCollapsed && "-rotate-90")}
@@ -617,12 +627,12 @@ export default function TapeChart() {
                           return (
                             <div key={k.name}
                               style={{
-                                left: 130 + s * cellW + 2,
+                                insetInlineStart: 130 + s * cellW + 2,
                                 width: (e - s) * cellW - 4,
                                 backgroundImage:
                                   "repeating-linear-gradient(45deg, #d4d4d8 0 6px, #e4e4e7 6px 12px)",
                               }}
-                              className="absolute top-1.5 flex h-8 items-center gap-1 truncate rounded-md border border-zinc-300 px-1.5 text-left text-[11px] font-medium text-zinc-600"
+                              className="absolute top-1.5 flex h-8 items-center gap-1 truncate rounded-md border border-zinc-300 px-1.5 text-start text-[11px] font-medium text-zinc-600"
                               title={`${k.reason}${k.note ? ` · ${k.note}` : ""} · ${k.from_date} → ${k.to_date}`}>
                               <Lock className="size-3 shrink-0" aria-hidden />
                               <span className="truncate">{k.reason}</span>
@@ -644,9 +654,9 @@ export default function TapeChart() {
                           return (
                             <button key={b.name}
                               onClick={() => openBooking(b)}
-                              style={{ left: 130 + s * cellW + 2, width: (e - s) * cellW - 4 }}
+                              style={{ insetInlineStart: 130 + s * cellW + 2, width: (e - s) * cellW - 4 }}
                               className={cn(
-                                "absolute top-1.5 flex h-8 items-center gap-1 truncate rounded-md px-1.5 text-left text-xs font-medium text-white",
+                                "absolute top-1.5 flex h-8 items-center gap-1 truncate rounded-md px-1.5 text-start text-xs font-medium text-white",
                                 b.status === "Checked In" ? "bg-brand-600 hover:bg-brand-700"
                                   : "bg-sky-500 hover:bg-sky-600",
                                 inConflict && "ring-2 ring-rose-500 ring-offset-1",
@@ -659,11 +669,11 @@ export default function TapeChart() {
                                 <span className={cn("size-2 shrink-0 rounded-full", seg.dot)} aria-hidden />
                               )}
                               <span className="truncate">
-                                {eta && <span className="mr-1 font-normal opacity-75">{eta}</span>}
+                                {eta && <span className="me-1 font-normal opacity-75">{eta}</span>}
                                 {b.guest_name}
                               </span>
                               {etd && (e - s) >= 2 && (
-                                <span className="ml-auto shrink-0 font-normal opacity-75">{etd}</span>
+                                <span className="ms-auto shrink-0 font-normal opacity-75">{etd}</span>
                               )}
                             </button>
                           )
@@ -903,8 +913,8 @@ function TapeHourly({
                   <button
                     key={b.name}
                     onClick={() => onOpen(b)}
-                    style={{ left: 130, width: gridW }}
-                    className="absolute top-2 flex h-9 items-center gap-1 rounded-md bg-zinc-200/70 px-2 text-left text-xs font-medium text-zinc-600 hover:bg-zinc-300/70"
+                    style={{ insetInlineStart: 130, width: gridW }}
+                    className="absolute top-2 flex h-9 items-center gap-1 rounded-md bg-zinc-200/70 px-2 text-start text-xs font-medium text-zinc-600 hover:bg-zinc-300/70"
                     title={`${b.guest_name} · overnight stay`}
                   >
                     {seg.vip && <Star className="size-3 fill-amber-400 text-amber-400" />}
@@ -916,9 +926,9 @@ function TapeHourly({
                 <button
                   key={b.name}
                   onClick={() => onOpen(b)}
-                  style={{ left: 130 + left(b.from_hour) + 2, width: width(b.from_hour, b.to_hour) - 4 }}
+                  style={{ insetInlineStart: 130 + left(b.from_hour) + 2, width: width(b.from_hour, b.to_hour) - 4 }}
                   className={cn(
-                    "absolute top-2 flex h-9 items-center gap-1 truncate rounded-md px-1.5 text-left text-xs font-medium text-white",
+                    "absolute top-2 flex h-9 items-center gap-1 truncate rounded-md px-1.5 text-start text-xs font-medium text-white",
                     b.status === "Checked In" ? "bg-brand-600 hover:bg-brand-700" : "bg-sky-500 hover:bg-sky-600",
                   )}
                   title={`${b.guest_name} · ${b.from_hour}-${b.to_hour} · day use`}

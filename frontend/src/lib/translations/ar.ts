@@ -411,6 +411,9 @@ export const AR: Record<string, string> = {
   "Filter by status": "تصفية حسب الحالة",
   "Held / blocked": "محجوز / محظور",
   "Needs cleaning": "بحاجة للتنظيف",
+  "Out of service": "خارج الخدمة",
+  "The tape chart maps every room against the days ahead. Add your room types and rooms, then reservations show up as bars you can open and move.":
+    "يعرض مخطط الإشغال كل غرفة عبر الأيام القادمة. أضِف أنواع الغرف والغرف، وستظهر الحجوزات كأشرطة يمكنك فتحها ونقلها.",
   "Position": "الإشغال",
   "in use": "قيد الاستخدام",
   "Days": "أيام",
