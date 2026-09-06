@@ -293,7 +293,8 @@ export default function PublicBooking() {
         if (!d) return
         adoptUiLocale((d as unknown as { ui_locale?: { currency_symbol?: string; locale?: string } }).ui_locale)
         setData(d)
-        setForm((f) => ({ ...f, meal_plan: d.meal_plans[0]?.name ?? "" }))
+        // Default to no meal plan ("Room only") so the guest is never silently
+        // charged for a plan they didn't pick — they choose one below.
       })
       .catch((e) => setError(serverError(e)))
   }, [navigate])

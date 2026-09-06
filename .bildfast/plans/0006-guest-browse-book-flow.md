@@ -66,5 +66,18 @@ tax = correct), `special_requests` + `meal_plan` stored. Then **deleted** the re
 deposit + the guest; **counts verified back to baseline** (Reservation/Guest/Security Deposit/Folio all
 1→1, `RES-2026-01634` gone). No residual demo data.
 
+**Follow-up (same defect on the other public page).** `PublicBooking.tsx` (`/book`) had the identical
+auto-select-`meal_plans[0]` line — removed it too (that page already has a `<option value="">Room only</option>`,
+so it defaults cleanly to no plan). On this single-listing property `/book` **redirects to `/stay/standard`**,
+so PublicBooking isn't the live path here; its fix is tsc + build-verified, mirroring the live-verified
+PublicListing change.
+
+**Verification honesty:** the availability panel, sold-out message, services picker, meal-plan default,
+estimate, and all i18n were **rendered live** as Guest (AR 390/1024, EN 1024). The end-to-end *submit* was
+exercised via the public **HTTP** endpoint (curl) — so `submitBooking()` and the "Booking confirmed" / Total
+success panel are **tsc-verified, not live-rendered** (a real UI submit would create a live reservation).
+Post-cleanup `search_stay` for the test dates returned `rooms_left:1` + quote 5250 — availability fully
+restored, no phantom hold.
+
 **Known data (not code) issue, re-flagged:** the property shows the **₹** symbol instead of SAR (﷼) —
 its currency/country is unset in Property config; a settings fix for the owner, out of scope here.
