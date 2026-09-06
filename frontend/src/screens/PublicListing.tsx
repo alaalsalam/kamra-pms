@@ -338,6 +338,23 @@ export default function PublicListing() {
 
   function fetchResults() {
     if (!resolved) return
+    // Enforce a bookable range at the fetch boundary — NOT per keystroke, which
+    // fights native date-input editing (a transient segment value snaps back).
+    // If the current dates are invalid (past / inverted), correct the inputs and
+    // let the resulting state change re-search with the clean range.
+    const clean = sanitizeStay(
+      search.check_in_date,
+      search.check_out_date,
+      String(search.adults),
+      String(search.children),
+    )
+    if (
+      clean.check_in_date !== search.check_in_date ||
+      clean.check_out_date !== search.check_out_date
+    ) {
+      setSearch(clean)
+      return
+    }
     setSearching(true)
     setSearchError(null)
     call<StayResult[]>("hotelpms.public_api.search_stay", {
@@ -727,14 +744,14 @@ export default function PublicListing() {
                     min={todayPlus(0)}
                     onChange={(e) => {
                       const v = e.target.value
-                      // Clearing the picker (v="") or a past date would break
-                      // date math / search — fall back to today.
-                      const today = todayPlus(0)
-                      const check_in_date = isValidDate(v) && v > today ? v : today
-                      const minCheckOut = addDays(check_in_date, minNights)
+                      if (!v) return // ignore a cleared field; a date is required
+                      // Only adjust the OTHER field (keep check-out ≥ min stay);
+                      // never clamp check-in itself — that fights typing. A past
+                      // value is corrected at the fetch boundary.
+                      const minCheckOut = addDays(v, minNights)
                       setSearch((s) => ({
                         ...s,
-                        check_in_date,
+                        check_in_date: v,
                         check_out_date:
                           s.check_out_date > minCheckOut ? s.check_out_date : minCheckOut,
                       }))
@@ -752,11 +769,10 @@ export default function PublicListing() {
                     min={addDays(search.check_in_date, minNights)}
                     onChange={(e) => {
                       const v = e.target.value
-                      setSearch((s) => ({
-                        ...s,
-                        check_out_date:
-                          v && v > s.check_in_date ? v : addDays(s.check_in_date, minNights),
-                      }))
+                      if (!v) return // ignore a cleared field; a date is required
+                      // No inverted-range clamp here (it fights typing) — an
+                      // invalid range is corrected at the fetch boundary.
+                      setSearch((s) => ({ ...s, check_out_date: v }))
                     }}
                   />
                 </label>

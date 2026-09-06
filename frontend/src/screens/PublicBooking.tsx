@@ -412,6 +412,21 @@ export default function PublicBooking() {
 
   function fetchResults() {
     if (!property) return
+    // Enforce a bookable range at the fetch boundary — NOT per keystroke, which
+    // fights native date-input editing. Correct invalid dates, then re-search.
+    const clean = sanitizeStay(
+      search.check_in_date,
+      search.check_out_date,
+      String(search.adults),
+      String(search.children),
+    )
+    if (
+      clean.check_in_date !== search.check_in_date ||
+      clean.check_out_date !== search.check_out_date
+    ) {
+      setSearch(clean)
+      return
+    }
     call<StayResult[]>("hotelpms.public_api.search_stay", {
       property,
       check_in_date: search.check_in_date,
@@ -660,12 +675,14 @@ export default function PublicBooking() {
                 min={todayPlus(0)}
                 onChange={(e) => {
                   const v = e.target.value
-                  const today = todayPlus(0)
-                  const check_in_date = isValidDate(v) && v > today ? v : today
-                  const minCheckOut = addDays(check_in_date, minNights)
+                  if (!v) return // ignore a cleared field; a date is required
+                  // Only adjust check-out (keep the min stay); never clamp
+                  // check-in itself — that fights typing. Past values are
+                  // corrected at the fetch boundary.
+                  const minCheckOut = addDays(v, minNights)
                   setSearch((s) => ({
                     ...s,
-                    check_in_date,
+                    check_in_date: v,
                     check_out_date:
                       s.check_out_date > minCheckOut ? s.check_out_date : minCheckOut,
                   }))
@@ -681,11 +698,10 @@ export default function PublicBooking() {
                 min={addDays(search.check_in_date, minNights)}
                 onChange={(e) => {
                   const v = e.target.value
-                  setSearch((s) => ({
-                    ...s,
-                    check_out_date:
-                      v && v > s.check_in_date ? v : addDays(s.check_in_date, minNights),
-                  }))
+                  if (!v) return // ignore a cleared field; a date is required
+                  // No inverted-range clamp here (it fights typing) — corrected
+                  // at the fetch boundary.
+                  setSearch((s) => ({ ...s, check_out_date: v }))
                 }}
               />
             </label>
