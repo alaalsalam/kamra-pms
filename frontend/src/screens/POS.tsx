@@ -3,6 +3,7 @@ import {
   Plus, Minus, Trash2, Send, UtensilsCrossed, Leaf, Search,
   Maximize2, Minimize2, Wallet, Printer, Receipt, XCircle, Ban,
   Scissors, Users, MoreHorizontal, PauseCircle, Tag, Gift, Clock,
+  Armchair, BedDouble, Bike, ShoppingBag, ArrowRight,
 } from "lucide-react"
 import { call, getCurrentProperty } from "../lib/api"
 import { subscribeRealtime } from "../lib/realtime"
@@ -133,6 +134,28 @@ interface Detail {
 
 type OrderType = "Dine In" | "Room Service" | "Takeaway" | "Delivery"
 const ORDER_TYPES: OrderType[] = ["Dine In", "Room Service", "Takeaway", "Delivery"]
+const ORDER_TYPE_META = {
+  "Dine In": {
+    icon: Armchair,
+    description: "Choose a table and guest count",
+    accent: "bg-brand-50 text-brand-800",
+  },
+  "Room Service": {
+    icon: BedDouble,
+    description: "Post the order to an in-house room",
+    accent: "bg-sky-50 text-sky-800",
+  },
+  Takeaway: {
+    icon: ShoppingBag,
+    description: "Counter pickup — no table required",
+    accent: "bg-amber-50 text-amber-800",
+  },
+  Delivery: {
+    icon: Bike,
+    description: "Customer, phone and address required",
+    accent: "bg-violet-50 text-violet-800",
+  },
+} satisfies Record<OrderType, { icon: typeof Armchair; description: string; accent: string }>
 
 const TILE: Record<TableTile["state"], string> = {
   vacant: "border-zinc-200 bg-white text-zinc-600 hover:border-brand-400 hover:text-brand-700",
@@ -253,6 +276,27 @@ export default function POS() {
     setGuests(""); setCustName(""); setCustPhone(""); setCustAddr("")
     if (atTable) setOrderType("Dine In")
   }
+  function chooseOrderType(type: OrderType) {
+    // An open bill is immutable with regard to its service channel. Switching
+    // modes starts a clean bill; a draft cart keeps its items but sheds fields
+    // that do not belong to the newly selected fulfilment path.
+    if (selected) newOrder()
+    setOrderType(type)
+    if (type !== "Dine In") {
+      setTable("")
+      setGuests("")
+      setCustomTable(false)
+      setReserveOpen(false)
+      setResTile(null)
+      setChooser(null)
+    }
+    if (type !== "Room Service") setRoom("")
+    if (type !== "Takeaway" && type !== "Delivery") {
+      setCustName("")
+      setCustPhone("")
+    }
+    if (type !== "Delivery") setCustAddr("")
+  }
   async function openTab(name: string) {
     setSelected(name); resetPanel()
     const d = await call<Detail>("hotelpms.pos.order_detail", { order: name })
@@ -286,6 +330,17 @@ export default function POS() {
 
   const newSubtotal = cart.reduce((s, l) => s + l.qty * l.price, 0)
   const disc = Math.min(Number(discount) || 0, selected ? Number.MAX_SAFE_INTEGER : newSubtotal)
+  const newOrderContextReady =
+    orderType === "Dine In" ? Boolean(table.trim())
+      : orderType === "Room Service" ? Boolean(room)
+        : orderType === "Delivery"
+          ? Boolean(custName.trim() && custPhone.trim() && custAddr.trim())
+          : true
+  const contextHint =
+    orderType === "Dine In" ? "Choose a table before sending the order"
+      : orderType === "Room Service" ? "Choose an occupied room before sending the order"
+        : orderType === "Delivery" ? "Add customer name, phone and delivery address"
+          : "Ready for counter pickup"
 
   async function act(fn: () => Promise<unknown>) {
     setBusy(true); setError(null)
@@ -342,7 +397,7 @@ export default function POS() {
       order_type: orderType,
       room: orderType === "Room Service" ? room || null : null,
       table_no: orderType === "Dine In" ? table || null : null,
-      guests: guests || null,
+      guests: orderType === "Dine In" ? guests || null : null,
       customer_name: orderType === "Takeaway" || orderType === "Delivery" ? custName || null : null,
       customer_phone: orderType === "Takeaway" || orderType === "Delivery" ? custPhone || null : null,
       delivery_address: orderType === "Delivery" ? custAddr || null : null,
@@ -383,19 +438,19 @@ export default function POS() {
         await reloadDetail(); setCart([])
       })
     } else {
-      if (cart.length === 0) return
+      if (cart.length === 0 || !newOrderContextReady) return
       await act(async () => { await createBill(true); newOrder() })
     }
   }
   async function hold() { // F5 - park the bill without firing
-    if (selected || cart.length === 0) return
+    if (selected || cart.length === 0 || !newOrderContextReady) return
     await act(async () => { await createBill(false); newOrder() })
   }
   async function proceedToPay() { // F4
     if (selected && detail) {
       if (detail.room || detail.nc) await act(async () => { await call("hotelpms.pos.deliver_order", { order: selected }); newOrder() })
       else setSettling(true)
-    } else if (cart.length > 0) {
+    } else if (cart.length > 0 && newOrderContextReady) {
       await act(async () => {
         const order = await createBill(true)
         await openTab(order)
@@ -558,8 +613,13 @@ export default function POS() {
       : [[null, visibleTables]]
 
   const isNewCustomerType = !selected && (orderType === "Takeaway" || orderType === "Delivery")
-  const runningBills = open.filter((o) => !o.kot_fired)
-  const kitchenBills = open.filter((o) => o.kot_fired && o.pending > 0)
+  const displayedOrderType = (selected && detail?.order_type
+    ? detail.order_type
+    : orderType) as OrderType
+  const modeOpen = open.filter((o) => (o.order_type || "Dine In") === displayedOrderType)
+  const modeRecent = recent.filter((o) => (o.order_type || "Dine In") === displayedOrderType)
+  const runningBills = modeOpen.filter((o) => !o.kot_fired)
+  const kitchenBills = modeOpen.filter((o) => o.kot_fired && o.pending > 0)
 
   return (
     <div ref={rootRef} className={floorOn ? "h-full overflow-y-auto bg-zinc-50 p-3" : ""}>
@@ -606,17 +666,41 @@ export default function POS() {
               </Button>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 border-t border-white/10 bg-navy-950/35 px-4 py-2">
-            <span className="me-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gold-300">{t("Order type")}</span>
-            {ORDER_TYPES.map((type) => (
-              <button key={type} onClick={() => { setOrderType(type); if (selected) newOrder(); }}
-                className={"rounded-lg px-3 py-1.5 text-xs font-medium transition " +
-                  ((selected && detail ? detail.order_type : orderType) === type
-                    ? "bg-white text-navy-950 shadow-sm"
-                    : "text-navy-100 hover:bg-white/10 hover:text-white")}>
-                {t(type)}
-              </button>
-            ))}
+        </section>
+
+        <section className="pos-order-mode-shell" aria-labelledby="pos-order-type-title">
+          <div className="pos-order-mode-intro">
+            <span className="pos-step">1</span>
+            <span>
+              <strong id="pos-order-type-title">{t("Choose order type")}</strong>
+              <small>{t("The workspace adapts to the selected service flow")}</small>
+            </span>
+          </div>
+          <div className="pos-order-modes" role="radiogroup" aria-label={t("Order type")}>
+            {ORDER_TYPES.map((type) => {
+              const meta = ORDER_TYPE_META[type]
+              const active = displayedOrderType === type
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  data-order-type={type}
+                  onClick={() => chooseOrderType(type)}
+                  className={"pos-order-mode " + (active ? "is-active" : "")}
+                >
+                  <span className={"pos-order-mode-icon " + meta.accent}>
+                    <meta.icon className="size-5" strokeWidth={1.8} aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <strong>{t(type)}</strong>
+                    <small>{t(meta.description)}</small>
+                  </span>
+                  <span className="pos-order-mode-check" aria-hidden>{active ? "✓" : <ArrowRight className="size-3.5" />}</span>
+                </button>
+              )
+            })}
           </div>
         </section>
         {error && <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>}
@@ -645,12 +729,13 @@ export default function POS() {
           />
         ) : (
           <>
-        <RunningStrip open={open} selected={selected} onOpen={openTab} />
+        <RunningStrip open={modeOpen} selected={selected} onOpen={openTab} />
 
-        <div className="grid gap-3 lg:grid-cols-12">
+        <div className="grid gap-3 xl:grid-cols-12">
           {/* ── left: tables + recent ── */}
-          <div className="flex min-h-0 flex-col gap-2 overflow-y-auto lg:col-span-3">
-            <div className="shrink-0 rounded-xl border border-zinc-200 bg-white p-3">
+          <div className="flex min-h-0 flex-col gap-2 overflow-y-auto xl:col-span-3">
+            {displayedOrderType === "Dine In" ? (
+            <div data-pos-panel="tables" className="shrink-0 rounded-xl border border-zinc-200 bg-white p-3">
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wide text-zinc-500">{t("Running tables")}</h3>
                 {tables.length > 0 && (
@@ -826,6 +911,35 @@ export default function POS() {
                 </div>
               )}
             </div>
+            ) : (
+              <div className="pos-service-panel" data-pos-panel={displayedOrderType}>
+                <div className={"pos-service-hero " + ORDER_TYPE_META[displayedOrderType].accent}>
+                  {(() => {
+                    const ModeIcon = ORDER_TYPE_META[displayedOrderType].icon
+                    return <ModeIcon className="size-6" strokeWidth={1.7} aria-hidden />
+                  })()}
+                  <div>
+                    <h3>{t(displayedOrderType)}</h3>
+                    <p>{t(ORDER_TYPE_META[displayedOrderType].description)}</p>
+                  </div>
+                </div>
+                <div className="pos-service-stats">
+                  <div><b>{modeOpen.length}</b><span>{t("Open bills")}</span></div>
+                  <div><b>{runningBills.length}</b><span>{t("Not sent")}</span></div>
+                  <div><b>{kitchenBills.length}</b><span>{t("In kitchen")}</span></div>
+                </div>
+                <div className="pos-service-guidance">
+                  <span className="pos-step">2</span>
+                  <div>
+                    <strong>{t("Complete order details")}</strong>
+                    <p>{t(contextHint)}</p>
+                  </div>
+                </div>
+                {modeOpen.length === 0 && (
+                  <p className="pos-service-empty">{t("No open orders for this type.")}</p>
+                )}
+              </div>
+            )}
 
             {(runningBills.length > 0 || kitchenBills.length > 0) && (
               <div className="shrink-0 rounded-xl border border-zinc-200 bg-white p-3">
@@ -872,7 +986,7 @@ export default function POS() {
             <div className="shrink-0 rounded-xl border border-zinc-200 bg-white p-3">
               <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500">{t("Recent")}</h3>
               <ul className="space-y-1">
-                {recent.map((r) => (
+                {modeRecent.map((r) => (
                   <li key={r.name}>
                     <button disabled={!r.open} onClick={() => openTab(r.name)}
                       className={"flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-xs " +
@@ -892,13 +1006,13 @@ export default function POS() {
                     </button>
                   </li>
                 ))}
-                {recent.length === 0 && <p className="py-2 text-center text-xs text-zinc-400">{t("No orders yet today.")}</p>}
+                {modeRecent.length === 0 && <p className="py-2 text-center text-xs text-zinc-400">{t("No orders yet today.")}</p>}
               </ul>
             </div>
           </div>
 
           {/* ── centre: menu ── */}
-          <div className="min-h-0 overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm lg:col-span-5">
+          <div className="min-h-0 overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm xl:col-span-5">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <h2 className="font-bold text-zinc-900">{t("Menu")}</h2>
@@ -936,7 +1050,7 @@ export default function POS() {
           </div>
 
           {/* ── right: the bill ── */}
-          <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm lg:sticky lg:top-3 lg:col-span-4 lg:max-h-[calc(100dvh-7rem)]">
+          <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm xl:sticky xl:top-3 xl:col-span-4 xl:max-h-[calc(100dvh-7rem)]">
             <div className="min-h-0 flex-1 overflow-y-auto p-3">
             {/* who / where */}
             {selected && detail ? (
@@ -957,7 +1071,14 @@ export default function POS() {
                 </span>
               </div>
             ) : (
-              <div className="mb-3 space-y-2">
+              <div className="pos-order-context">
+                <div className="pos-order-context-head">
+                  <span className="pos-step">2</span>
+                  <span>
+                    <strong>{t("Order details")}</strong>
+                    <small>{t(contextHint)}</small>
+                  </span>
+                </div>
                 {orderType === "Dine In" && (
                   <div className="grid grid-cols-2 gap-2">
                     {tables.length > 0 && !customTable ? (
@@ -1007,6 +1128,10 @@ export default function POS() {
                     )}
                   </>
                 )}
+                <div className={"pos-context-state " + (newOrderContextReady ? "is-ready" : "is-missing")}>
+                  <span aria-hidden>{newOrderContextReady ? "✓" : "!"}</span>
+                  {t(newOrderContextReady ? "Order details are ready" : contextHint)}
+                </div>
               </div>
             )}
 
@@ -1167,7 +1292,7 @@ export default function POS() {
             {/* actions */}
             <div className="mt-3 space-y-2 border-t border-zinc-100 pt-3">
               <div className="grid grid-cols-2 gap-1.5">
-                <Button variant="outline" className="!px-2 text-xs" disabled={busy || !!selected || cart.length === 0} onClick={hold}>
+                <Button variant="outline" className="!px-2 text-xs" disabled={busy || !!selected || cart.length === 0 || !newOrderContextReady} onClick={hold}>
                   <PauseCircle className="size-3.5" />Hold bill
                 </Button>
                 <Button variant="outline" className="!px-2 text-xs"
@@ -1203,7 +1328,8 @@ export default function POS() {
                   )}
               </div>
               <Button variant="outline" className="w-full"
-                disabled={busy || cart.length === 0}
+                data-pos-action="send-kot"
+                disabled={busy || cart.length === 0 || (!selected && !newOrderContextReady)}
                 onClick={kotAction}>
                 <Send className="size-4" />{selected ? "Add round & fire KOT" : "Send to kitchen"}
                 <kbd className="rounded bg-zinc-100 px-1 text-[10px] text-zinc-500">F6</kbd>
@@ -1216,7 +1342,8 @@ export default function POS() {
                 </div>
               ) : (
                 <Button className="w-full"
-                  disabled={busy || (selected ? !detail : cart.length === 0)}
+                  data-pos-action="pay"
+                  disabled={busy || (selected ? !detail : cart.length === 0 || !newOrderContextReady)}
                   onClick={proceedToPay}>
                   <Wallet className="size-4" />
                   {selected && detail?.nc ? "Close complimentary bill"

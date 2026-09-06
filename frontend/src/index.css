@@ -1028,6 +1028,345 @@ html[dir="rtl"] .oasis-data-row.is-selected {
   font-size: 12px;
 }
 
+/* Restaurant POS — service mode is a first-class decision. The controls are
+   deliberately large enough for touch screens and each mode owns its context
+   instead of leaking table fields into takeaway or delivery orders. */
+.pos-order-mode-shell {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-zinc-200);
+  border-radius: 18px;
+  background: var(--color-white);
+  box-shadow: 0 12px 34px -28px rgba(27, 36, 32, 0.5);
+}
+
+.pos-order-mode-intro {
+  display: flex;
+  width: 170px;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding-inline: 7px 12px;
+  border-inline-end: 1px solid var(--color-zinc-200);
+}
+
+.pos-order-mode-intro strong,
+.pos-order-context-head strong {
+  display: block;
+  color: var(--color-zinc-900);
+  font-size: 12.5px;
+  font-weight: 750;
+}
+
+.pos-order-mode-intro small,
+.pos-order-context-head small {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-zinc-500);
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+.pos-step {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-brand-800);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 7px 18px -10px rgba(7, 59, 52, 0.8);
+}
+
+.pos-order-modes {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pos-order-mode {
+  display: flex;
+  min-width: 0;
+  min-height: 66px;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-zinc-200);
+  border-radius: 14px;
+  background: var(--color-white);
+  color: var(--color-zinc-700);
+  text-align: start;
+  transition: border-color 130ms ease, background-color 130ms ease, box-shadow 130ms ease, transform 130ms ease;
+}
+
+.pos-order-mode:hover {
+  border-color: var(--color-brand-200);
+  background: var(--color-brand-50);
+  transform: translateY(-1px);
+}
+
+.pos-order-mode.is-active {
+  border-color: var(--color-brand-600);
+  background: color-mix(in srgb, var(--color-brand-50) 74%, var(--color-white));
+  box-shadow:
+    inset 0 0 0 1px var(--color-brand-600),
+    0 10px 24px -20px rgba(7, 59, 52, 0.7);
+}
+
+.pos-order-mode-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  place-items: center;
+  border-radius: 12px;
+}
+
+.pos-order-mode strong {
+  display: block;
+  overflow: hidden;
+  color: var(--color-zinc-900);
+  font-size: 11.5px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pos-order-mode small {
+  display: block;
+  overflow: hidden;
+  margin-top: 2px;
+  color: var(--color-zinc-400);
+  font-size: 8.5px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pos-order-mode-check {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-zinc-100);
+  color: var(--color-zinc-400);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.pos-order-mode.is-active .pos-order-mode-check {
+  background: var(--color-brand-700);
+  color: white;
+}
+
+html[dir="rtl"] .pos-order-mode-check svg {
+  transform: rotate(180deg);
+}
+
+.pos-service-panel {
+  overflow: hidden;
+  flex: none;
+  border: 1px solid var(--color-zinc-200);
+  border-radius: 16px;
+  background: var(--color-white);
+  box-shadow: 0 12px 30px -28px rgba(27, 36, 32, 0.55);
+}
+
+.pos-service-hero {
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  gap: 11px;
+  padding: 15px;
+}
+
+.pos-service-hero h3 {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.pos-service-hero p {
+  margin-top: 3px;
+  font-size: 10px;
+  line-height: 1.55;
+  opacity: 0.78;
+}
+
+.pos-service-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--color-zinc-200);
+  border-bottom: 1px solid var(--color-zinc-200);
+}
+
+.pos-service-stats div {
+  padding: 10px 5px;
+  text-align: center;
+}
+
+.pos-service-stats div + div {
+  border-inline-start: 1px solid var(--color-zinc-200);
+}
+
+.pos-service-stats b,
+.pos-service-stats span {
+  display: block;
+}
+
+.pos-service-stats b {
+  color: var(--color-zinc-900);
+  font-size: 17px;
+}
+
+.pos-service-stats span {
+  margin-top: 1px;
+  color: var(--color-zinc-400);
+  font-size: 8.5px;
+}
+
+.pos-service-guidance {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 13px 14px;
+}
+
+.pos-service-guidance strong {
+  display: block;
+  color: var(--color-zinc-800);
+  font-size: 11px;
+}
+
+.pos-service-guidance p,
+.pos-service-empty {
+  margin-top: 2px;
+  color: var(--color-zinc-500);
+  font-size: 9.5px;
+  line-height: 1.55;
+}
+
+.pos-service-empty {
+  margin: 0 14px 14px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--color-zinc-50);
+  text-align: center;
+}
+
+.pos-order-context {
+  display: grid;
+  gap: 9px;
+  margin-bottom: 13px;
+  padding: 11px;
+  border: 1px solid var(--color-zinc-200);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-brand-50) 38%, var(--color-white));
+}
+
+.pos-order-context-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-bottom: 2px;
+}
+
+.pos-context-state {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border: 1px solid;
+  border-radius: 9px;
+  font-size: 9.5px;
+  font-weight: 650;
+}
+
+.pos-context-state > span {
+  display: grid;
+  width: 17px;
+  height: 17px;
+  place-items: center;
+  border-radius: 999px;
+  color: white;
+  font-size: 9px;
+}
+
+.pos-context-state.is-ready {
+  border-color: #bfe4ce;
+  background: #e8f5ee;
+  color: #176b43;
+}
+
+.pos-context-state.is-ready > span {
+  background: #178a50;
+}
+
+.pos-context-state.is-missing {
+  border-color: var(--color-amber-200);
+  background: var(--color-amber-50);
+  color: var(--color-amber-800);
+}
+
+.pos-context-state.is-missing > span {
+  background: var(--color-amber-600);
+}
+
+@media (max-width: 1100px) {
+  .pos-order-mode-shell {
+    flex-direction: column;
+  }
+
+  .pos-order-mode-intro {
+    width: 100%;
+    padding-bottom: 9px;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--color-zinc-200);
+  }
+}
+
+@media (max-width: 760px) {
+  .pos-order-modes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pos-order-mode {
+    min-height: 62px;
+  }
+
+  .pos-order-mode small {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .pos-order-mode-shell {
+    padding: 9px;
+  }
+
+  .pos-order-mode {
+    padding: 7px;
+  }
+
+  .pos-order-mode-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .pos-order-mode-check {
+    display: none;
+  }
+}
+
 @media (max-width: 767px) {
   .oasis-resource-head {
     align-items: flex-start;
