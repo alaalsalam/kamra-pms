@@ -208,6 +208,13 @@ function RoleHome() {
   return <Navigate to="/apps" replace />
 }
 
+/** Force all screen-local data, dialogs and navigation to be recreated when
+ * a shared browser session changes identity (including from another tab). */
+function SessionBoundShell() {
+  const { account } = useAuth()
+  return <AppShell key={account ?? "anonymous"} />
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -241,7 +248,7 @@ export default function App() {
         <Route path="login" element={<LoginPage />} />
         <Route element={<RequireAuth />}>
           <Route element={<RequireRouteAccess />}>
-          <Route element={<AppShell />}>
+          <Route element={<SessionBoundShell />}>
           <Route index element={<RoleHome />} />
           <Route path="apps" element={<AppLauncher />} />
           <Route path="marketplace" element={<Marketplace />} />

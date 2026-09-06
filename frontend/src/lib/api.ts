@@ -21,6 +21,7 @@ async function doFetch(path: string, init?: RequestInit) {
   const request = () =>
     fetch(path, {
       ...init,
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         ...(token ? { "X-Frappe-CSRF-Token": token } : {}),
@@ -67,11 +68,17 @@ async function doFetch(path: string, init?: RequestInit) {
   return res.json()
 }
 
-export async function login(usr: string, pwd: string) {
+export async function login(usr: string, pwd: string): Promise<WhoAmI> {
   await doFetch("/api/method/login", {
     method: "POST",
     body: JSON.stringify({ usr, pwd }),
   })
+  // A successful HTTP response alone is not enough: prove that Frappe issued
+  // an authenticated session before the UI leaves the login page.
+  const identity = await whoami()
+  if (identity.user === "Guest")
+    throw new Error("Login completed without an authenticated session.")
+  return identity
 }
 
 export async function logout() {

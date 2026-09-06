@@ -150,9 +150,11 @@ export default function AppShell() {
   const { user, roles, signOut } = useAuth()
   const { t } = useT()
   const location = useLocation()
+  const navigate = useNavigate()
   const [booking, setBooking] = useState<BookingInitial | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [properties, setProperties] = useState<PropertyRow[]>([])
+  const [propertiesLoaded, setPropertiesLoaded] = useState(false)
   const [property, setProperty] = useState(getCurrentProperty())
   const [demoMode, setDemoMode] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
@@ -166,11 +168,27 @@ export default function AppShell() {
         setCurrentProperty(props[0].name)
         setProperty(props[0].name)
       }
-    })
+    }).catch(() => setProperties([])).finally(() => setPropertiesLoaded(true))
     call<{ demo_mode: boolean }>("hotelpms.public_api.site_info")
       .then((info) => setDemoMode(info.demo_mode))
       .catch(() => setDemoMode(false))
   }, [])
+
+  const canSetUpProperty = roles.some(
+    (role) => role === "System Manager" || role === "Administrator",
+  )
+  useEffect(() => {
+    if (
+      propertiesLoaded &&
+      properties.length === 0 &&
+      location.pathname !== "/setup" &&
+      canSetUpProperty
+    ) {
+      // A freshly purged/new site should lead its authorized operator to
+      // setup, not leave them on a dashboard backed by no property.
+      navigate("/setup", { replace: true })
+    }
+  }, [canSetUpProperty, location.pathname, navigate, properties.length, propertiesLoaded])
 
   useEffect(() => subscribeRealtime(() => setRefreshKey((k) => k + 1)), [])
 

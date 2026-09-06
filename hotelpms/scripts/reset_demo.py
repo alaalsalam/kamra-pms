@@ -67,7 +67,7 @@ def is_playground() -> bool:
 
 def scheduled():
 	"""Scheduler entry: no-op on real tenants, never throws."""
-	if not is_playground():
+	if not is_playground() or frappe.db.get_default("hotelpms_demo_autoreset") == "0":
 		return
 	reset()
 
@@ -110,6 +110,7 @@ def reset() -> dict:
 		seed_arabic_demo()
 
 	frappe.db.set_default("hotelpms_demo_mode", "1")
+	frappe.db.set_default("hotelpms_demo_autoreset", "1")
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit -- persist demo flag after reseed
 	frappe.clear_cache()
 

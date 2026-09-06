@@ -5,6 +5,14 @@ import { enabledModules, getCurrentProperty } from "./api"
 const cache = new Map<string, string[]>()
 const inFlight = new Map<string, Promise<string[]>>()
 
+/** Drop client-side module results when the authenticated principal changes.
+ * The backend remains authoritative, but an old tab must not keep rendering
+ * the previous operator's navigation while a new session is being adopted. */
+export function clearEnabledModulesCache() {
+  cache.clear()
+  inFlight.clear()
+}
+
 function loadModules(property: string): Promise<string[]> {
   const saved = cache.get(property)
   if (saved) return Promise.resolve(saved)

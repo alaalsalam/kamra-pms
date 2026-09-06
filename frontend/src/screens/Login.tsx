@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { ArrowRight, BadgeCheck, BedDouble, ChartNoAxesCombined, UtensilsCrossed } from "lucide-react"
 
 import { login } from "../lib/api"
+import { announceAuthChanged } from "../lib/auth"
 import { BrandLogo } from "../components/BrandLogo"
 import { Button } from "../components/ui/button"
 import UtilityControls from "../components/UtilityControls"
@@ -49,6 +50,7 @@ export default function Login(props: { onSuccess: () => void }) {
       // Navigation + the production CSRF re-boot are handled by the /login
       // route (LoginPage.onSuccess).
       sessionStorage.removeItem("hotelpms_session_ended")
+      announceAuthChanged()
       props.onSuccess()
     } catch {
       setError(t("Wrong email, username, or password."))
