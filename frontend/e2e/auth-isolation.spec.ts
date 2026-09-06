@@ -11,6 +11,16 @@ async function identity(page: import("playwright/test").Page) {
   })
 }
 
+async function expectUser(page: import("playwright/test").Page, user: string) {
+  await expect.poll(async () => {
+    try {
+      return (await identity(page)).user
+    } catch {
+      return "navigating"
+    }
+  }).toBe(user)
+}
+
 test("demo personas do not share sessions, routes or navigation", async ({ page }) => {
   await page.goto(`${base}/hotelpms/login`)
   await page.getByText("finance@hotelpms.local", { exact: true }).click()
@@ -25,7 +35,7 @@ test("demo personas do not share sessions, routes or navigation", async ({ page 
 
   await page.getByRole("button", { name: /تسجيل الخروج|Sign out/ }).click()
   await expect(page).toHaveURL(/\/hotelpms\/login$/)
-  expect((await identity(page)).user).toBe("Guest")
+  await expectUser(page, "Guest")
 
   await page.getByText("pos@hotelpms.local", { exact: true }).click()
   await expect(page).toHaveURL(/\/hotelpms\/pos$/)
@@ -57,7 +67,7 @@ test("an already-open tab adopts logout and the next persona", async ({ page, co
   // Storage-event synchronization removes the old Finance shell without the
   // user refreshing the second tab manually.
   await expect(oldTab).toHaveURL(/\/hotelpms\/login$/)
-  expect((await identity(oldTab)).user).toBe("Guest")
+  await expectUser(oldTab, "Guest")
 
   await page.getByText("pos@hotelpms.local", { exact: true }).click()
   await expect(page).toHaveURL(/\/hotelpms\/pos$/)
@@ -90,6 +100,30 @@ test("every advertised demo account opens its own real role home", async ({ page
 
     await page.getByRole("button", { name: /تسجيل الخروج|Sign out/ }).click()
     await expect(page).toHaveURL(/\/hotelpms\/login$/)
-    expect((await identity(page)).user).toBe("Guest")
+    await expectUser(page, "Guest")
   }
+})
+
+test("mobile shell exposes identity and performs a real logout", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto(`${base}/hotelpms/login`)
+  await page.getByText("finance@hotelpms.local", { exact: true }).click()
+  await expect(page).toHaveURL(/\/hotelpms\/billing$/)
+
+  await page.getByRole("button", { name: /المزيد|More/ }).click()
+  await expect(page.getByText(/finance@hotelpms\.local/)).toBeVisible()
+  await page.getByRole("button", { name: /تسجيل الخروج|Sign out/ }).click()
+  await expect(page).toHaveURL(/\/hotelpms\/login$/)
+  await expectUser(page, "Guest")
+})
+
+test("housekeeping phone app uses the central logout session", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto(`${base}/hotelpms/hk`)
+  await page.getByText("housekeeping@hotelpms.local", { exact: true }).click()
+  await expect.poll(async () => (await identity(page)).user).toBe("housekeeping@hotelpms.local")
+
+  await page.getByRole("button", { name: /تسجيل الخروج|Sign out/ }).click()
+  await expect(page).toHaveURL(/\/hotelpms\/login$/)
+  await expectUser(page, "Guest")
 })

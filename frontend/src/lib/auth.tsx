@@ -63,6 +63,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearIdentityState = useCallback(() => {
     clearCurrentProperty()
     clearEnabledModulesCache()
+    // Presentation preferences that can make a newly authenticated operator
+    // inherit the previous operator's screen (hidden columns, collapsed room
+    // groups, POS/KDS workstation choices). Language and theme are device
+    // preferences and intentionally survive.
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+        const key = localStorage.key(i) || ""
+        if (
+          key.startsWith("hotelpms:cols:") ||
+          key === "hotelpms:tape-collapsed" ||
+          key === "hotelpms_locale" ||
+          key === "pos_print_kot" ||
+          key === "hotelpms.kds.chime"
+        ) {
+          localStorage.removeItem(key)
+        }
+      }
+    } catch {
+      // Storage may be unavailable; the hard navigation still remounts UI.
+    }
   }, [])
 
   const refresh = useCallback(async () => {

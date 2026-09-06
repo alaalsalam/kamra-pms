@@ -147,7 +147,7 @@ function AppSwitcher({ apps, current }: { apps: AppDef[]; current?: AppDef }) {
 }
 
 export default function AppShell() {
-  const { user, roles, signOut } = useAuth()
+  const { account, user, roles, signOut } = useAuth()
   const { t } = useT()
   const location = useLocation()
   const navigate = useNavigate()
@@ -223,6 +223,16 @@ export default function AppShell() {
     "System Manager",
     "Administrator",
   ].some((role) => roles.includes(role))
+  const primaryRole = [
+    "System Manager",
+    "Hotel Admin",
+    "Front Desk",
+    "Revenue Manager",
+    "Finance",
+    "Housekeeping",
+    "Restaurant POS",
+    "Kitchen",
+  ].find((role) => roles.includes(role))
 
   async function handleSignOut() {
     if (signingOut) return
@@ -473,6 +483,26 @@ export default function AppShell() {
                       {t(item.label)}
                     </NavLink>
                   ))}
+                </div>
+                <div className="mt-4 flex items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                    <Building2 className="size-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-bold text-zinc-900">{user}</span>
+                    <span className="block truncate text-[10px] text-zinc-500" dir="ltr">
+                      {account}{primaryRole ? ` · ${t(primaryRole)}` : ""}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    disabled={signingOut}
+                    className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-3 text-xs font-bold text-zinc-700"
+                  >
+                    <LogOut className="size-4" aria-hidden />
+                    {t(signingOut ? "Signing out..." : "Sign out")}
+                  </button>
                 </div>
               </div>
             </div>

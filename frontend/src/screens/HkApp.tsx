@@ -5,9 +5,9 @@ import {
   call,
   getCurrentProperty,
   isNetworkError,
-  logout,
   whoami,
 } from "../lib/api"
+import { useAuth } from "../lib/auth"
 import { subscribeRealtime } from "../lib/realtime"
 import { Badge } from "../components/ui/badge"
 import { cn } from "../lib/utils"
@@ -62,6 +62,7 @@ const hkTone: Record<HkRoom["housekeeping_status"], string> = {
 
 export default function HkApp() {
   const { t } = useT()
+  const { signOut } = useAuth()
   const [auth, setAuth] = useState<"loading" | "anon" | "ok">("loading")
   const [data, setData] = useState<{ tasks: HkTask[]; rooms: HkRoom[] } | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -261,7 +262,7 @@ export default function HkApp() {
             <RefreshCw className="size-5 text-zinc-400" />
           </button>
           <button
-            onClick={() => logout().then(() => setAuth("anon"))}
+            onClick={() => void signOut()}
             aria-label="Sign out"
             className="flex size-11 items-center justify-center rounded-lg active:bg-zinc-100"
           >
