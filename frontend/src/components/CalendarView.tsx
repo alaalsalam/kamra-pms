@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react"
+import { BedDouble, CalendarDays, ChevronLeft, ChevronRight, LayoutGrid } from "lucide-react"
 import { getCalendar, type CalendarData } from "../lib/api"
 import { serverError } from "../lib/resource"
 import { primaryLabel } from "../lib/dir"
@@ -11,6 +11,7 @@ import { cur, moneyLocale, dateLocale } from "../lib/money"
 import { Bilingual } from "./Bilingual"
 import { Legend } from "./Legend"
 import { BoardNav } from "./BoardNav"
+import { OnboardingEmptyState } from "./OnboardingEmptyState"
 
 const inr = (n: number) =>
   n.toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
@@ -20,6 +21,15 @@ function cellTone(available: number, total: number) {
   if (available <= Math.max(1, Math.floor(total * 0.25)))
     return "bg-amber-50 text-amber-800"
   return "bg-white text-zinc-700"
+}
+
+/** Same thresholds as cellTone, but the "available" state gets a visible teal
+ * fill so it reads as a badge on the white mobile cards. */
+function badgeTone(available: number, total: number) {
+  if (available === 0) return "bg-rose-50 text-rose-700"
+  if (available <= Math.max(1, Math.floor(total * 0.25)))
+    return "bg-amber-50 text-amber-800"
+  return "bg-brand-50 text-brand-700"
 }
 
 const DAYS = 14
@@ -51,6 +61,8 @@ export function CalendarView(props: {
 }) {
   const [data, setData] = useState<CalendarData | null>(null)
   const [start, setStart] = useState(() => iso(new Date()))
+  // On phones the 14-column grid is unreadable, so we show one day at a time.
+  const [mobileDay, setMobileDay] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
@@ -194,74 +206,158 @@ export function CalendarView(props: {
           </div>
         )}
         {data.room_types.length === 0 ? (
-          <div className="py-12 text-center">
-            <CalendarDays className="mx-auto mb-2 size-8 text-zinc-300" aria-hidden />
-            <p className="text-sm font-medium text-zinc-600">No room types to show</p>
-            <p className="mt-0.5 text-xs text-zinc-400">Add room types to see live availability here.</p>
-          </div>
+          <OnboardingEmptyState
+            icon={LayoutGrid}
+            title="Set up room types to see availability"
+            message="The calendar shows how many rooms are free each night. Add your room types, then your rooms, to bring it to life."
+            cta={{ label: "Create room types", to: "/room-types" }}
+            secondary={{ label: "Add rooms", to: "/rooms" }}
+            gatedNote="Ask a hotel administrator to add room types and rooms."
+          />
+        ) : data.room_types.every((rt) => rt.total_rooms === 0) ? (
+          <OnboardingEmptyState
+            icon={BedDouble}
+            title="No rooms added yet"
+            message="Your room types are ready, but there are no rooms yet — availability stays at zero until rooms exist."
+            cta={{ label: "Add rooms", to: "/rooms" }}
+            gatedNote="Ask a hotel administrator to add rooms."
+          />
         ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-separate border-spacing-0 text-sm">
-            <thead>
-              <tr>
-                <th className="sticky left-0 bg-white pr-3 text-left text-xs font-medium text-zinc-500">
-                  Room type
-                </th>
-                {data.dates.map((d) => {
+          <>
+            {/* Desktop: the full 14-day grid */}
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full border-separate border-spacing-0 text-sm">
+                <thead>
+                  <tr>
+                    <th className="sticky start-0 bg-white pe-3 text-start text-xs font-medium text-zinc-500">
+                      Room type
+                    </th>
+                    {data.dates.map((d) => {
+                      const l = dayLabel(d)
+                      const isToday = d === iso(new Date())
+                      return (
+                        <th
+                          key={d}
+                          className={cn(
+                            "min-w-14 px-1 pb-2 text-center text-xs font-medium",
+                            l.weekend ? "text-brand-700" : "text-zinc-500",
+                            isToday && "rounded-t-md bg-brand-50",
+                          )}
+                        >
+                          <div>{l.dow}</div>
+                          <div className="text-sm font-semibold">{l.day}</div>
+                        </th>
+                      )
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  {shownTypes.map((rt) => (
+                    <tr key={rt.room_type}>
+                      <td className="sticky start-0 whitespace-nowrap bg-white py-1 pe-3 font-medium">
+                        <Bilingual as="span" value={rt.room_type_name} primaryOnly />
+                        <span className="ms-1 text-xs font-normal text-zinc-400">
+                          ×{rt.total_rooms}
+                        </span>
+                      </td>
+                      {rt.cells.map((c) => (
+                        <td key={c.date} className={cn("p-0.5", c.date === iso(new Date()) && "bg-brand-50/60")}>
+                          <button
+                            onClick={() => props.onPick?.(rt.room_type, c.date)}
+                            disabled={c.available === 0 || !props.onPick}
+                            title={`${rt.room_type_name} · ${c.date} · ${c.available} left · ${cur()}${inr(c.rate)}`}
+                            className={cn(
+                              "w-full rounded-md border border-zinc-200 px-1 py-1.5 text-center transition-colors",
+                              "hover:border-brand-600 focus-visible:outline-2 focus-visible:outline-brand-600",
+                              "disabled:cursor-not-allowed",
+                              cellTone(c.available, rt.total_rooms),
+                            )}
+                          >
+                            <div className="text-sm font-semibold leading-none">
+                              {c.available}
+                            </div>
+                            <div className="mt-0.5 text-[10px] leading-none opacity-70">
+                              <bdi dir="ltr">{cur()}{inr(c.rate)}</bdi>
+                            </div>
+                          </button>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Mobile: one day at a time — a tappable room-type list, not a crushed grid */}
+            <div className="lg:hidden">
+              <div
+                className="mb-3 flex gap-1.5 overflow-x-auto pb-1"
+                role="tablist"
+                aria-label="Pick a date"
+              >
+                {data.dates.map((d, i) => {
                   const l = dayLabel(d)
-                  const isToday = d === iso(new Date())
+                  const sel = i === Math.min(mobileDay, data.dates.length - 1)
                   return (
-                    <th
+                    <button
                       key={d}
+                      role="tab"
+                      aria-selected={sel}
+                      onClick={() => setMobileDay(i)}
                       className={cn(
-                        "min-w-14 px-1 pb-2 text-center text-xs font-medium",
-                        l.weekend ? "text-brand-700" : "text-zinc-500",
-                        isToday && "rounded-t-md bg-brand-50",
+                        "flex min-h-12 shrink-0 flex-col items-center justify-center rounded-lg border px-2.5 py-1 text-xs tabular-nums transition-colors",
+                        sel
+                          ? "border-brand-600 bg-brand-50 text-brand-800"
+                          : "border-zinc-200 text-zinc-500 hover:border-zinc-300",
                       )}
                     >
-                      <div>{l.dow}</div>
-                      <div className="text-sm font-semibold">{l.day}</div>
-                    </th>
+                      <span>{l.dow}</span>
+                      <span className="text-sm font-semibold">{l.day}</span>
+                    </button>
                   )
                 })}
-              </tr>
-            </thead>
-            <tbody>
-              {shownTypes.map((rt) => (
-                <tr key={rt.room_type}>
-                  <td className="sticky left-0 whitespace-nowrap bg-white py-1 pe-3 font-medium">
-                    <Bilingual as="span" value={rt.room_type_name} primaryOnly />
-                    <span className="ms-1 text-xs font-normal text-zinc-400">
-                      ×{rt.total_rooms}
-                    </span>
-                  </td>
-                  {rt.cells.map((c) => (
-                    <td key={c.date} className={cn("p-0.5", c.date === iso(new Date()) && "bg-brand-50/60")}>
+              </div>
+              <ul className="space-y-2">
+                {shownTypes.map((rt) => {
+                  const c = rt.cells[Math.min(mobileDay, rt.cells.length - 1)]
+                  if (!c) return null
+                  return (
+                    <li key={rt.room_type}>
                       <button
                         onClick={() => props.onPick?.(rt.room_type, c.date)}
                         disabled={c.available === 0 || !props.onPick}
-                        title={`${rt.room_type_name} · ${c.date} · ${c.available} left · ${cur()}${inr(c.rate)}`}
                         className={cn(
-                          "w-full rounded-md border border-zinc-200 px-1 py-1.5 text-center transition-colors",
+                          "flex min-h-14 w-full items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 text-start transition-colors",
                           "hover:border-brand-600 focus-visible:outline-2 focus-visible:outline-brand-600",
-                          "disabled:cursor-not-allowed",
-                          cellTone(c.available, rt.total_rooms),
+                          "disabled:cursor-not-allowed disabled:opacity-70",
                         )}
                       >
-                        <div className="text-sm font-semibold leading-none">
-                          {c.available}
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold text-zinc-800">
+                            <Bilingual as="span" value={rt.room_type_name} primaryOnly />
+                            <span className="ms-1 text-xs font-normal text-zinc-400">
+                              ×{rt.total_rooms}
+                            </span>
+                          </div>
+                          <div className="mt-0.5 text-xs text-zinc-400">
+                            <bdi dir="ltr" className="tabular-nums">{cur()}{inr(c.rate)}</bdi> · per night
+                          </div>
                         </div>
-                        <div className="mt-0.5 text-[10px] leading-none opacity-70">
-                          {cur()}{inr(c.rate)}
-                        </div>
+                        <span
+                          className={cn(
+                            "flex min-w-11 shrink-0 flex-col items-center rounded-lg px-2.5 py-1.5 tabular-nums",
+                            badgeTone(c.available, rt.total_rooms),
+                          )}
+                        >
+                          <span className="text-base font-semibold leading-none">{c.available}</span>
+                          <span className="mt-0.5 text-[10px] font-medium leading-none opacity-70">available</span>
+                        </span>
                       </button>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          </>
         )}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <Legend

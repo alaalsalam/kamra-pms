@@ -432,6 +432,21 @@ export const AR: Record<string, string> = {
   "No room assigned yet - assign from the Tape Chart before check-in.": "لم تُعيّن غرفة بعد — عيّنها من مخطط الإشغال قبل تسجيل الوصول.",
   "Click a bar to move rooms or change dates.": "انقر على شريط لنقل الغرفة أو تعديل التواريخ.",
   "Click a cell to start a booking": "انقر على خلية لبدء حجز",
+  // Zero-data onboarding (calendar + shared OnboardingEmptyState)
+  "Set up room types to see availability": "أضِف أنواع الغرف لعرض التوفر",
+  "The calendar shows how many rooms are free each night. Add your room types, then your rooms, to bring it to life.":
+    "يعرض التقويم عدد الغرف المتاحة كل ليلة. أضِف أنواع الغرف ثم الغرف لتفعيله.",
+  "Create room types": "إنشاء أنواع الغرف",
+  "Add rooms": "إضافة غرف",
+  "Ask a hotel administrator to add room types and rooms.":
+    "اطلب من مدير الفندق إضافة أنواع الغرف والغرف.",
+  "No rooms added yet": "لم تُضَف أي غرف بعد",
+  "Your room types are ready, but there are no rooms yet — availability stays at zero until rooms exist.":
+    "أنواع الغرف جاهزة، لكن لا توجد غرف بعد — يبقى التوفر صفرًا حتى تُضاف الغرف.",
+  "Ask a hotel administrator to add rooms.": "اطلب من مدير الفندق إضافة الغرف.",
+  "Ask a hotel administrator to set this up.": "اطلب من مدير الفندق إعداد هذا.",
+  "per night": "لليلة",
+  "available": "متاحة",
   "Click a day to add a booking, or a booking to edit it.": "انقر على يوم لإضافة حجز، أو على حجز لتعديله.",
   "Jump to date": "انتقل إلى تاريخ",
   "Previous 14 days": "الأيام الـ14 السابقة",
