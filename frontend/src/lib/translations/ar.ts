@@ -125,6 +125,9 @@ export const AR: Record<string, string> = {
   "Meal Plans": "خطط الوجبات",
   "Meal plan": "خطة الوجبات",
   "Experiences": "التجارب",
+  "Activities": "الأنشطة",
+  "Experiences and add-ons guests can book with their stay.":
+    "التجارب والإضافات التي يمكن للنزلاء حجزها مع إقامتهم.",
   "Experience": "التجربة",
   "Experience name": "اسم التجربة",
   "Duration": "المدة",

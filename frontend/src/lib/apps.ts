@@ -192,9 +192,19 @@ export const APPS: AppDef[] = [
       { to: "/guardrails", label: "Guardrails", icon: ShieldCheck },
       { to: "/vouchers", label: "Vouchers", icon: BadgePercent },
       { to: "/meal-plans", label: "Meal Plans", icon: UtensilsCrossed },
-      { to: "/experiences", label: "Experiences", icon: MapPin },
       { to: "/travel-agents", label: "Travel Agents", icon: Briefcase },
       { to: "/companies", label: "Companies", icon: Building2 },
+    ],
+  },
+  {
+    id: "activities",
+    name: "Activities",
+    icon: MapPin,
+    tint: APP_TILE,
+    description: "Experiences and add-ons guests can book with their stay.",
+    roles: ["Revenue Manager", "Hotel Admin", "System Manager", "Administrator"],
+    items: [
+      { to: "/experiences", label: "Experiences", icon: MapPin },
     ],
   },
   {
@@ -270,6 +280,17 @@ export const APPS: AppDef[] = [
   },
 ]
 
+/** Tabs that are always available (not part of the backend per-property module
+ * toggle). "activities" is a frontend-only grouping for booking add-ons that
+ * every property offers, so it stays visible regardless of enabled_modules. */
+const ALWAYS_ON_MODULES = new Set(["activities"])
+
+/** Is this app's module active for the property? Role gating is applied
+ * separately; this only reflects the per-property module toggle. */
+function moduleActive(appId: string, modules?: string[]): boolean {
+  return !modules?.length || ALWAYS_ON_MODULES.has(appId) || modules.includes(appId)
+}
+
 /** Which app owns a path? Longest matching item route wins; "/" only exact. */
 export function appForPath(pathname: string): AppDef {
   return matchingAppForPath(pathname) ?? APPS[0]
@@ -300,7 +321,7 @@ export function canAccessPath(pathname: string, roles: string[], modules?: strin
   if (pathname === "/") return true
   const app = matchingAppForPath(pathname)
   if (!app) return ["/apps", "/marketplace", "/activity"].includes(pathname)
-  if (modules?.length && !modules.includes(app.id)) return false
+  if (!moduleActive(app.id, modules)) return false
   if (!app.roles.some((r) => roles.includes(r))) return false
   const item = app.items
     .filter((i) => i.to && (pathname === i.to || pathname.startsWith(i.to + "/")))
@@ -321,7 +342,7 @@ export function firstAccessiblePath(roles: string[], modules?: string[]): string
   if (home) return home[1]
   for (const app of APPS) {
     if (!app.roles.some((r) => roles.includes(r))) continue
-    if (modules?.length && !modules.includes(app.id)) continue
+    if (!moduleActive(app.id, modules)) continue
     const item = app.items.find((i) => i.to && canAccessPath(i.to, roles, modules))
     if (item?.to) return item.to
   }
@@ -338,6 +359,6 @@ export function visibleApps(roles: string[], modules?: string[]): AppDef[] {
   return APPS.filter(
     (a) =>
       a.roles.some((r) => roles.includes(r)) &&
-      (!modules?.length || modules.includes(a.id)),
+      moduleActive(a.id, modules),
   )
 }
