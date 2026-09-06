@@ -47,4 +47,24 @@ stale-render display bug; card = الاستقبال → session never switched),
 will investigate — with the owner's explicit authorization, since the fix and its regression test both
 live in locked files (`auth.tsx` / `Login.tsx` / `auth-isolation.spec.ts`).
 
-_No code changed. Investigation only._
+## ⚠️ Concurrent external change discovered mid-investigation
+While investigating, a commit by **another author** landed on `develop` and is **now the deployed
+build**:
+- `b1b1eca` — **"feat(ui): introduce Oasis dual-layer workspace shell"** by `alaalsalam`
+  (2026-09-06 21:44). It **modified `frontend/src/AppShell.tsx` — a LOCKED auth-boundary file** (+159
+  lines), plus `index.css` (+391), `ar.ts`, `Today.tsx`, and rebuilt all assets. Live bundle is now
+  `index-BO35EVdc.js` (was `index-A6WZMo8O.js`).
+- This is a **fresh variable** for the reported tab/session behavior — a new workspace shell that
+  re-renders navigation. It also means a locked file was changed by a party other than me, after the
+  bc35cb7 lock (a coordination issue to surface, not something I edited).
+- **Re-checked on this exact build:** the **auth-isolation suite still passes 5/5**, and my in-iframe
+  frontdesk→admin recipe still yields admin's full 8 tabs. So `b1b1eca`'s shell isolates correctly in
+  every environment I can test. But my tests are top-level / same-origin; I cannot exercise BildFast's
+  cross-origin preview, so I cannot rule out a preview-specific interaction of the new shell.
+
+**Stance unchanged:** I did not (and will not) edit the locked files without a reproduction + explicit
+authorization. If the owner's screenshot confirms a real broken state, note that the shell that renders
+tabs (`AppShell.tsx`) was just changed by `b1b1eca` — any fix must be coordinated with that author and
+is gated on the same authorization.
+
+_No code changed by me. Investigation only._
