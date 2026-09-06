@@ -465,6 +465,13 @@ export const AR: Record<string, string> = {
   "Stayover Clean": "تنظيف أثناء الإقامة",
   "Deep Clean": "تنظيف عميق",
   "Inspection": "فحص",
+  // HK mobile app
+  "Couldn't load your board": "تعذّر تحميل لوحتك",
+  "Nothing assigned to you yet — open {rooms} to pick up a room.":
+    "لا شيء مُسند إليك بعد — افتح {rooms} لاختيار غرفة والبدء.",
+  "No unassigned rooms right now.": "لا توجد غرف غير مُسندة حاليًا.",
+  "Tap an occupied room to post minibar or laundry.":
+    "اضغط على غرفة مشغولة لتسجيل ميني بار أو غسيل.",
   "Click a day to add a booking, or a booking to edit it.": "انقر على يوم لإضافة حجز، أو على حجز لتعديله.",
   "Jump to date": "انتقل إلى تاريخ",
   "Previous 14 days": "الأيام الـ14 السابقة",

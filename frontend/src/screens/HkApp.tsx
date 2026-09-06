@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
-import { qty } from "../lib/i18n"
-import { BedDouble, LogOut, Plane, RefreshCw, Star, Clock, PackageSearch } from "lucide-react"
+import { qty, useT, fill } from "../lib/i18n"
+import { BedDouble, LogOut, Plane, RefreshCw, Star, Clock, PackageSearch, WifiOff } from "lucide-react"
 import {
   call,
   getCurrentProperty,
@@ -61,8 +61,10 @@ const hkTone: Record<HkRoom["housekeeping_status"], string> = {
 }
 
 export default function HkApp() {
+  const { t } = useT()
   const [auth, setAuth] = useState<"loading" | "anon" | "ok">("loading")
   const [data, setData] = useState<{ tasks: HkTask[]; rooms: HkRoom[] } | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [view, setView] = useState<"mine" | "pool" | "rooms" | "laundry">("mine")
   const [rejecting, setRejecting] = useState<string | null>(null)
@@ -88,7 +90,12 @@ export default function HkApp() {
   const load = useCallback(() => {
     call<{ tasks: HkTask[]; rooms: HkRoom[] }>("hotelpms.api.hk_queue", {
       property: getCurrentProperty(),
-    }).then(setData)
+    })
+      .then((d) => {
+        setData(d)
+        setLoadError(null)
+      })
+      .catch((e) => setLoadError(serverError(e)))
   }, [])
 
   useEffect(() => {
@@ -241,20 +248,22 @@ export default function HkApp() {
     <div className="min-h-screen bg-zinc-50 pb-20">
       <header className="sticky top-0 z-40 flex items-center gap-2 border-b border-zinc-200 bg-white px-4 py-3">
         <img src={BRAND_LOGO_URL} alt="" className="size-7 rounded-md object-contain" aria-hidden />
-        <span className="font-semibold">Housekeeping</span>
-        <span className="ml-auto flex items-center gap-3">
+        <span className="font-semibold">{t("Housekeeping")}</span>
+        <span className="ms-auto flex items-center gap-1">
           <button
             onClick={() => { setLogItem({ desc: "", condition: "Found", room: "" }); setLogMsg(null) }}
             aria-label="Log a lost or found item"
+            className="flex size-11 items-center justify-center rounded-lg active:bg-zinc-100"
           >
             <PackageSearch className="size-5 text-zinc-400" />
           </button>
-          <button onClick={load} aria-label="Refresh">
+          <button onClick={load} aria-label="Refresh" className="flex size-11 items-center justify-center rounded-lg active:bg-zinc-100">
             <RefreshCw className="size-5 text-zinc-400" />
           </button>
           <button
             onClick={() => logout().then(() => setAuth("anon"))}
             aria-label="Sign out"
+            className="flex size-11 items-center justify-center rounded-lg active:bg-zinc-100"
           >
             <LogOut className="size-5 text-zinc-400" />
           </button>
@@ -262,6 +271,26 @@ export default function HkApp() {
       </header>
 
       <main className="mx-auto max-w-lg px-3 py-4">
+        {loadError ? (
+          <div className="mt-10 rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center">
+            <WifiOff className="mx-auto mb-2 size-8 text-zinc-300" aria-hidden />
+            <p className="text-sm font-semibold text-zinc-700">{t("Couldn't load your board")}</p>
+            <p className="mt-1 text-xs text-zinc-500">{loadError}</p>
+            <button
+              onClick={load}
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-600 px-6 text-sm font-semibold text-white active:brightness-95"
+            >
+              {t("Try again")}
+            </button>
+          </div>
+        ) : !data ? (
+          <ul className="space-y-3" aria-busy="true" aria-label="Loading">
+            {[0, 1, 2].map((i) => (
+              <li key={i} className="h-24 animate-pulse rounded-2xl bg-white" />
+            ))}
+          </ul>
+        ) : (
+          <>
         {view === "mine" && (
           <>
             <p className="mb-3 px-1 text-sm text-zinc-500">
@@ -271,11 +300,19 @@ export default function HkApp() {
               {mine.map((t) => <TaskCard key={t.name} t={t} />)}
               {mine.length === 0 && (
                 <li className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-zinc-400">
-                  Nothing assigned to you. Check{" "}
-                  <button className="font-semibold text-brand-700" onClick={() => setView("pool")}>
-                    available rooms
-                  </button>{" "}
-                  to pick up a room.
+                  {fill(
+                    t("Nothing assigned to you yet — open {rooms} to pick up a room."),
+                    {
+                      rooms: (
+                        <button
+                          className="font-semibold text-brand-700"
+                          onClick={() => setView("pool")}
+                        >
+                          {t("available rooms")}
+                        </button>
+                      ),
+                    },
+                  )}
                 </li>
               )}
             </ul>
@@ -291,7 +328,7 @@ export default function HkApp() {
               {pool.map((t) => <TaskCard key={t.name} t={t} />)}
               {pool.length === 0 && (
                 <li className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-zinc-400">
-                  No unassigned rooms right now.
+                  {t("No unassigned rooms right now.")}
                 </li>
               )}
             </ul>
@@ -315,7 +352,7 @@ export default function HkApp() {
                 )}
               >
                 {r.vip ? (
-                  <Star className="absolute right-1.5 top-1.5 size-3.5 fill-amber-400 text-amber-400" aria-label="VIP" />
+                  <Star className="absolute end-1.5 top-1.5 size-3.5 fill-amber-400 text-amber-400" aria-label="VIP" />
                 ) : null}
                 <div className="flex items-center justify-center gap-1 text-xl font-bold">
                   {r.room_number}
@@ -343,11 +380,13 @@ export default function HkApp() {
         )}
         {view === "rooms" && (
           <p className="mt-3 text-center text-xs text-zinc-400">
-            Tap an occupied room to post minibar or laundry.
+            {t("Tap an occupied room to post minibar or laundry.")}
           </p>
         )}
 
         {view === "laundry" && <HkLaundry rooms={data?.rooms ?? []} />}
+          </>
+        )}
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-zinc-200 bg-white">
