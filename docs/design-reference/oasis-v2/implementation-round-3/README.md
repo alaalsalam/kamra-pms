@@ -12,7 +12,7 @@ Concurrent work already merged (build on, do not revert): `b1b1eca` (dual-layer 
 | Screen | Reference | Status | Intended differences from reference |
 |---|---|---|---|
 | Calendar (`/calendar`) | (design-system, no direct mockup) | **done** (1440 AR ✓, build ✓, auth-isolation 5/5, 0 console err) | New shared `ScreenHeader` (title + hotel/date context + role-gated "New booking" + KPI row: occupancy meter, rooms-free, arrivals/departures/to-clean); per-date occupancy %; semantic legend now icon+text (Available / Limited⚠ / Sold-out🚫). Enrichment uses existing calendar/snapshot APIs, batched (no per-cell N+1). |
-| Tape Chart (`/tape`) | v2-04 | _pending_ | |
+| Tape Chart (`/tape`) | v2-04 | **done** (1440+390 AR ✓, build ✓, auth-isolation 5/5, 0 console err) | ScreenHeader + 5 derived KPI tiles (occupancy meter, rooms-free, arrivals, departures, out-of-service); **sticky date-header + sticky room column** (RTL corner verified); bars keep `insetInlineStart` (RTL mirror), status = colour+icon+text; filter selects → removable chips + Clear; day/hourly zoom; mobile 390 = day-chip picker + grouped room list (no overflow); all tape/allocation APIs preserved, no new fetch. Intended diffs: Auto-assign now role-gated; arrivals/departures derived from tape payload (may undercount unassigned vs Calendar snapshot); house-position folded into date header; no content-visibility (protects frozen header/bars). |
 | Rooms (`/rooms`) | (resource pattern) | _pending_ | (check 4eb291b coverage first) |
 | Booking modal + room selection | v2-06 | _pending_ | |
 

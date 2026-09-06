@@ -1576,4 +1576,24 @@ export const AR: Record<string, string> = {
   // Navigation tidy-up
   "Voice & Messaging": "الصوت والمراسلة",
   "Groups": "المجموعات",
+  // Tape chart — Oasis v2 round 3
+  "Changeover conflicts": "تعارضات تغيير النزلاء",
+  "You don't have access to the tape chart": "لا تملك صلاحية الوصول إلى مخطط الإشغال",
+  "Your role can't open the room board. Ask a hotel administrator if you need it.":
+    "دورك لا يتيح فتح لوحة الغرف. اطلب من مدير الفندق إن كنت بحاجة إليها.",
+  "Pick a date": "اختر يومًا",
+  "Assigning...": "جارٍ الإسناد...",
+  "Review": "مراجعة",
+  "Day-use hours": "ساعات الاستخدام النهاري",
+  "Arrival / departure times (ETA · ETD)": "أوقات الوصول / المغادرة (وصول متوقع · مغادرة متوقعة)",
+  "Set": "تعيين",
+  "staying over": "مبيت",
+  "Walk-in": "بلا موعد",
+  "Direct": "مباشر",
+  "Rooms are matched to each guest's type and preferences. Assigning places them now; \"Review\" flags a choice worth a second look.":
+    "تُطابَق الغرف مع نوع كل ضيف وتفضيلاته. الإسناد يضعهم الآن؛ و«مراجعة» تشير إلى خيار يستحق نظرة ثانية.",
+  "Times drive the house position: back-to-back rooms flag a conflict when the arrival lands before the departure.":
+    "تؤثر الأوقات في إشغال المنشأة: الغرف المتتابعة تُظهر تعارضًا عندما يصل النزيل قبل مغادرة السابق.",
+  "Date changes re-price automatically (unless the booking holds a manual amount) and the double-booking guard re-checks the room.":
+    "تتغيّر التسعيرة تلقائيًا مع تغيير التواريخ (ما لم يحتفظ الحجز بمبلغ يدوي)، ويعيد حارس الحجز المزدوج فحص الغرفة.",
 }
