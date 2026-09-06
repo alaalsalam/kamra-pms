@@ -51,3 +51,8 @@ clear. Not chased further to avoid churn.
 
 **Scope note:** `/book` redirects to `/stay/standard` on this single-listing property, so PublicBooking
 isn't the live path here — its identical fix is tsc + build-verified.
+
+**Known gap (named, not chased):** the amber "Check your dates" hint + disabled button render only on
+the single-listing path (`!isSite && primary`). On the multi-listing **site** path (and on `/book`) an
+invalid range is a *silent* fetch-boundary no-op — no hint, and the site "Check availability" button
+stays enabled (it just doesn't search). Neither is this property's live path; left as-is to avoid churn.
