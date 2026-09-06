@@ -19,3 +19,12 @@ Concurrent work already merged (build on, do not revert): `b1b1eca` (dual-layer 
 **Package 0 complete** (`d9263f8` Calendar · `1496cb5` Tape · `23d6ea0` Rooms · Booking below). All: tsc 0, build green, auth-isolation 5/5, 0 app console errors (only the pre-existing unrelated socket.io 400), AR/EN parity, no 390 overflow, real APIs preserved, no locked file touched, POS untouched.
 
 Before/after screenshots: `./before/` and `./after/` (1440 / 1024 / 390, AR + EN).
+
+## Checkpoint (2026-09-07)
+- **Package 0: DONE + committed** (4 commits above). Base `4649388` → HEAD `7f5d03a`.
+- **Next: Package 1** — Today, Dashboard, Role Home, Apps launcher.
+  - **AppShell + core navigation are treated as already-done (b1b1eca dual-layer shell) AND locked**
+    (auth-boundary + concurrent-author turf) → NOT rebuilt. Package 1 covers the *screens* only, plus
+    the shared `ScreenHeader`/KPI system already introduced in package 0.
+- Shared component layer emerging: `ScreenHeader` (title + hotel/date context + role-gated action + KPI
+  tiles), `roomCells` (semantic status), Legend (icon+text). Reuse across screens.
