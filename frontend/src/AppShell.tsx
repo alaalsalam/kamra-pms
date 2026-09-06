@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Building2, LayoutGrid, LogOut, Menu, Plus, SaudiRiyal, Search, X } from "lucide-react"
+import { Building2, ChevronDown, LayoutGrid, LogOut, Menu, Plus, SaudiRiyal, Search, X } from "lucide-react"
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { BookingDialog } from "./components/BookingDialog"
 import { BrandLogo } from "./components/BrandLogo"
@@ -146,6 +146,57 @@ function AppSwitcher({ apps, current }: { apps: AppDef[]; current?: AppDef }) {
   )
 }
 
+/**
+ * The permanent product rail is the first major Oasis structural layer.
+ * It separates switching operational areas from navigating inside one area,
+ * so a receptionist never has to parse a single, very long mixed menu.
+ */
+function ProductRail({ apps, current }: { apps: AppDef[]; current?: AppDef }) {
+  const navigate = useNavigate()
+  const { t } = useT()
+
+  const go = (app: AppDef) => {
+    const first = app.items.find((item) => item.to)
+    if (first?.to) navigate(first.to)
+  }
+
+  return (
+    <aside className="oasis-product-rail" aria-label={t("Apps")}>
+      <button
+        type="button"
+        className="oasis-rail-brand"
+        onClick={() => navigate("/")}
+        aria-label="HotelPMS"
+      >
+        <BrandLogo size={38} showWordmark={false} tone="dark" />
+      </button>
+      <nav className="oasis-rail-apps">
+        {apps.map((app) => {
+          const active = app.id === current?.id
+          return (
+            <button
+              key={app.id}
+              type="button"
+              onClick={() => go(app)}
+              className={cn("oasis-rail-app", active && "is-active")}
+              aria-current={active ? "page" : undefined}
+              aria-label={t(app.name)}
+              title={t(app.name)}
+            >
+              <app.icon className="size-[19px]" strokeWidth={1.8} aria-hidden />
+              <span>{t(app.name)}</span>
+            </button>
+          )
+        })}
+      </nav>
+      <NavLink to="/apps" className="oasis-rail-all" title={t("View all apps")}>
+        <LayoutGrid className="size-5" aria-hidden />
+        <span>{t("All")}</span>
+      </NavLink>
+    </aside>
+  )
+}
+
 export default function AppShell() {
   const { account, user, roles, signOut } = useAuth()
   const { t } = useT()
@@ -253,7 +304,7 @@ export default function AppShell() {
         href={item.href}
         target="_blank"
         rel="noreferrer"
-        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium text-zinc-600 hover:bg-zinc-100"
+        className="oasis-context-link"
       >
         <item.icon className="size-4" aria-hidden />
         {t(item.label)}
@@ -265,10 +316,10 @@ export default function AppShell() {
         end={item.to === "/"}
         className={({ isActive }) =>
           cn(
-            "relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-colors after:absolute after:inset-y-2 after:start-0 after:w-[3px] after:rounded-full",
+            "oasis-context-link",
             isActive
-              ? "bg-brand-50 font-semibold text-brand-800 after:bg-brand-600"
-              : "text-zinc-600 after:bg-transparent hover:bg-zinc-100 hover:text-zinc-900",
+              ? "is-active"
+              : "",
           )
         }
       >
@@ -278,7 +329,7 @@ export default function AppShell() {
     )
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50">
+    <div className="oasis-shell">
       {demoMode && !kiosk && (
         <div className="bg-gold-500 px-4 py-1.5 text-center text-xs font-semibold text-[#3a2405]">
           {t("HotelPMS demo — data is restored every night.")}
@@ -291,47 +342,56 @@ export default function AppShell() {
           </a>
         </div>
       )}
-      <div className="flex min-h-0 flex-1">
+      <div className="oasis-shell-frame">
       {!kiosk && (
-      <aside className="hidden w-[248px] shrink-0 border-e border-zinc-200 bg-[#fcfcfa] px-3 py-4 sm:sticky sm:top-0 sm:flex sm:h-screen sm:flex-col sm:overflow-y-auto">
-        <div className="mb-4 border-b border-zinc-200 px-2 pb-4">
-          <BrandLogo size={36} />
+      <>
+      <ProductRail apps={apps} current={currentApp} />
+      <aside className="oasis-context-sidebar">
+        <div className="oasis-context-brand">
+          <BrandLogo size={34} tagline />
         </div>
 
         {currentApp && (
-          <div className="mb-2 flex items-center gap-2 rounded-xl px-3 py-2">
+          <div className="oasis-context-heading">
             <span
-              className={cn(
-                "flex size-8 items-center justify-center rounded-xl",
-                currentApp.tint,
-              )}
+              className="oasis-context-icon"
             >
-              <currentApp.icon className="size-4" aria-hidden />
+              <currentApp.icon className="size-[18px]" strokeWidth={1.8} aria-hidden />
             </span>
-            <span className="text-[13px] font-bold text-zinc-800">
-              {t(currentApp.name)}
+            <span className="min-w-0">
+              <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+                {t("Workspace")}
+              </span>
+              <span className="block truncate text-[14px] font-bold text-zinc-900">
+                {t(currentApp.name)}
+              </span>
             </span>
           </div>
         )}
 
-        <nav className="flex-1 space-y-0.5">{items.map(renderItem)}</nav>
+        <nav className="oasis-context-nav" aria-label={currentApp ? t(currentApp.name) : t("Navigation")}>
+          <p className="oasis-context-label">{t("Navigation")}</p>
+          {items.map(renderItem)}
+        </nav>
 
-        <div className="mt-5 space-y-2 border-t border-zinc-200 pt-3">
-          <div className="flex items-center gap-2.5 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 shadow-sm">
-            <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+        <div className="oasis-context-footer">
+          <div className="oasis-property-card">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
               <Building2 className="size-4" aria-hidden />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-semibold text-zinc-800">
+              <span className="block truncate text-xs font-bold text-zinc-900">
                 {properties.find((p) => p.name === property)?.property_name ?? t("Property")}
               </span>
-              <span className="block truncate text-[10px] text-zinc-400">{user}</span>
+              <span className="block truncate text-[10px] text-zinc-500">
+                {primaryRole ? t(primaryRole) : user}
+              </span>
             </span>
             <button
               type="button"
               onClick={handleSignOut}
               disabled={signingOut}
-              className="grid size-8 place-items-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+              className="grid size-9 place-items-center rounded-xl text-zinc-400 transition hover:bg-rose-50 hover:text-rose-700"
               title={t(signingOut ? "Signing out..." : "Sign out")}
               aria-label={t(signingOut ? "Signing out..." : "Sign out")}
             >
@@ -340,40 +400,41 @@ export default function AppShell() {
           </div>
         </div>
       </aside>
+      </>
       )}
 
-      <div className="min-w-0 flex-1">
+      <div className="oasis-workspace">
         {!kiosk && (
-        <header className="sticky top-0 z-40 flex min-h-[62px] flex-wrap items-center gap-2 bg-gradient-to-b from-zinc-50 via-zinc-50/95 to-zinc-50/75 px-4 py-2 backdrop-blur-md lg:px-7">
-          <AppSwitcher apps={apps} current={currentApp} />
+        <header className="oasis-topbar">
+          <div className="sm:hidden"><AppSwitcher apps={apps} current={currentApp} /></div>
+          <div className="oasis-mobile-wordmark sm:hidden"><BrandLogo size={30} /></div>
           {properties.length > 1 ? (
-            <select
-              className="max-w-[13rem] truncate rounded-full border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold shadow-sm focus:outline-2 focus:outline-brand-600 lg:max-w-none"
-              value={property}
-              onChange={(e) => switchProperty(e.target.value)}
-              aria-label="Property"
-            >
-              {properties.map((p) => (
-                <option key={p.name} value={p.name}>
-                  {p.property_name}
-                  {p.city ? ` · ${p.city}` : ""}
-                </option>
-              ))}
-            </select>
+            <label className="oasis-property-select">
+              <Building2 className="size-4 text-brand-700" aria-hidden />
+              <select value={property} onChange={(e) => switchProperty(e.target.value)} aria-label="Property">
+                {properties.map((p) => (
+                  <option key={p.name} value={p.name}>
+                    {p.property_name}{p.city ? ` · ${p.city}` : ""}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="size-3.5 text-zinc-400" aria-hidden />
+            </label>
           ) : (
-            <span className="hidden text-xs font-semibold text-zinc-600 lg:inline">
-              {properties[0]?.property_name ?? ""}
-            </span>
+            <div className="oasis-property-static">
+              <Building2 className="size-4 text-brand-700" aria-hidden />
+              <span>{properties[0]?.property_name ?? ""}</span>
+            </div>
           )}
-          <div className="flex flex-1 justify-center px-2">
-            <div className="hidden w-full max-w-[380px] md:block">
+          <div className="oasis-top-search">
+            <div className="hidden w-full max-w-[460px] md:block">
               <SearchShortcut />
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="oasis-top-actions">
             <UtilityControls tone="light" />
             {canCreateBooking && (
-              <Button variant="primary" onClick={() => setBooking({})}>
+              <Button variant="primary" className="shadow-[0_8px_22px_rgba(14,122,108,.2)]" onClick={() => setBooking({})}>
                 <Plus className="size-4" aria-hidden />
                 New booking
               </Button>
@@ -398,7 +459,7 @@ export default function AppShell() {
                     ? "h-[100dvh] overflow-hidden p-0"
                     : "min-h-[calc(100dvh-3.5rem)] overflow-auto p-3",
                 )
-              : "mx-auto w-full max-w-[1180px] px-4 pb-24 pt-5 sm:py-6 lg:px-7 lg:py-7"
+              : "oasis-page-canvas"
           }
         >
           <Outlet

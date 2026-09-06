@@ -381,6 +381,397 @@ body {
   contain-intrinsic-size: 480px;
 }
 
+/* -----------------------------------------------------------------------
+   Oasis workspace architecture
+
+   The narrow dark rail answers "which operational area am I in?" while the
+   ivory contextual sidebar answers "what can I do here?". Keeping those two
+   questions separate is the largest structural change in the second design
+   round and makes the suite easier to scan for role-based users.
+   ----------------------------------------------------------------------- */
+.oasis-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(217, 237, 233, 0.48), transparent 28rem),
+    var(--color-zinc-50);
+  color: var(--color-zinc-900);
+}
+
+.oasis-shell-frame {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  align-items: stretch;
+}
+
+.oasis-product-rail {
+  position: sticky;
+  top: 0;
+  z-index: 45;
+  display: none;
+  width: 82px;
+  height: 100dvh;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(30, 147, 130, 0.34), transparent 16rem),
+    linear-gradient(180deg, #073b34 0%, #052e29 100%);
+  box-shadow: 12px 0 34px -28px rgba(5, 46, 41, 0.72);
+}
+
+.oasis-rail-brand {
+  display: grid;
+  min-height: 72px;
+  width: 100%;
+  place-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.oasis-rail-brand:focus-visible,
+.oasis-rail-app:focus-visible,
+.oasis-rail-all:focus-visible {
+  outline: 2px solid var(--color-gold-300);
+  outline-offset: -3px;
+}
+
+.oasis-rail-apps {
+  width: 100%;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 10px 8px;
+  scrollbar-width: none;
+}
+
+.oasis-rail-apps::-webkit-scrollbar {
+  display: none;
+}
+
+.oasis-rail-app,
+.oasis-rail-all {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 53px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 13px;
+  color: rgba(237, 246, 244, 0.68);
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: center;
+  transition: background-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.oasis-rail-app + .oasis-rail-app {
+  margin-top: 3px;
+}
+
+.oasis-rail-app:hover,
+.oasis-rail-all:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.oasis-rail-app.is-active {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.oasis-rail-app.is-active::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -8px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--color-gold-400);
+  box-shadow: 0 0 14px rgba(232, 150, 62, 0.72);
+}
+
+html[dir="rtl"] .oasis-rail-app.is-active::before {
+  border-radius: 4px 0 0 4px;
+}
+
+.oasis-rail-all {
+  width: calc(100% - 16px);
+  margin: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0;
+}
+
+.oasis-context-sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 42;
+  display: none;
+  width: 250px;
+  height: 100dvh;
+  flex: none;
+  flex-direction: column;
+  overflow: hidden;
+  border-inline-end: 1px solid var(--color-zinc-200);
+  background: color-mix(in srgb, var(--color-white) 94%, var(--color-gold-50));
+  box-shadow: 8px 0 28px -28px rgba(27, 36, 32, 0.45);
+}
+
+.oasis-context-brand {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  padding-inline: 20px;
+  border-bottom: 1px solid var(--color-zinc-200);
+}
+
+.oasis-context-heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 16px 13px 8px;
+  padding: 10px;
+  border: 1px solid var(--color-brand-100);
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--color-brand-50), color-mix(in srgb, var(--color-white) 88%, var(--color-brand-50)));
+}
+
+.oasis-context-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--color-brand-800);
+  color: white;
+  box-shadow: 0 8px 18px -10px rgba(7, 59, 52, 0.65);
+}
+
+.oasis-context-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 5px 13px 18px;
+}
+
+.oasis-context-label {
+  margin: 10px 11px 7px;
+  color: var(--color-zinc-400);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.oasis-context-link {
+  position: relative;
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 2px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  color: var(--color-zinc-600);
+  font-size: 12.5px;
+  font-weight: 550;
+  transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.oasis-context-link:hover {
+  background: var(--color-zinc-100);
+  color: var(--color-zinc-900);
+  transform: translateX(2px);
+}
+
+html[dir="rtl"] .oasis-context-link:hover {
+  transform: translateX(-2px);
+}
+
+.oasis-context-link.is-active {
+  background: var(--color-brand-50);
+  color: var(--color-brand-900);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px var(--color-brand-100);
+}
+
+.oasis-context-link.is-active::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 11px;
+  bottom: 11px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--color-brand-600);
+}
+
+.oasis-context-footer {
+  padding: 12px;
+  border-top: 1px solid var(--color-zinc-200);
+  background: color-mix(in srgb, var(--color-zinc-50) 78%, var(--color-white));
+}
+
+.oasis-property-card {
+  display: flex;
+  min-height: 60px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--color-zinc-200);
+  border-radius: 14px;
+  background: var(--color-white);
+  box-shadow: 0 7px 24px -20px rgba(27, 36, 32, 0.45);
+}
+
+.oasis-workspace {
+  min-width: 0;
+  flex: 1;
+}
+
+.oasis-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-zinc-200) 82%, transparent);
+  background: color-mix(in srgb, var(--color-zinc-50) 86%, transparent);
+  backdrop-filter: blur(18px) saturate(1.18);
+}
+
+.oasis-property-select,
+.oasis-property-static {
+  display: none;
+  min-height: 42px;
+  max-width: 250px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  border: 1px solid var(--color-zinc-200);
+  border-radius: 13px;
+  background: var(--color-white);
+  color: var(--color-zinc-800);
+  box-shadow: 0 1px 2px rgba(27, 36, 32, 0.04);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.oasis-property-select select {
+  min-width: 0;
+  flex: 1;
+  appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.oasis-top-search {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  padding-inline: 8px;
+}
+
+.oasis-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.oasis-mobile-wordmark {
+  flex: 1;
+}
+
+.oasis-page-canvas {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 24px 22px 96px;
+}
+
+@media (min-width: 640px) {
+  .oasis-context-sidebar {
+    display: flex;
+    width: 224px;
+  }
+
+  .oasis-topbar {
+    padding-inline: 24px;
+  }
+
+  .oasis-property-select,
+  .oasis-property-static {
+    display: flex;
+  }
+
+  .oasis-page-canvas {
+    padding: 28px 26px 44px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .oasis-product-rail {
+    display: flex;
+  }
+
+  .oasis-context-sidebar {
+    width: 252px;
+  }
+
+  .oasis-topbar {
+    padding-inline: 30px;
+  }
+
+  .oasis-page-canvas {
+    padding: 30px 32px 52px;
+  }
+}
+
+@media (max-width: 639px) {
+  .oasis-topbar {
+    min-height: 60px;
+    padding: 8px 12px;
+  }
+
+  .oasis-top-actions > :first-child {
+    display: none;
+  }
+
+  .oasis-top-actions button span {
+    display: none;
+  }
+}
+
+.dark .oasis-product-rail {
+  background: linear-gradient(180deg, #052e29, #031f1c);
+}
+
+.dark .oasis-context-icon {
+  color: #d9ede9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oasis-rail-app,
+  .oasis-rail-all,
+  .oasis-context-link {
+    transition: none;
+  }
+}
+
 @keyframes sheet-in {
   from {
     transform: translateX(100%);

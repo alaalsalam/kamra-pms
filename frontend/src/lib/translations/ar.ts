@@ -64,6 +64,8 @@ export const AR: Record<string, string> = {
   "More navigation": "خيارات تنقل إضافية",
   "More": "المزيد",
   "Navigation": "التنقل",
+  "Workspace": "مساحة العمل",
+  "Apps": "التطبيقات",
   "Choose where you want to go": "اختر الوجهة التي تريد الانتقال إليها",
   "HotelPMS Assistant": "مساعد HotelPMS",
   "Reservations": "الحجوزات",
