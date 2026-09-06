@@ -183,6 +183,7 @@ function CalendarScreen() {
           ? (room_type, date) => openBooking({ room_type, date })
           : undefined
       }
+      onNewBooking={canCreateBooking ? () => openBooking({}) : undefined}
     />
   )
 }
