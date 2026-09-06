@@ -129,6 +129,37 @@ function nightsBetween(a: string, b: string) {
   return Math.max(1, Math.round(ms / 86_400_000))
 }
 
+/** A real `YYYY-MM-DD` calendar date — rejects junk URL params so date math
+ *  (which throws on `new Date("garbage").toISOString()`) never crashes. */
+function isValidDate(s: string | undefined): s is string {
+  return !!s && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(new Date(s).getTime())
+}
+
+/** Coerce the raw `/stay/:slug/:checkin/:checkout/:adults/:children` URL params
+ *  into a bookable stay: check-in never in the past, check-out strictly after
+ *  check-in, occupancy in range. Guards against inverted / past / malformed
+ *  links (and the URL the app itself could mint from a bad picker edit) so the
+ *  guest sees availability instead of a "check-out must be after check-in"
+ *  server error. The URL is rewritten to this canonical value on mount. */
+function sanitizeStay(
+  rawCheckIn: string | undefined,
+  rawCheckOut: string | undefined,
+  rawAdults: string | undefined,
+  rawChildren: string | undefined,
+) {
+  const today = todayPlus(0)
+  let check_in_date = isValidDate(rawCheckIn) ? rawCheckIn : todayPlus(1)
+  if (check_in_date < today) check_in_date = today
+  let check_out_date = isValidDate(rawCheckOut) ? rawCheckOut : addDays(check_in_date, 2)
+  if (check_out_date <= check_in_date) check_out_date = addDays(check_in_date, 2)
+  return {
+    check_in_date,
+    check_out_date,
+    adults: Math.max(1, Number(rawAdults ?? 2) || 2),
+    children: Math.max(0, Number(rawChildren ?? 0) || 0),
+  }
+}
+
 function addDays(date: string, days: number) {
   const d = new Date(date)
   d.setDate(d.getDate() + days)
@@ -227,15 +258,9 @@ export default function PublicListing() {
   const [searchParams] = useSearchParams()
   const [resolved, setResolved] = useState<Resolved | null>(null)
   const [data, setData] = useState<Showcase | null>(null)
-  const [search, setSearch] = useState(() => {
-    const check_in_date = checkin ?? todayPlus(1)
-    return {
-      check_in_date,
-      check_out_date: checkout ?? addDays(check_in_date, 2),
-      adults: Number(adultsParam ?? 2) || 2,
-      children: Number(childrenParam ?? 0) || 0,
-    }
-  })
+  const [search, setSearch] = useState(() =>
+    sanitizeStay(checkin, checkout, adultsParam, childrenParam),
+  )
   const [results, setResults] = useState<Record<string, StayResult>>({})
   const [searching, setSearching] = useState(false)
   const [searched, setSearched] = useState(false)
@@ -303,7 +328,7 @@ export default function PublicListing() {
       { replace: true },
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, checkOut, slug])
+  }, [search, checkOut, slug, resolved])
 
   useEffect(() => {
     if (!resolved) return
@@ -330,7 +355,11 @@ export default function PublicListing() {
         setResults(map)
         setSearched(true)
       })
-      .catch((e) => setSearchError(serverError(e)))
+      .catch((e) => {
+        setSearchError(serverError(e))
+        // Drop any prior quote so a stale price can't sit beside the error.
+        setResults({})
+      })
       .finally(() => setSearching(false))
   }
 
@@ -697,7 +726,11 @@ export default function PublicListing() {
                     value={search.check_in_date}
                     min={todayPlus(0)}
                     onChange={(e) => {
-                      const check_in_date = e.target.value
+                      const v = e.target.value
+                      // Clearing the picker (v="") or a past date would break
+                      // date math / search — fall back to today.
+                      const today = todayPlus(0)
+                      const check_in_date = isValidDate(v) && v > today ? v : today
                       const minCheckOut = addDays(check_in_date, minNights)
                       setSearch((s) => ({
                         ...s,
@@ -717,9 +750,14 @@ export default function PublicListing() {
                     className={inputCls}
                     value={search.check_out_date}
                     min={addDays(search.check_in_date, minNights)}
-                    onChange={(e) =>
-                      setSearch({ ...search, check_out_date: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const v = e.target.value
+                      setSearch((s) => ({
+                        ...s,
+                        check_out_date:
+                          v && v > s.check_in_date ? v : addDays(s.check_in_date, minNights),
+                      }))
+                    }}
                   />
                 </label>
                 <label className="block">

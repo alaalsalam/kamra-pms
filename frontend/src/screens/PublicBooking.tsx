@@ -168,6 +168,35 @@ function addDays(date: string, days: number) {
   return d.toISOString().slice(0, 10)
 }
 
+/** A real `YYYY-MM-DD` calendar date — rejects junk URL params so date math
+ *  (which throws on `new Date("garbage").toISOString()`) never crashes. */
+function isValidDate(s: string | undefined): s is string {
+  return !!s && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(new Date(s).getTime())
+}
+
+/** Coerce the raw `/book/:checkin/:checkout/:adults/:children` URL params into
+ *  a bookable stay: check-in never in the past, check-out strictly after
+ *  check-in, occupancy in range. Guards against inverted / past / malformed
+ *  links so the guest never hits a "check-out must be after check-in" error. */
+function sanitizeStay(
+  rawCheckIn: string | undefined,
+  rawCheckOut: string | undefined,
+  rawAdults: string | undefined,
+  rawChildren: string | undefined,
+) {
+  const today = todayPlus(0)
+  let check_in_date = isValidDate(rawCheckIn) ? rawCheckIn : todayPlus(1)
+  if (check_in_date < today) check_in_date = today
+  let check_out_date = isValidDate(rawCheckOut) ? rawCheckOut : addDays(check_in_date, 2)
+  if (check_out_date <= check_in_date) check_out_date = addDays(check_in_date, 2)
+  return {
+    check_in_date,
+    check_out_date,
+    adults: Math.max(1, Number(rawAdults ?? 2) || 2),
+    children: Math.max(0, Number(rawChildren ?? 0) || 0),
+  }
+}
+
 function setMetaTag(name: string, content: string) {
   let el = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
   if (!el) {
@@ -239,15 +268,9 @@ export default function PublicBooking() {
     }[]
   >([])
   const [data, setData] = useState<Showcase | null>(null)
-  const [search, setSearch] = useState(() => {
-    const check_in_date = params.checkin ?? todayPlus(1)
-    return {
-      check_in_date,
-      check_out_date: params.checkout ?? addDays(check_in_date, 2),
-      adults: Number(params.adults ?? 2) || 2,
-      children: Number(params.children ?? 0) || 0,
-    }
-  })
+  const [search, setSearch] = useState(() =>
+    sanitizeStay(params.checkin, params.checkout, params.adults, params.children),
+  )
   const [results, setResults] = useState<Record<string, StayResult>>({})
   const [booking, setBooking] = useState<string | null>(null) // room type name
   const [form, setForm] = useState({ guest_name: "", phone: "", email: "", meal_plan: "", special_requests: "" })
@@ -636,7 +659,9 @@ export default function PublicBooking() {
                 value={search.check_in_date}
                 min={todayPlus(0)}
                 onChange={(e) => {
-                  const check_in_date = e.target.value
+                  const v = e.target.value
+                  const today = todayPlus(0)
+                  const check_in_date = isValidDate(v) && v > today ? v : today
                   const minCheckOut = addDays(check_in_date, minNights)
                   setSearch((s) => ({
                     ...s,
@@ -654,9 +679,14 @@ export default function PublicBooking() {
                 className={inputCls}
                 value={search.check_out_date}
                 min={addDays(search.check_in_date, minNights)}
-                onChange={(e) =>
-                  setSearch({ ...search, check_out_date: e.target.value })
-                }
+                onChange={(e) => {
+                  const v = e.target.value
+                  setSearch((s) => ({
+                    ...s,
+                    check_out_date:
+                      v && v > s.check_in_date ? v : addDays(s.check_in_date, minNights),
+                  }))
+                }}
               />
             </label>
             <label className="block">
