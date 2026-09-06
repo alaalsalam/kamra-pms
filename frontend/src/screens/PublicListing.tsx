@@ -3,9 +3,13 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import {
   ArrowLeft,
   BedDouble,
+  Check,
   ExternalLink,
+  Loader2,
   MapPin,
+  Minus,
   Phone,
+  Plus,
   Search,
   Users,
 } from "lucide-react"
@@ -17,6 +21,7 @@ import { Button } from "../components/ui/button"
 import { PublicFooter, PublicHeader } from "../components/PublicChrome"
 import { Sheet } from "../components/ui/sheet"
 import { cur, moneyLocale, adoptUiLocale } from "../lib/money"
+import { qty } from "../lib/i18n"
 import { formatPhoneDisplay, formatPhoneTel } from "../lib/phone"
 
 const inr = (n: number) =>
@@ -88,6 +93,14 @@ interface Showcase {
     from_rate?: number
   }[]
   meal_plans: { name: string; code: string; label: string; price_per_adult: number }[]
+  experiences: {
+    name: string
+    experience_name: string
+    category: string | null
+    price: number
+    gst_rate: number
+    description: string | null
+  }[]
 }
 
 interface StayResult {
@@ -224,6 +237,9 @@ export default function PublicListing() {
     }
   })
   const [results, setResults] = useState<Record<string, StayResult>>({})
+  const [searching, setSearching] = useState(false)
+  const [searched, setSearched] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
   const [booking, setBooking] = useState<string | null>(null)
   const [form, setForm] = useState({
     guest_name: "",
@@ -232,6 +248,8 @@ export default function PublicListing() {
     meal_plan: "",
     special_requests: "",
   })
+  // experience add-ons the guest picks in the booking sheet: name -> qty
+  const [addons, setAddons] = useState<Record<string, number>>({})
   const [done, setDone] = useState<{ reservation: string; amount: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -272,7 +290,8 @@ export default function PublicListing() {
             .ui_locale,
         )
         setData(d)
-        setForm((f) => ({ ...f, meal_plan: d.meal_plans[0]?.name ?? "" }))
+        // Start with no meal plan selected so the guest is never silently
+        // charged for a plan they didn't pick — they opt in below.
       })
       .catch((e) => setError(serverError(e)))
   }, [slug])
@@ -294,6 +313,8 @@ export default function PublicListing() {
 
   function fetchResults() {
     if (!resolved) return
+    setSearching(true)
+    setSearchError(null)
     call<StayResult[]>("hotelpms.public_api.search_stay", {
       property: resolved.property,
       check_in_date: search.check_in_date,
@@ -302,12 +323,24 @@ export default function PublicListing() {
       children: search.children,
       listing_slug: listingSlug,
       location_slug: locationSlug,
-    }).then((rows) => {
-      const map: Record<string, StayResult> = {}
-      rows.forEach((r) => (map[r.room_type] = r))
-      setResults(map)
     })
+      .then((rows) => {
+        const map: Record<string, StayResult> = {}
+        rows.forEach((r) => (map[r.room_type] = r))
+        setResults(map)
+        setSearched(true)
+      })
+      .catch((e) => setSearchError(serverError(e)))
+      .finally(() => setSearching(false))
   }
+
+  // A guest who lands with dates already in the URL (e.g. arriving from /book or
+  // a shared link) sees live availability immediately — no extra click before
+  // the next step appears.
+  useEffect(() => {
+    if (resolved && data && checkin && checkout && !searched) fetchResults()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolved, data])
 
   useEffect(() => {
     if (!data || !resolved) return
@@ -332,6 +365,9 @@ export default function PublicListing() {
           adults: search.adults,
           children: search.children,
           ...form,
+          addons: Object.entries(addons)
+            .filter(([, qty]) => qty > 0)
+            .map(([experience, qty]) => ({ experience, qty })),
         },
       )
       setDone({ reservation: res.reservation, amount: res.amount_after_tax })
@@ -638,9 +674,15 @@ export default function PublicListing() {
                   )}
                 </p>
                 <p className="text-sm text-zinc-500">
-                  {!isSite && results[primary?.name ?? ""]?.quote
-                    ? `${results[primary!.name].quote!.nights} nights · taxes in`
-                    : "from / night"}
+                  {!isSite && results[primary?.name ?? ""]?.quote ? (
+                    <>
+                      {qty(results[primary!.name].quote!.nights, "night")}
+                      {" · "}
+                      taxes in
+                    </>
+                  ) : (
+                    "from / night"
+                  )}
                 </p>
               </div>
 
@@ -716,34 +758,96 @@ export default function PublicListing() {
                 </label>
               </div>
               <p className="text-center text-xs text-zinc-400">
-                {nightsBetween(search.check_in_date, search.check_out_date)} night
-                {nightsBetween(search.check_in_date, search.check_out_date) === 1 ? "" : "s"}
+                {qty(nightsBetween(search.check_in_date, search.check_out_date), "night")}
               </p>
 
               <Button
                 variant={isSite ? "outline" : "gold"}
                 className="w-full justify-center gap-2 py-2.5 text-base"
+                disabled={searching}
                 onClick={() => {
                   fetchResults()
                   document
-                    .getElementById(isSite ? "choose-listing" : "sticky-book")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                    .getElementById(isSite ? "choose-listing" : "avail-result")
+                    ?.scrollIntoView({ behavior: "smooth", block: "center" })
                 }}
               >
-                <Search className="size-4" aria-hidden />
-                Check availability
+                {searching ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                ) : (
+                  <Search className="size-4" aria-hidden />
+                )}
+                {searching ? "Checking availability…" : "Check availability"}
               </Button>
 
+              {/* Single-listing: a clear result — available / sold out / error —
+                  so the guest always sees the next step after checking. */}
               {!isSite && primary && (
-                <Button
-                  id="sticky-book"
-                  variant="gold"
-                  className="w-full justify-center py-2.5 text-base"
-                  disabled={!results[primary.name]?.quote}
-                  onClick={() => setBooking(primary.name)}
-                >
-                  {confirmLabel}
-                </Button>
+                <div id="avail-result">
+                  {searchError ? (
+                    <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                      <p>Couldn't check availability right now.</p>
+                      <button
+                        className="mt-1 font-semibold underline hover:no-underline"
+                        onClick={fetchResults}
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  ) : searched && !searching ? (
+                    (results[primary.name]?.rooms_left ?? 0) > 0 ? (
+                      <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4">
+                        <p className="flex items-center gap-1.5 text-sm font-semibold text-emerald-800">
+                          <Check className="size-4" aria-hidden /> Available for your dates
+                        </p>
+                        {results[primary.name]?.quote ? (
+                          <p className="mt-1 text-sm text-emerald-700">
+                            <bdi dir="ltr" className="font-semibold tabular-nums">
+                              {cur()}
+                              {inr(results[primary.name].quote!.amount_after_tax)}
+                            </bdi>
+                            {" · "}
+                            {qty(results[primary.name].quote!.nights, "night")}
+                            {" · "}
+                            taxes in
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-sm text-emerald-700">
+                            Price is confirmed at booking.
+                          </p>
+                        )}
+                        <Button
+                          id="sticky-book"
+                          variant="gold"
+                          className="mt-3 w-full justify-center py-2.5 text-base"
+                          onClick={() => setBooking(primary.name)}
+                        >
+                          {confirmLabel}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
+                        <p className="font-semibold text-amber-800">
+                          No rooms available for these dates.
+                        </p>
+                        <p className="mt-0.5 text-amber-700">
+                          Try different check-in / check-out dates to find an opening.
+                        </p>
+                      </div>
+                    )
+                  ) : (
+                    !searching && (
+                      <Button
+                        id="sticky-book"
+                        variant="gold"
+                        className="w-full justify-center py-2.5 text-base"
+                        disabled
+                      >
+                        {confirmLabel}
+                      </Button>
+                    )
+                  )}
+                </div>
               )}
 
               {isSite && (
@@ -786,6 +890,8 @@ export default function PublicListing() {
           onClose={() => {
             setBooking(null)
             setDone(null)
+            setAddons({})
+            setForm((f) => ({ ...f, meal_plan: "", special_requests: "" }))
           }}
           footer={
             done ? (
@@ -794,6 +900,8 @@ export default function PublicListing() {
                 onClick={() => {
                   setBooking(null)
                   setDone(null)
+                  setAddons({})
+                  setForm((f) => ({ ...f, meal_plan: "", special_requests: "" }))
                 }}
               >
                 Done
@@ -814,8 +922,11 @@ export default function PublicListing() {
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-emerald-800">
               <p className="text-lg font-semibold">{done.reservation}</p>
               <p className="mt-1 text-sm">
-                Total {cur()}
-                {inr(done.amount)}
+                Total{" "}
+                <bdi dir="ltr" className="tabular-nums">
+                  {cur()}
+                  {inr(done.amount)}
+                </bdi>
               </p>
             </div>
           ) : (
@@ -855,6 +966,139 @@ export default function PublicListing() {
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
               </label>
+
+              {/* Services — meal plan */}
+              {data.meal_plans.length > 0 && (
+                <div className="sm:col-span-2">
+                  <span className="mb-1.5 block text-sm font-medium text-zinc-600">
+                    Meal plan
+                  </span>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {[{ name: "", label: "No meal plan", price_per_adult: 0 }, ...data.meal_plans].map((mp) => {
+                      const selected = form.meal_plan === mp.name
+                      return (
+                        <button
+                          type="button"
+                          key={mp.name || "none"}
+                          onClick={() => setForm((f) => ({ ...f, meal_plan: mp.name }))}
+                          className={
+                            "flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-start text-sm transition " +
+                            (selected
+                              ? "border-gold-500 bg-gold-50 ring-1 ring-gold-500"
+                              : "border-zinc-200 hover:border-zinc-300")
+                          }
+                        >
+                          <span className="font-medium text-zinc-800">{mp.label}</span>
+                          {mp.price_per_adult > 0 && (
+                            <span className="shrink-0 text-xs text-zinc-500">
+                              +<bdi dir="ltr" className="tabular-nums">{cur()}{inr(mp.price_per_adult)}</bdi>{" "}
+                              per adult / night
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Services — experiences / add-ons */}
+              {data.experiences.length > 0 && (
+                <div className="sm:col-span-2">
+                  <span className="mb-1.5 block text-sm font-medium text-zinc-600">
+                    Add-ons &amp; experiences
+                  </span>
+                  <ul className="space-y-2">
+                    {data.experiences.map((ex) => {
+                      const qty = addons[ex.name] || 0
+                      return (
+                        <li
+                          key={ex.name}
+                          className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 px-3.5 py-2.5"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-zinc-800">
+                              {ex.experience_name}
+                            </p>
+                            <p className="text-xs text-zinc-500">
+                              <bdi dir="ltr" className="tabular-nums">
+                                {cur()}{inr(ex.price * (1 + ex.gst_rate / 100))}
+                              </bdi>{" "}
+                              · taxes in
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <button
+                              type="button"
+                              aria-label="Remove one"
+                              disabled={qty === 0}
+                              onClick={() =>
+                                setAddons((a) => ({ ...a, [ex.name]: Math.max(0, (a[ex.name] || 0) - 1) }))
+                              }
+                              className="flex size-8 items-center justify-center rounded-lg border border-zinc-200 text-zinc-600 disabled:opacity-40"
+                            >
+                              <Minus className="size-4" aria-hidden />
+                            </button>
+                            <span className="w-5 text-center text-sm font-semibold tabular-nums">{qty}</span>
+                            <button
+                              type="button"
+                              aria-label="Add one"
+                              onClick={() =>
+                                setAddons((a) => ({ ...a, [ex.name]: (a[ex.name] || 0) + 1 }))
+                              }
+                              className="flex size-8 items-center justify-center rounded-lg border border-zinc-200 text-zinc-600 hover:border-zinc-300"
+                            >
+                              <Plus className="size-4" aria-hidden />
+                            </button>
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              <label className="block sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-zinc-600">
+                  Special requests (optional)
+                </span>
+                <textarea
+                  className={inputCls + " min-h-20"}
+                  value={form.special_requests}
+                  onChange={(e) => setForm((f) => ({ ...f, special_requests: e.target.value }))}
+                />
+              </label>
+
+              {/* Estimated total (final total is confirmed by the booking) */}
+              {(() => {
+                const q = booking ? results[booking]?.quote : null
+                const nights = q?.nights ?? nightsBetween(search.check_in_date, checkOut)
+                const mp = data.meal_plans.find((m) => m.name === form.meal_plan)
+                const mealEst = mp ? nights * search.adults * mp.price_per_adult : 0
+                const expEst = data.experiences.reduce(
+                  (s, ex) => s + (addons[ex.name] || 0) * ex.price * (1 + ex.gst_rate / 100),
+                  0,
+                )
+                const roomEst = q?.amount_after_tax ?? 0
+                const estTotal = roomEst + mealEst + expEst
+                // Only show an estimate when we have a real room quote — otherwise
+                // the "total" would omit the room and mislead the guest.
+                if (!q) return null
+                return (
+                  <div className="rounded-xl bg-zinc-50 px-4 py-3 sm:col-span-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-zinc-700">Estimated total</span>
+                      <bdi dir="ltr" className="text-lg font-semibold tabular-nums text-gold">
+                        {cur()}{inr(estTotal)}
+                      </bdi>
+                    </div>
+                    <p className="mt-0.5 text-xs text-zinc-400">
+                      Final total is confirmed at booking. Taxes included.
+                    </p>
+                  </div>
+                )
+              })()}
+
               {error && (
                 <p className="text-sm text-rose-600 sm:col-span-2">{error}</p>
               )}
