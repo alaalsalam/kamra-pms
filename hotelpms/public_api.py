@@ -694,12 +694,21 @@ def book(property: str, room_type: str, check_in_date: str,
 	key = (idempotency_key or "").strip() or None
 
 	# Peek at payment terms before insert so Instant can choose status.
-	q = price_quote(
-		property, room_type, check_in_date, check_out_date,
-		int(adults), int(children), meal_plan or None,
-		voucher_code=voucher_code or None,
-	)
-	advance_due, policy = _advance_terms(prop, float(q["amount_after_tax"] or 0))
+	# The pricing quote reads config doctypes the public Guest role cannot
+	# access (Room Type / Meal Plan / Rate Plan / Property) — quoting as Guest
+	# raised a PermissionError the instant a meal plan (auto-selected by the
+	# booking page) was included. Quote under the same governed booking agent
+	# already used for the write below.
+	frappe.set_user("agent@hotelpms.local")  # nosemgrep: frappe-setuser -- controlled user context switch; target user is validated and scope-limited in this flow
+	try:
+		q = price_quote(
+			property, room_type, check_in_date, check_out_date,
+			int(adults), int(children), meal_plan or None,
+			voucher_code=voucher_code or None,
+		)
+		advance_due, policy = _advance_terms(prop, float(q["amount_after_tax"] or 0))
+	finally:
+		frappe.set_user("Guest")  # nosemgrep: frappe-setuser -- controlled user context switch; target user is validated and scope-limited in this flow
 
 	status = None
 	hold_expires_on = None
