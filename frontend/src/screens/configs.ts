@@ -7,6 +7,7 @@ import ReservationDetail from "./ReservationDetail"
 import ReservationSummary from "../components/ReservationSummary"
 import { guestCell, stayCell, roomCell, balanceCell } from "./reservationCells"
 import { cur, taxLabel } from "../lib/money"
+import { Sparkles } from "lucide-react"
 
 export const roomsConfig: ScreenConfig = {
   doctype: "Room",
@@ -484,10 +485,10 @@ export const housekeepingConfig: ScreenConfig = {
   propertyScoped: true,
   orderBy: "creation desc",
   columns: [
-    { field: "name", label: "Task" },
     { field: "room", label: "Room", lookup: { doctype: "Room", labelField: "room_number" } },
     { field: "task_type", label: "Type", badge: true },
-    { field: "priority", label: "Priority" },
+    { field: "priority", label: "Priority", badge: true },
+    { field: "assigned_to_user", label: "Owner", lookup: { doctype: "User", labelField: "full_name" } },
     { field: "status", label: "Status", badge: true },
   ],
   form: [
@@ -497,6 +498,15 @@ export const housekeepingConfig: ScreenConfig = {
     { field: "status", label: "Status", type: "select", options: ["Pending", "In Progress", "Done", "Verified"] },
     { field: "notes", label: "Notes", type: "data" },
   ],
+  onboarding: {
+    icon: Sparkles,
+    title: "No housekeeping tasks yet",
+    message:
+      "Cleaning and inspection tasks appear here automatically when a room needs attention after checkout. Make sure rooms exist first — then tasks flow in, or add one with New.",
+    cta: { label: "Add rooms", to: "/rooms" },
+    gatedNote:
+      "Ask a hotel administrator to add rooms; housekeeping tasks then appear after checkouts.",
+  },
 }
 
 export const billingConfig: ScreenConfig = {

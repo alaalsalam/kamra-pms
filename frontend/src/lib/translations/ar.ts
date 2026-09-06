@@ -450,6 +450,21 @@ export const AR: Record<string, string> = {
   "Ask a hotel administrator to set this up.": "اطلب من مدير الفندق إعداد هذا.",
   "per night": "لليلة",
   "available": "متاحة",
+  // Shared ResourceScreen states (permission-denied + filtered-empty)
+  "You don't have access to this list": "لا تملك صلاحية عرض هذه القائمة",
+  "Your role can't view these records. Ask a hotel administrator if you need access.":
+    "لا يمكن لدورك عرض هذه السجلات. اطلب من مدير الفندق منحك الصلاحية إن لزم.",
+  "No matches for your search or filters.": "لا توجد نتائج مطابقة لبحثك أو عوامل التصفية.",
+  // Housekeeping onboarding
+  "No housekeeping tasks yet": "لا توجد مهام تدبير بعد",
+  "Cleaning and inspection tasks appear here automatically when a room needs attention after checkout. Make sure rooms exist first — then tasks flow in, or add one with New.":
+    "تظهر مهام التنظيف والفحص هنا تلقائيًا عندما تحتاج غرفة إلى عناية بعد المغادرة. تأكد أولًا من وجود غرف — ثم تتدفق المهام، أو أضِف واحدة عبر «جديد».",
+  "Ask a hotel administrator to add rooms; housekeeping tasks then appear after checkouts.":
+    "اطلب من مدير الفندق إضافة غرف؛ عندها تظهر مهام التدبير بعد المغادرات.",
+  "Checkout Clean": "تنظيف بعد المغادرة",
+  "Stayover Clean": "تنظيف أثناء الإقامة",
+  "Deep Clean": "تنظيف عميق",
+  "Inspection": "فحص",
   "Click a day to add a booking, or a booking to edit it.": "انقر على يوم لإضافة حجز، أو على حجز لتعديله.",
   "Jump to date": "انتقل إلى تاريخ",
   "Previous 14 days": "الأيام الـ14 السابقة",

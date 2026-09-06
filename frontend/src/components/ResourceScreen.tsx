@@ -6,9 +6,10 @@ import {
   type ComponentType,
   type ReactNode,
 } from "react"
-import { Columns3, Download, Plus, Search, Trash2 } from "lucide-react"
+import { Columns3, Download, Plus, Search, Trash2, type LucideIcon } from "lucide-react"
 import { Sheet } from "./ui/sheet"
 import { ContextPanel } from "./ContextPanel"
+import { OnboardingEmptyState } from "./OnboardingEmptyState"
 import { getCurrentProperty } from "../lib/api"
 import {
   createResource,
@@ -100,6 +101,17 @@ export interface ScreenConfig {
     onClose: () => void
     onOpenDetail: () => void
   }>
+  /** Zero-data onboarding shown in place of the generic "Nothing here yet." when
+   *  there are no records AND no active search/filter. Its CTA is role-gated by
+   *  the shared OnboardingEmptyState. Opt-in. */
+  onboarding?: {
+    icon?: LucideIcon
+    title: string
+    message: string
+    cta?: { label: string; to: string }
+    secondary?: { label: string; to: string }
+    gatedNote?: string
+  }
 }
 
 const inputCls =
@@ -205,6 +217,7 @@ const BADGE_TONES: Record<string, "green" | "sky" | "amber" | "rose" | "zinc"> =
   Open: "amber", Closed: "zinc", Enquiry: "amber", Completed: "zinc",
   Clean: "green", Dirty: "amber", Inspected: "sky", "Out of Order": "rose",
   "In Progress": "sky", Done: "green",
+  Urgent: "rose", High: "amber", Verified: "green",
 }
 
 const cellValue = (v: unknown) =>
@@ -226,6 +239,7 @@ export function ResourceScreen({
   const [contextRow, setContextRow] = useState<Row | null>(null)
   const [draft, setDraft] = useState<Record<string, unknown>>({})
   const [error, setError] = useState<string | null>(null)
+  const [errorStatus, setErrorStatus] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
   const [linkOptions, setLinkOptions] = useState<Record<string, string[]>>({})
   const [dynOptions, setDynOptions] = useState<Record<string, string[]>>({})
@@ -376,8 +390,12 @@ export function ResourceScreen({
       .then((r) => {
         setRows(r)
         setError(null)
+        setErrorStatus(null)
       })
-      .catch((e) => setError(serverError(e)))
+      .catch((e) => {
+        setError(serverError(e))
+        setErrorStatus((e as { status?: number })?.status ?? null)
+      })
       .finally(() => setLoading(false))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.doctype, debounced, filterVals, page, dateFrom, dateTo])
@@ -526,6 +544,14 @@ export function ResourceScreen({
     }
   }
 
+  const isFiltered = Boolean(
+    debounced ||
+      Object.values(filterVals).some(Boolean) ||
+      dateFrom ||
+      dateTo,
+  )
+  const permissionDenied = errorStatus === 401 || errorStatus === 403
+
   return (
     <div className={"space-y-3" + (contextRow ? " lg:pe-[392px]" : "")}>
       {config.boardNav && <BoardNav />}
@@ -541,7 +567,7 @@ export function ResourceScreen({
         </div>
         <div className="flex items-center gap-2">
           {headerAction}
-          {config.allowCreate !== false && (
+          {config.allowCreate !== false && !permissionDenied && (
             <Button onClick={() => openEdit("new")}>
               <Plus className="size-4" aria-hidden />
               New
@@ -550,7 +576,7 @@ export function ResourceScreen({
         </div>
       </CardHeader>
       <CardContent>
-        {error && !editing && (
+        {error && !editing && !permissionDenied && (
           <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {error}
           </div>
@@ -738,11 +764,24 @@ export function ResourceScreen({
                 ))}
               {!loading && rows.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={config.columns.length}
-                    className="py-6 text-center text-sm text-zinc-400"
-                  >
-                    Nothing here yet.
+                  <td colSpan={config.columns.length} className="p-0">
+                    {permissionDenied ? (
+                      <OnboardingEmptyState
+                        variant="denied"
+                        title="You don't have access to this list"
+                        message="Your role can't view these records. Ask a hotel administrator if you need access."
+                      />
+                    ) : isFiltered ? (
+                      <div className="py-8 text-center text-sm text-zinc-400">
+                        No matches for your search or filters.
+                      </div>
+                    ) : config.onboarding ? (
+                      <OnboardingEmptyState {...config.onboarding} />
+                    ) : (
+                      <div className="py-6 text-center text-sm text-zinc-400">
+                        Nothing here yet.
+                      </div>
+                    )}
                   </td>
                 </tr>
               )}
