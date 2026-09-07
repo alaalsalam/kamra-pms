@@ -18,6 +18,12 @@ export function useKiosk(auto = false) {
   useEffect(() => {
     const fn = (e: Event) => setOn(Boolean((e as CustomEvent).detail))
     window.addEventListener(EVENT, fn)
+    // Re-sync from the DOM once the listener is live. Child effects run before
+    // parent effects, so a floor screen's setKiosk(true) can fire (setting
+    // data-kiosk) before this listener exists — on a hard reload the event is
+    // then missed and the shell would keep its chrome. Reading the attribute
+    // here recovers that lost transition without affecting later toggles.
+    setOn(document.documentElement.dataset.kiosk === "1")
     return () => window.removeEventListener(EVENT, fn)
   }, [])
 

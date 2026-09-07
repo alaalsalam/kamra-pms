@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ChefHat, Check, RefreshCw, Clock, X, Undo2, TriangleAlert, Flame, Lock,
-  Martini, CookingPot, Utensils, Bell, BellOff, Play, Inbox, Maximize2, Minimize2,
+  Martini, CookingPot, Utensils, Bell, BellOff, Play, Inbox, Maximize2, Minimize2, LogOut,
 } from "lucide-react"
 import { call, getCurrentProperty } from "../lib/api"
+import { useAuth } from "../lib/auth"
 import { serverError } from "../lib/resource"
 import { OnboardingEmptyState } from "../components/OnboardingEmptyState"
 import { subscribeRealtime } from "../lib/realtime"
@@ -493,6 +494,7 @@ export default function Kitchen() {
   const { kioskOn, browserFs, toggleBrowserFs } = useFloorFullscreen(rootRef, {
     blockEscape: () => !!openOrderRef.current,
   })
+  const { signOut } = useAuth()
   const now = useNow()
 
   useEffect(() => {
@@ -611,6 +613,10 @@ export default function Kitchen() {
             {browserFs ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           </button>
           <button onClick={load} aria-label="Refresh"><RefreshCw className="size-5 text-zinc-400" /></button>
+          <button onClick={() => void signOut()} aria-label="Sign out" title="Sign out"
+            className="rounded-lg border border-zinc-300 bg-white p-2 text-zinc-500 transition hover:bg-rose-50 hover:text-rose-600">
+            <LogOut className="size-4" />
+          </button>
         </div>
       </div>
 
