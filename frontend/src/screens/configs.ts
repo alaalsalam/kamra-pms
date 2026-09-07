@@ -14,6 +14,7 @@ import {
 } from "./experienceCells"
 import { roomHkStatusCell, roomOccupancyCell } from "./roomCells"
 import { hkStatusCell, hkPriorityCell } from "./hkCells"
+import { statusCellFor } from "./statusCells"
 import { MapPin, PackageSearch, Sparkles } from "lucide-react"
 
 export const roomsConfig: ScreenConfig = {
@@ -334,7 +335,7 @@ export const roomBlocksConfig: ScreenConfig = {
     { field: "reason", label: "Reason", badge: true },
     { field: "from_date", label: "From" },
     { field: "to_date", label: "To" },
-    { field: "block_status", label: "Status", badge: true },
+    { field: "block_status", label: "Status", render: statusCellFor("block_status") },
     { field: "note", label: "Note" },
   ],
   form: [
@@ -391,7 +392,7 @@ export const venueBookingsConfig: ScreenConfig = {
     { field: "event_type", label: "Type", badge: true },
     { field: "event_date", label: "Date" },
     { field: "pax_guaranteed", label: "Pax" },
-    { field: "status", label: "Status", badge: true },
+    { field: "status", label: "Status", render: statusCellFor("status") },
     { field: "grand_total", label: `Quote ${cur()}` },
     { field: "balance_due", label: `Due ${cur()}` },
   ],
@@ -432,11 +433,11 @@ export const lostFoundConfig: ScreenConfig = {
   ],
   columns: [
     { field: "name", label: "Ref" },
-    { field: "condition", label: "Kind", badge: true },
+    { field: "condition", label: "Kind", render: statusCellFor("condition") },
     { field: "item_description", label: "Item" },
     { field: "found_in_room", label: "Room" },
     { field: "found_on", label: "Logged" },
-    { field: "status", label: "Status", badge: true },
+    { field: "status", label: "Status", render: statusCellFor("status") },
   ],
   form: [
     { field: "condition", label: "Kind", type: "select", options: ["Found", "Missing", "Damaged"], required: true },
@@ -467,7 +468,7 @@ export const shiftsConfig: ScreenConfig = {
     { field: "name", label: "Shift" },
     { field: "shift_date", label: "Date" },
     { field: "shift", label: "Slot", badge: true },
-    { field: "status", label: "Status", badge: true },
+    { field: "status", label: "Status", render: statusCellFor("status") },
     { field: "closing_cash", label: `Closing cash ${cur()}` },
   ],
   form: [
@@ -652,7 +653,7 @@ export const groupsConfig: ScreenConfig = {
     { field: "check_in_date", label: "Arrive" },
     { field: "check_out_date", label: "Depart" },
     { field: "cutoff_date", label: "Cutoff" },
-    { field: "status", label: "Status", badge: true },
+    { field: "status", label: "Status", render: statusCellFor("status") },
   ],
   form: [
     { field: "group_name", label: "Group name", type: "data", required: true },

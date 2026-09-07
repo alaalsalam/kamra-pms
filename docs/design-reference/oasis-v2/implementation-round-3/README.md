@@ -65,3 +65,8 @@ touched, 0 app console errors, real APIs preserved, no locked file, POS untouche
 | Screen | Reference | Status | Notes |
 |---|---|---|---|
 | Housekeeping tasks `/housekeeping` | (resource pattern) | **done** (already elevated by 4eb291b; gap-filled) | New `hkCells.tsx`: task `status` (Pending→amber/clock, In Progress→sky/dashed, Done→emerald/check, Verified→brand/badge) + `priority` (Urgent→rose/alert, High→amber/chevrons-up, Medium→sky/equal, Low→zinc/chevron-down) now render as colour **+ icon + text** (was colour-only badges). All 8 status/priority AR keys pre-existed → 0 ar.ts edits. Verified live 1440 AR: 6/6 pills iconed, 0 console err. |
+
+## Package 6b — cross-doctype semantic status sweep
+| Screens | Status | Notes |
+|---|---|---|
+| Groups `/groups`, Room Blocks `/room-blocks`, Lost & Found `/lost-found`, Shifts `/shifts`, Events `/events` | **done** (room-blocks verified live 1440 AR, 0 console err) | New `statusCells.tsx` `statusCellFor(field)` — one keyword-mapped cell (Confirmed/Completed/Returned/Found→emerald·Active→brand·Released/Open/Tentative/Enquiry→sky·In Storage/Missing/Damaged/Pending→amber·Closed→zinc·Cancelled/Lost/Disposed→rose; neutral fallback for unknowns, never worse than the badge it replaces). Wired: Group Booking `status`, Room Block `block_status`, Lost&Found `status`+`condition`, Shift Handover `status`, Venue Booking `status`. All 16 status AR keys pre-existed → 0 ar.ts edits. Lost&Found showed the permission-denied state correctly for System Manager (feature, not defect). |
