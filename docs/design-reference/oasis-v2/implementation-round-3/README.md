@@ -41,3 +41,12 @@ Before/after screenshots: `./before/` and `./after/` (1440 / 1024 / 390, AR + EN
 |---|---|---|---|
 | Reservations `/reservations` | v2-03 | **done** (already elevated by 4eb291b; gap-filled) | ResourceScreen already gives header + filter bar + record count + guest/stay/room/balance cells. Gap-fill: new `reservationStatusCell` renders the lifecycle status as colour **+ icon + text** (Confirmed✓ / Checked-in→ / Checked-out→ / Pending-payment💳 / Waitlist⏱ / Cancelled✕ / No-show🚫), replacing the colour-only badge. Verified 1440 AR, 0 console err. |
 | CRS `/crs` | — | **done** (1440 AR ✓, build ✓, 0 console err) | Full rebuild: ScreenHeader + KPI bar (properties-with-space / rooms-available / from-rate / nights); search-as-hero (stays mounted, dims on re-search); active-query + property-scope chips + Clear; results = property cards → room-type rows with availability badge (colour+icon+text, BookingDialog vocab) + capacity + taxes-in total; invalid-pick guard (children>capacity → non-interactive + reason); role-gated Book; skeleton/empty/error+retry/permission-denied states; inline Sheet books the correct FOREIGN property (openBooking would use current property). Fixed a UTC date bug collapsing 1-night stays. crs_search/create_booking byte-identical. +13 AR keys. |
+
+## Checkpoint 2 (2026-09-07) — 9 screens committed
+Base `4649388` → HEAD `dd15b0c`. Done: **Pkg 0** (Calendar/Tape/Rooms/Booking), **Pkg 1**
+(Today/Dashboard/Apps), **Pkg 2** (Reservations/CRS). Pkg 2 remainder (group/edit/cancel) live inside
+BookingDialog/ReservationDetail already touched. **Next: Guests, then Folio/Billing, Housekeeping,
+POS/Kitchen, Revenue/Events/Reports, Settings, Login + public.** Many remaining internal screens are
+ResourceScreens already elevated by 4eb291b → semantic-status gap-fill pattern (`roomCells` /
+`reservationStatusCell`) applies. Every commit: build green, tsc 0, auth-isolation 5/5 where nav/role
+touched, 0 app console errors, real APIs preserved, no locked file, POS untouched.
