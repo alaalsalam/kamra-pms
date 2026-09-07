@@ -118,3 +118,16 @@ Verified live (1440 AR, Hotel Admin `gm@`). All structurally sound: RTL correct,
 | Assistant `/assistant` | **partial** (1440 AR ✓, non-regressive) | Intro caption ("acting as you · on {hotel}" via fill()) + much copy translated. **Residual (backlog):** a description block still English — "Chat console", "Claude acts with your role limits · same governed tools". Low-visibility admin/AI screen; observer falls back to English so no regression. |
 
 **Live bug fixed in the same pass:** the laundry service `<option>` (Settings) had no `value`, so the observer-translated **Arabic** option text was being sent as `service_type` to `save_laundry_rate` — corrupting the saved value. Fixed with `value={s}` (English value, Arabic display). +122 net-new AR keys (0 duplicates; catalogue now 1,730). Zero logic/API changes otherwise; tsc 0, build green, auth-isolation 5/5.
+
+## Checkpoint 3 (2026-09-07) — 22 commits, base 4649388 → HEAD 6fa902f
+**Comprehensive round-3 coverage.** All: tsc 0, build green, auth-isolation 5/5 where nav/role touched, 0 app console errors (only the benign socket.io 400), real APIs preserved, no locked file, POS untouched.
+
+**Elevated/rebuilt (verified live 1440 AR, evidence in before/ + after/):** Calendar, Tape Chart, Rooms, Booking & Check-in modals, Today, Dashboard, Apps launcher, Reservations, CRS, Guests, Billing, Folio detail, Housekeeping, + cross-doctype semantic status (Groups/Room Blocks/Lost&Found/Shifts/Venue Bookings), Reports, Revenue Reports, Settings, Marketplace, Assistant (partial). GuestJourney verified strong (no rebuild needed). Public `/book` verified already-excellent (structured, not a CSS overlay).
+
+**Defects fixed this round:** P0 Today crash on "Ready" rooms; 2 live data bugs (CRS UTC 1-night collapse; laundry `<option>` sending Arabic into `service_type`); status/report/config i18n leaks; RTL logical-prop swaps.
+
+**Public secondary surfaces — not fully verified (need valid data):** `/stay/:slug` (listing/location slug, not property slug — happy path unverified; its "Listing not found" empty-state string leaks English → minor i18n key to add) and `/checkin/:token` (needs a real pre-arrival token). Both are outside the auth shell; `/book` (the primary funnel) is done.
+
+**Handed to the BACKEND phase (out of frontend lane, logged above):** systemic **₹→SAR** currency (38 hardcoded rupee symbols across api/folio/payments/banquet/…); `guest_journey` English event strings; **Lost & Found 403** for authorized roles (Hotel Admin + System Manager); page-capped aggregate KPIs (Billing Outstanding/Open/count; Guests VIP/returning/lifetime) → need server aggregate endpoints.
+
+**Remaining frontend long-tail (low priority, non-blocking):** Assistant description block; scattered labels on deep-admin screens (Channel Manager, Developers, Setup, Agents, Activity, Kitchen, Inventory, Outlets, Menu items); Banquet/POS individual passes; the `/stay` + `/checkin` happy-path polish. Best done as a dedicated i18n sweep (single owner for ar.ts). Marquee surfaces are complete.
