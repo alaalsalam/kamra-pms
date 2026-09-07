@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
+import bookHero from "../assets/book-hero.jpg"
 import {
   BadgeCheck,
   BedDouble,
@@ -480,14 +481,10 @@ export default function PublicBooking() {
     ? data.locations
     : [{ name: p.property_name, address: p.address_line, google_maps_url: null,
          latitude: p.latitude, longitude: p.longitude, room_types: [] }]
-  // Prefer the booking-engine hero, then gallery / listing cover so /book
-  // never shows an empty grey strip when photos exist elsewhere.
-  const heroSrc =
-    p.hero_image ||
-    p.gallery?.find((g) => g.url)?.url ||
-    data.room_types.find((rt) => rt.media?.[0]?.url)?.media?.[0]?.url ||
-    sites.find((s) => s.cover_image)?.cover_image ||
-    null
+  // Branded booking-engine hero (Riyadh skyline at dusk), bundled locally so it
+  // is stable + optimized and never depends on an external stock URL. Property
+  // gallery / room / cover art still drives the sections below.
+  const heroSrc = bookHero
 
   // the sticky summary always reflects a room: the one the guest picked, or
   // else the first available one, so it is never empty while dates are valid.
