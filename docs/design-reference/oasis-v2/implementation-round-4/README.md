@@ -27,3 +27,12 @@ Per-screen loop: **Inspect live → capture before → analyze journey → redes
   name/phone/address (what the backend accepts) and does NOT invent driver/time inputs (they'd be silently dropped). **Fix
   (backend):** add `driver` (Link/Data) + `delivery_time` (Datetime) fields to POS Order + thread them through `create_order`;
   the frontend delivery form then binds them.
+
+### POS — independent review follow-up (bildfast-review: ship-safe, no P0/P1)
+The review confirmed **all `hotelpms.pos.*` APIs + behavior preserved byte-for-byte** and the `kiosk.ts` change safe (no loop, no auth surface). Applied its P2 findings + the orchestrator's legibility pass in a follow-up commit:
+- **[data integrity] NC `<option>` regained `value={w}`** — the `t()` sweep had made the complimentary-authoriser submit the *translated* label into `mark_nc(authorized_by=…)`; now sends canonical English again.
+- **Escape now closes the pay/reserve/history sheets** (blockEscape + a scoped Escape handler) instead of exiting kiosk; height-fit deferred a frame on kiosk/fullscreen toggles so the pay buttons aren't clipped on Escape-restore.
+- **i18n:** +14 keys — dynamic statuses (Running/Delivered/Fired/Prepared/Voided/Placed) + NC roles (Captain/Chef/Manager/GM/Management) + the KOT toast strings (via `.replace`) no longer leak English.
+- **a11y:** aria-labels on all icon-only buttons (steppers, remove, back, New Bill) → **0 unlabeled icon buttons live**; More-menu items regained the `busy` guard.
+- **Touch/legibility:** filter/area chips + inline void/NC/cancel/reserve controls bumped to ≥44px; menu-card price 13→15px, table-tile number/detail enlarged.
+- Re-verified: tsc 0, build green, **auth-isolation 5/5**, live kiosk no-scroll/no-overflow, 0 app console errors, fresh hash deployed.

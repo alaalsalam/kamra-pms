@@ -220,7 +220,11 @@ export default function POS() {
   const [printNote, setPrintNote] = useState<string | null>(null)
   const [posTab, setPosTab] = useState<"context" | "menu" | "cart">("menu") // 390 pane switch
   const [historyOpen, setHistoryOpen] = useState(false)
-  const { browserFs, toggleBrowserFs } = useFloorFullscreen(rootRef)
+  // A modal/sheet owns Escape while open, so leaving kiosk unwinds one layer
+  // at a time (mirrors the kitchen ticket drawer).
+  const { browserFs, toggleBrowserFs } = useFloorFullscreen(rootRef, {
+    blockEscape: () => settling || reserveOpen || historyOpen,
+  })
 
   // Fill exactly from the POS's own top to the viewport bottom, minus the
   // scroll container's bottom padding. Robust to the demo banner / header /
@@ -234,18 +238,35 @@ export default function POS() {
       const top = el.getBoundingClientRect().top
       el.style.height = `${Math.max(360, window.innerHeight - top - pb)}px`
     }
+    // Chrome toggles (kiosk on/off, fullscreen) reflow the shell a frame after
+    // the event fires, so defer the measure to avoid a stale top offset.
+    const fitDeferred = () => requestAnimationFrame(fit)
     const raf = requestAnimationFrame(fit)
-    const t = setTimeout(fit, 120) // after chrome/kiosk settle
+    const tm = setTimeout(fit, 120) // after initial chrome/kiosk settle
     window.addEventListener("resize", fit)
-    window.addEventListener("hotelpms:kiosk", fit as EventListener)
-    document.addEventListener("fullscreenchange", fit)
+    window.addEventListener("hotelpms:kiosk", fitDeferred as EventListener)
+    document.addEventListener("fullscreenchange", fitDeferred)
     return () => {
-      cancelAnimationFrame(raf); clearTimeout(t)
+      cancelAnimationFrame(raf); clearTimeout(tm)
       window.removeEventListener("resize", fit)
-      window.removeEventListener("hotelpms:kiosk", fit as EventListener)
-      document.removeEventListener("fullscreenchange", fit)
+      window.removeEventListener("hotelpms:kiosk", fitDeferred as EventListener)
+      document.removeEventListener("fullscreenchange", fitDeferred)
     }
   }, [])
+
+  // Escape closes the top open sheet (kiosk Escape is blocked meanwhile).
+  useEffect(() => {
+    if (!(settling || reserveOpen || historyOpen)) return
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return
+      e.stopPropagation()
+      if (historyOpen) setHistoryOpen(false)
+      else if (reserveOpen) setReserveOpen(false)
+      else if (settling) setSettling(false)
+    }
+    window.addEventListener("keydown", onEsc, true)
+    return () => window.removeEventListener("keydown", onEsc, true)
+  }, [settling, reserveOpen, historyOpen])
 
   useEffect(() => {
     call<Outlet[]>("hotelpms.pos.outlets", { property: getCurrentProperty() })
@@ -410,7 +431,10 @@ export default function POS() {
       customer, address, nc: !!kot.nc, nc_by: ncBy, items: kot.fired_items,
     }
     if (!ticket.items?.length) return
-    setPrintNote(`KOT #${ticket.kot_no ?? "—"} saved${printKot ? " and sent to printer" : ". Turn on Print KOT to send it to the kitchen printer"}.`)
+    setPrintNote((printKot
+      ? t("KOT #{n} saved and sent to printer.")
+      : t("KOT #{n} saved. Turn on printing to send it to the kitchen."))
+      .replace("{n}", String(ticket.kot_no ?? "—")))
     if (!printKot) return
     printSavedKot(ticket)
   }
@@ -502,7 +526,7 @@ export default function POS() {
     const last = (detail.kot_tickets || []).at(-1)
     if (last?.items?.length) {
       printSavedKot(last, true)
-      setPrintNote(`Reprinting KOT #${last.kot_no}.`)
+      setPrintNote(t("Reprinting KOT #{n}.").replace("{n}", String(last.kot_no)))
       return
     }
     const items = detail.items.filter((i) => !i.voided && i.kot_status !== "New")
@@ -735,7 +759,7 @@ export default function POS() {
                 aria-label={t("Sign out")} title={t("Sign out")}>
                 <LogOut className="size-4" />
               </button>
-              <Button variant="gold" className="h-10" onClick={() => newOrder()}>
+              <Button variant="gold" className="h-10" aria-label={t("New Bill")} onClick={() => newOrder()}>
                 <Plus className="size-4" /><span className="hidden sm:inline">{t("New Bill")}</span>
                 <kbd className="hidden rounded bg-brand-950/20 px-1 text-[10px] lg:inline">F2</kbd>
               </Button>
@@ -903,7 +927,7 @@ export default function POS() {
               posTab === "cart" ? "flex" : "hidden lg:flex")}>
               {/* cart header */}
               <div className="flex shrink-0 items-center gap-2 border-b border-zinc-200 bg-zinc-50 px-4 py-3">
-                <button onClick={() => setPosTab("menu")} className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-100 lg:hidden"><ChevronLeft className="size-5 rtl:rotate-180" /></button>
+                <button aria-label={t("Back to menu")} onClick={() => setPosTab("menu")} className="grid size-11 place-items-center rounded-lg text-zinc-400 hover:bg-zinc-100 lg:hidden"><ChevronLeft className="size-5 rtl:rotate-180" /></button>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <b className="truncate text-sm">{selected && detail ? orderLabel(detail) : newTargetLabel}</b>
@@ -965,11 +989,11 @@ export default function POS() {
                       <div className="m-3 rounded-xl border border-rose-200 bg-rose-50 p-2">
                         <p className="mb-1 text-xs font-medium text-rose-700">{t("Void")} {voiding.item_name} — {t("reason required")}</p>
                         <div className="flex gap-1.5">
-                          <input autoFocus className={cn(inputCls, "!h-9 text-xs")} placeholder={t("e.g. spilled, wrong item")}
+                          <input autoFocus className={cn(inputCls, "!h-11 text-xs")} placeholder={t("e.g. spilled, wrong item")}
                             value={voidReason} onChange={(e) => setVoidReason(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && confirmVoid()} />
-                          <Button variant="outline" className="!h-9 !px-2 text-xs font-semibold text-rose-600" disabled={busy || !voidReason.trim()} onClick={confirmVoid}>{t("Void")}</Button>
-                          <Button variant="ghost" className="!h-9 !px-2 text-xs" onClick={() => setVoiding(null)}>✕</Button>
+                          <Button variant="outline" className="!h-11 !px-2 text-xs font-semibold text-rose-600" disabled={busy || !voidReason.trim()} onClick={confirmVoid}>{t("Void")}</Button>
+                          <Button variant="ghost" className="!h-11 !px-2 text-xs" onClick={() => setVoiding(null)}>✕</Button>
                         </div>
                       </div>
                     )}
@@ -1002,12 +1026,12 @@ export default function POS() {
                             {selected && <span className="text-[10px] font-semibold text-gold-700">{t("New — not sent")}</span>}
                           </span>
                           <div className="flex items-center overflow-hidden rounded-xl border border-zinc-300">
-                            <button onClick={() => setQty(l.menu_item, -1)} className="grid size-11 place-items-center text-brand-700 active:bg-brand-50"><Minus className="size-4" /></button>
+                            <button aria-label={t("Decrease quantity")} onClick={() => setQty(l.menu_item, -1)} className="grid size-11 place-items-center text-brand-700 active:bg-brand-50"><Minus className="size-4" /></button>
                             <b className="w-8 text-center text-sm tabular-nums">{l.qty}</b>
-                            <button onClick={() => setQty(l.menu_item, 1)} className="grid size-11 place-items-center text-brand-700 active:bg-brand-50"><Plus className="size-4" /></button>
+                            <button aria-label={t("Increase quantity")} onClick={() => setQty(l.menu_item, 1)} className="grid size-11 place-items-center text-brand-700 active:bg-brand-50"><Plus className="size-4" /></button>
                           </div>
                           <span className="w-16 text-end text-[13px] font-semibold tabular-nums">{cur()}{inr(l.qty * l.price)}</span>
-                          <button onClick={() => setQty(l.menu_item, -l.qty)} className="text-zinc-300 hover:text-rose-500"><Trash2 className="size-4" /></button>
+                          <button aria-label={t("Remove item")} onClick={() => setQty(l.menu_item, -l.qty)} className="grid size-11 place-items-center text-zinc-300 hover:text-rose-500"><Trash2 className="size-4" /></button>
                         </div>
                         <input className="mt-1.5 w-full rounded-lg border border-zinc-200 px-2 py-1.5 text-xs" placeholder={t("Instructions")}
                           value={l.instructions} onChange={(e) => setInstr(l.menu_item, e.target.value)} />
@@ -1022,13 +1046,13 @@ export default function POS() {
                 <div className="border-t border-zinc-100 bg-gold-50 p-3">
                   <p className="mb-1 text-xs font-medium text-gold-800">{t("Complimentary (no charge) - who authorized?")}</p>
                   <div className="flex flex-wrap gap-1.5">
-                    <select className={cn(inputCls, "!h-9 !w-28 text-xs")} value={ncBy} onChange={(e) => setNcBy(e.target.value)}>
-                      {["Captain", "Chef", "Manager", "GM", "Management", "Owner"].map((w) => <option key={w}>{t(w)}</option>)}
+                    <select className={cn(inputCls, "!h-11 !w-28 text-xs")} value={ncBy} onChange={(e) => setNcBy(e.target.value)}>
+                      {["Captain", "Chef", "Manager", "GM", "Management", "Owner"].map((w) => <option key={w} value={w}>{t(w)}</option>)}
                     </select>
-                    <input autoFocus className={cn(inputCls, "!h-9 min-w-[8rem] flex-1 text-xs")} placeholder={t("Reference (birthday, complaint #, promo…)")}
+                    <input autoFocus className={cn(inputCls, "!h-11 min-w-[8rem] flex-1 text-xs")} placeholder={t("Reference (birthday, complaint #, promo…)")}
                       value={ncNote} onChange={(e) => setNcNote(e.target.value)} onKeyDown={(e) => e.key === "Enter" && saveNc()} />
-                    <Button variant="outline" className="!h-9 !px-2 text-xs font-semibold text-gold-700" disabled={busy} onClick={() => saveNc()}>{t("NC")}</Button>
-                    <Button variant="ghost" className="!h-9 !px-2 text-xs" onClick={() => setNcOpen(false)}>✕</Button>
+                    <Button variant="outline" className="!h-11 !px-2 text-xs font-semibold text-gold-700" disabled={busy} onClick={() => saveNc()}>{t("NC")}</Button>
+                    <Button variant="ghost" className="!h-11 !px-2 text-xs" onClick={() => setNcOpen(false)}>✕</Button>
                   </div>
                 </div>
               )}
@@ -1036,10 +1060,10 @@ export default function POS() {
                 <div className="border-t border-zinc-100 bg-rose-50 p-3">
                   <p className="mb-1 text-xs font-medium text-rose-700">{t("Cancel this order - reason required")}</p>
                   <div className="flex gap-1.5">
-                    <input autoFocus className={cn(inputCls, "!h-9 text-xs")} placeholder={t("e.g. guest left")}
+                    <input autoFocus className={cn(inputCls, "!h-11 text-xs")} placeholder={t("e.g. guest left")}
                       value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} onKeyDown={(e) => e.key === "Enter" && confirmCancel()} />
-                    <Button variant="outline" className="!h-9 !px-2 text-xs font-semibold text-rose-600" disabled={busy || !cancelReason.trim()} onClick={confirmCancel}>{t("Cancel order")}</Button>
-                    <Button variant="ghost" className="!h-9 !px-2 text-xs" onClick={() => setCancelling(false)}>✕</Button>
+                    <Button variant="outline" className="!h-11 !px-2 text-xs font-semibold text-rose-600" disabled={busy || !cancelReason.trim()} onClick={confirmCancel}>{t("Cancel order")}</Button>
+                    <Button variant="ghost" className="!h-11 !px-2 text-xs" onClick={() => setCancelling(false)}>✕</Button>
                   </div>
                 </div>
               )}
@@ -1099,16 +1123,16 @@ export default function POS() {
                     <MiniAct icon={MoreHorizontal} label={t("More")} disabled={busy || !selected} onClick={() => setMoreOpen((v) => !v)} />
                     {moreOpen && selected && detail && (
                       <div className="absolute bottom-full end-0 z-20 mb-1 w-48 rounded-2xl border border-zinc-200 bg-white p-1 shadow-lg">
-                        <button className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-start text-xs hover:bg-zinc-50"
-                          disabled={detail.status === "Delivered"} onClick={() => { setMoreOpen(false); detail.nc ? saveNc(true) : setNcOpen(true) }}>
+                        <button className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-start text-xs hover:bg-zinc-50 disabled:opacity-40"
+                          disabled={busy || detail.status === "Delivered"} onClick={() => { setMoreOpen(false); detail.nc ? saveNc(true) : setNcOpen(true) }}>
                           <Gift className="size-4 text-gold-600" />{detail.nc ? t("Undo complimentary") : t("Complimentary")}
                         </button>
-                        <button className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-start text-xs hover:bg-zinc-50"
-                          disabled={!detail.kot_no} onClick={() => { setMoreOpen(false); reprintKot() }}>
+                        <button className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-start text-xs hover:bg-zinc-50 disabled:opacity-40"
+                          disabled={busy || !detail.kot_no} onClick={() => { setMoreOpen(false); reprintKot() }}>
                           <Printer className="size-4 text-zinc-500" />{t("Reprint KOT")}
                         </button>
-                        <button className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-start text-xs text-rose-600 hover:bg-rose-50"
-                          onClick={() => { setMoreOpen(false); setCancelling(true); setCancelReason("") }}>
+                        <button className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-start text-xs text-rose-600 hover:bg-rose-50 disabled:opacity-40"
+                          disabled={busy} onClick={() => { setMoreOpen(false); setCancelling(true); setCancelReason("") }}>
                           <Ban className="size-4" />{t("Cancel order")}
                         </button>
                       </div>
@@ -1273,14 +1297,14 @@ function DineInPane(p: {
       <div className="flex flex-wrap gap-1">
         {([["all", `${t("All")} (${tables.length})`], ["available", `${t("Available")} (${p.availableCount})`], ["occupied", `${t("Occupied")} (${tables.length - p.availableCount})`]] as const).map(([k, l]) => (
           <button key={k} onClick={() => p.setTableFilter(k)}
-            className={cn("rounded-full px-2.5 py-1 text-[11px] font-semibold", p.tableFilter === k ? "bg-brand-600 text-white" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200")}>{l}</button>
+            className={cn("rounded-full px-3 py-2 text-[11px] font-semibold", p.tableFilter === k ? "bg-brand-600 text-white" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200")}>{l}</button>
         ))}
       </div>
       {p.areas.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {["All", ...p.areas].map((a) => (
             <button key={a} onClick={() => p.setAreaFilter(a)}
-              className={cn("rounded-full px-2.5 py-1 text-[11px]", p.areaFilter === a ? "bg-zinc-800 font-medium text-white" : "bg-white text-zinc-500 ring-1 ring-zinc-200 hover:ring-zinc-400")}>{a}</button>
+              className={cn("rounded-full px-3 py-2 text-[11px]", p.areaFilter === a ? "bg-zinc-800 font-medium text-white" : "bg-white text-zinc-500 ring-1 ring-zinc-200 hover:ring-zinc-400")}>{a}</button>
           ))}
         </div>
       )}
@@ -1300,8 +1324,8 @@ function DineInPane(p: {
                       <Users className="size-2.5" />{tl.bills}
                     </span>
                   )}
-                  <b className="text-[15px] tabular-nums leading-none">{tl.table}</b>
-                  <span className="truncate text-[10px] font-semibold opacity-70">
+                  <b className="text-base tabular-nums leading-none">{tl.table}</b>
+                  <span className="truncate text-[11px] font-semibold opacity-70">
                     {tl.bills > 0
                       ? <>{cur()}{inr(tl.order_total)}{tl.since ? ` · ${ago(tl.since)}` : ""}</>
                       : tl.state === "reserved" ? `${t("Res")} ${tl.res_time}`
@@ -1342,9 +1366,9 @@ function DineInPane(p: {
             </div>
             {tl.res_phone && <p className="text-[11px] text-violet-700"><bdi dir="ltr">{tl.res_phone}</bdi></p>}
             <div className="flex gap-1.5">
-              <Button className="h-9 flex-1 text-xs" disabled={p.busy} onClick={() => p.seatReservation(tl)}>{t("Seat now")}</Button>
-              <Button variant="outline" className="!h-9 !px-2 text-xs" disabled={p.busy} onClick={() => p.closeReservation(tl, "No Show")}>{t("No show")}</Button>
-              <Button variant="outline" className="!h-9 !px-2 text-xs text-rose-600" disabled={p.busy} onClick={() => p.closeReservation(tl, "Cancelled")}>{t("Cancel")}</Button>
+              <Button className="h-11 flex-1 text-xs" disabled={p.busy} onClick={() => p.seatReservation(tl)}>{t("Seat now")}</Button>
+              <Button variant="outline" className="!h-11 !px-2 text-xs" disabled={p.busy} onClick={() => p.closeReservation(tl, "No Show")}>{t("No show")}</Button>
+              <Button variant="outline" className="!h-11 !px-2 text-xs text-rose-600" disabled={p.busy} onClick={() => p.closeReservation(tl, "Cancelled")}>{t("Cancel")}</Button>
             </div>
           </div>
         )
@@ -1561,9 +1585,9 @@ function MenuCard({ it, qty, onAdd }: { it: MenuItem; qty: number; onAdd: () => 
         <Leaf className={cn("absolute bottom-2 size-3.5", it.is_veg ? "text-emerald-500" : "text-rose-400")} style={{ insetInlineEnd: "0.5rem" }} />
       </div>
       <div className="flex flex-1 flex-col gap-1 p-2.5">
-        <span dir="auto" className="line-clamp-2 text-[12.5px] font-bold leading-snug text-zinc-900">{primary}</span>
-        {secondary && <span dir="auto" className="truncate text-[10px] text-zinc-400">{secondary}</span>}
-        <span className="mt-auto text-[13px] font-bold tabular-nums text-brand-800">{cur()}{inr(it.price)}</span>
+        <span dir="auto" className="line-clamp-2 text-[13px] font-bold leading-snug text-zinc-900">{primary}</span>
+        {secondary && <span dir="auto" className="truncate text-[10.5px] text-zinc-400">{secondary}</span>}
+        <span className="mt-auto text-[15px] font-bold tabular-nums text-brand-800">{cur()}{inr(it.price)}</span>
       </div>
     </button>
   )
