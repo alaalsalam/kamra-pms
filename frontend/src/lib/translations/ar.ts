@@ -385,6 +385,23 @@ export const AR: Record<string, string> = {
     "إلغاء مجاني حتى {cutoff}؛ بعد ذلك تُحصَّل {fee}.",
   "No-show: {charge} charged.": "عدم الحضور: تُحصَّل {charge}.",
   // CRS (central reservations)
+  "Search availability across your properties": "ابحث عن التوافر في كل منشآتك",
+  "Properties with space": "منشآت بها أماكن متاحة",
+  "Rooms available": "غرف متاحة",
+  "Clear property filter": "مسح تصفية المنشأة",
+  "You don't have access to central reservations": "لا تملك صلاحية الوصول إلى الحجوزات المركزية",
+  "Central reservations is for reception and revenue teams. Ask a hotel administrator if you need access.":
+    "الحجوزات المركزية مخصّصة لفريقي الاستقبال والإيرادات. اطلب من مدير المنشأة الصلاحية إن لزم.",
+  "Searching": "جارٍ البحث",
+  "View reservation": "عرض الحجز",
+  "No availability for these dates": "لا يوجد توافر لهذه التواريخ",
+  "No availability at this property for these dates":
+    "لا يوجد توافر في هذه المنشأة لهذه التواريخ",
+  "Try other dates, a shorter stay, or a smaller party.":
+    "جرّب تواريخ أخرى، أو إقامة أقصر، أو عددًا أقل من الضيوف.",
+  "Search all properties": "البحث في كل المنشآت",
+  "Room sleeps up to {n} children — reduce the party or split rooms.":
+    "تتّسع الغرفة حتى {n} أطفال — قلّل عدد الضيوف أو وزّعهم على غرف.",
   "with space": "بها أماكن متاحة",
   "from": "من",
   "total": "الإجمالي",
