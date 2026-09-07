@@ -99,3 +99,13 @@ Found while verifying **GuestJourney** (`/guests/:name`). The frontend is alread
 - **[P2] `guest_journey` builds English event titles/details** ("Booked …", "Checked in · Room …", "Checked out", "Booking cancelled", "via {channel}") that reach the AR journey timeline untranslatable (they're server strings, not observer-reachable). **Fix (backend):** emit structured event `type` + fields (already partly present) and let the frontend render/translate the label, OR localise server-side.
 
 Frontend verdict: GuestJourney needs **no rebuild** — only the backend journey/currency fixes above.
+
+## Health sweep of remaining custom screens (Pkg 9–10) — 2026-09-07
+Verified live (1440 AR, Hotel Admin `gm@`). All structurally sound: RTL correct, no horizontal overflow, only the benign socket.io 400 in console, no ₹ leak in-page (₹ is backend-string-only, logged above).
+- **`/reports` (ملخص المدير)** — English KPI **subtitles** leak (room rate / room sold · total spend / guest · RevPAX explanation · Last 14 days · Month to date). → being fixed (i18n polish agent).
+- **`/revenue-reports`** — checked in the same polish pass.
+- **`/tickets` (تذاكر الخدمة)** — healthy; the English seen is user-entered ticket content (guest requests), not UI chrome.
+- **`/laundry` (المغسلة)** — healthy; no label leaks.
+- **`/settings` (المنشأة)** — structurally fine; scattered UI-label leaks remain (e.g. "Slab threshold", "staff", "Your … data model", "book"; proper-noun integrations TripAdvisor/Razorpay/Frappe/Webhook are acceptable). Also note **Razorpay** appears as a payment option — an India-market gateway; a Saudi/SAR product likely wants a regional PSP (config/backend decision).
+
+**Deep-screen label-i18n backlog (frontend polish, lower priority):** a long tail of scattered English UI labels remains on the Pkg 9–10 config/report/admin screens (Settings, Revenue, Assistant, Marketplace, Channel Manager, Developers, Setup, etc.). None are broken — RTL/overflow/console all clean — they just need exact-match `ar.ts` keys (or `fill()` for interpolated labels). Best done as a dedicated i18n sweep, one owner for `ar.ts`, after the higher-value screens (all done). The marquee operational/financial/guest/calendar surfaces are complete.
