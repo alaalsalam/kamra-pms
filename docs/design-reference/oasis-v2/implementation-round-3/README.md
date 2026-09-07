@@ -50,3 +50,8 @@ POS/Kitchen, Revenue/Events/Reports, Settings, Login + public.** Many remaining 
 ResourceScreens already elevated by 4eb291b → semantic-status gap-fill pattern (`roomCells` /
 `reservationStatusCell`) applies. Every commit: build green, tsc 0, auth-isolation 5/5 where nav/role
 touched, 0 app console errors, real APIs preserved, no locked file, POS untouched.
+
+## Package 4 — Guests · Guest Journey · Check-in · GRC
+| Screen | Reference | Status | Notes |
+|---|---|---|---|
+| Guests `/guests` | — | **done** (1440 AR ✓, build ✓, 0 console err) | Full rebuild: ScreenHeader + 4 KPI tiles (Guests/VIPs/Returning/Lifetime value); debounced server search + VIP/Returning removable filter chips + Clear (results dim, no unmount); table→link-rows to `/guests/:name` (avatar, VIP/Returning badges colour+icon+text, phone/email `<bdi>`, stays·nights, recency chip Upcoming/Last-stay/None, lifetime value); skeleton/empty/error+retry/permission-denied states; table-free responsive (no 390 overflow). `guests_with_stats` unchanged. +10 AR keys. Intended diffs: email search omitted (backend matches name/phone only; email still shown), In-house KPI→Returning, 200-row cap shown as "200+". |
