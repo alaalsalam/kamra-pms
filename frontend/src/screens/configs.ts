@@ -13,6 +13,7 @@ import {
   experienceStatusCell,
 } from "./experienceCells"
 import { roomHkStatusCell, roomOccupancyCell } from "./roomCells"
+import { hkStatusCell, hkPriorityCell } from "./hkCells"
 import { MapPin, PackageSearch, Sparkles } from "lucide-react"
 
 export const roomsConfig: ScreenConfig = {
@@ -540,9 +541,9 @@ export const housekeepingConfig: ScreenConfig = {
   columns: [
     { field: "room", label: "Room", lookup: { doctype: "Room", labelField: "room_number" } },
     { field: "task_type", label: "Type", badge: true },
-    { field: "priority", label: "Priority", badge: true },
+    { field: "priority", label: "Priority", render: hkPriorityCell },
     { field: "assigned_to_user", label: "Owner", lookup: { doctype: "User", labelField: "full_name" } },
-    { field: "status", label: "Status", badge: true },
+    { field: "status", label: "Status", render: hkStatusCell },
   ],
   form: [
     { field: "room", label: "Room", type: "link", linkDoctype: "Room", required: true },
