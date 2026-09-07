@@ -6,6 +6,8 @@ import {
   Brush,
   CalendarDays,
   CircleAlert,
+  DoorClosed,
+  DoorOpen,
   Gauge,
   Link2,
   LogIn,
@@ -24,7 +26,6 @@ import {
   isAuthError,
   setHousekeepingStatus,
   type ReservationRow,
-  type RoomRow,
   type Snapshot,
 } from "../lib/api"
 import { serverError } from "../lib/resource"
@@ -55,24 +56,30 @@ interface DashboardKpi {
   }
 }
 
-const HK_CYCLE: RoomRow["housekeeping_status"][] = [
+// Tap-to-advance order. "Ready" (a room cleaned, inspected and released for
+// sale) sits after Inspected. Keyed as string[] because the locked api.ts
+// RoomRow union is stale and omits "Ready".
+const HK_CYCLE: string[] = [
   "Dirty",
   "Clean",
   "Inspected",
+  "Ready",
   "Out of Order",
 ]
 
 // Housekeeping readiness — same semantic vocabulary as screens/roomCells.tsx
-// (package-0): colour + icon + text, never colour alone.
-const HK_META: Record<
-  RoomRow["housekeeping_status"],
-  { icon: typeof Sparkles; chip: string; swatch: string; ink: string }
-> = {
+// (package-0): colour + icon + text, never colour alone. Record<string> +
+// fallback so a status outside the stale api.ts union (e.g. "Ready") can never
+// crash the cockpit.
+type HkMeta = { icon: typeof Sparkles; chip: string; swatch: string; ink: string }
+const HK_META: Record<string, HkMeta> = {
+  Ready: { icon: DoorOpen, chip: "border-brand-200 bg-brand-50 text-brand-800", swatch: "bg-brand-500", ink: "text-brand-600" },
   Clean: { icon: Sparkles, chip: "border-emerald-200 bg-emerald-50 text-emerald-800", swatch: "bg-emerald-500", ink: "text-emerald-600" },
   Inspected: { icon: BadgeCheck, chip: "border-sky-200 bg-sky-50 text-sky-800", swatch: "bg-sky-500", ink: "text-sky-600" },
   Dirty: { icon: Brush, chip: "border-amber-200 bg-amber-50 text-amber-800", swatch: "bg-amber-500", ink: "text-amber-600" },
   "Out of Order": { icon: Wrench, chip: "border-rose-200 bg-rose-50 text-rose-800", swatch: "bg-rose-500", ink: "text-rose-600" },
 }
+const HK_FALLBACK: HkMeta = { icon: DoorClosed, chip: "border-zinc-200 bg-zinc-50 text-zinc-700", swatch: "bg-zinc-400", ink: "text-zinc-500" }
 
 const inr0 = (n: number) =>
   Number(n).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
@@ -627,10 +634,10 @@ export default function Today() {
                     </button>
                   )
                 }
-                const meta = HK_META[room.housekeeping_status]
+                const meta = HK_META[room.housekeeping_status] ?? HK_FALLBACK
                 const Icon = meta.icon
-                const next =
-                  HK_CYCLE[(HK_CYCLE.indexOf(room.housekeeping_status) + 1) % HK_CYCLE.length]
+                const cur = HK_CYCLE.indexOf(room.housekeeping_status)
+                const next = HK_CYCLE[(cur < 0 ? 0 : cur + 1) % HK_CYCLE.length]
                 return (
                   <button
                     key={room.name}
@@ -654,6 +661,7 @@ export default function Today() {
               className="mt-4"
               items={[
                 { swatch: "bg-brand-700", icon: BedDouble, iconClassName: "text-brand-700", label: "Occupied" },
+                { swatch: HK_META.Ready.swatch, icon: HK_META.Ready.icon, iconClassName: HK_META.Ready.ink, label: "Ready" },
                 { swatch: HK_META.Clean.swatch, icon: HK_META.Clean.icon, iconClassName: HK_META.Clean.ink, label: "Clean" },
                 { swatch: HK_META.Inspected.swatch, icon: HK_META.Inspected.icon, iconClassName: HK_META.Inspected.ink, label: "Inspected" },
                 { swatch: HK_META.Dirty.swatch, icon: HK_META.Dirty.icon, iconClassName: HK_META.Dirty.ink, label: "Dirty" },

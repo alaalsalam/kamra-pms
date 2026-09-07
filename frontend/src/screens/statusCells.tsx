@@ -15,7 +15,6 @@ import {
   Trash2,
   Clock,
   PackageSearch,
-  PackageX,
   Wrench,
 } from "lucide-react"
 import { cn } from "../lib/utils"
@@ -55,7 +54,6 @@ const STATUS_MAP: Record<string, { icon: typeof CheckCircle2; cls: string }> = {
   Cancelled: { icon: XCircle, cls: BAD },
   Lost: { icon: Ban, cls: BAD },
   Disposed: { icon: Trash2, cls: BAD },
-  Missed: { icon: PackageX, cls: BAD },
 }
 
 // Factory: returns a render function reading the given field. Lets one cell

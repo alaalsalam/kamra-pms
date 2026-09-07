@@ -11,6 +11,9 @@ import {
   Clock,
   CreditCard,
   HelpCircle,
+  PauseCircle,
+  Tag,
+  Inbox,
 } from "lucide-react"
 
 // Composite cell renderers for the Oasis reservations table. Kept in a .tsx
@@ -101,7 +104,10 @@ const RES_STATUS: Record<string, { icon: typeof CheckCircle2; cls: string }> = {
   "Checked Out": { icon: LogOut, cls: "bg-sky-50 text-sky-700 ring-sky-200" },
   "Pending Payment": { icon: CreditCard, cls: "bg-amber-50 text-amber-700 ring-amber-200" },
   Waitlist: { icon: Clock, cls: "bg-amber-50 text-amber-700 ring-amber-200" },
+  Held: { icon: PauseCircle, cls: "bg-amber-50 text-amber-700 ring-amber-200" },
   Tentative: { icon: HelpCircle, cls: "bg-sky-50 text-sky-700 ring-sky-200" },
+  Quoted: { icon: Tag, cls: "bg-sky-50 text-sky-700 ring-sky-200" },
+  Requested: { icon: Inbox, cls: "bg-sky-50 text-sky-700 ring-sky-200" },
   Cancelled: { icon: XCircle, cls: "bg-rose-50 text-rose-700 ring-rose-200" },
   "No Show": { icon: Ban, cls: "bg-rose-50 text-rose-700 ring-rose-200" },
 }
