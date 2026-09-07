@@ -3,15 +3,12 @@ import { Link, useNavigate } from "react-router-dom"
 import {
   CheckCircle2,
   Coins,
-  CreditCard,
   FileText,
   FolderOpen,
-  HelpCircle,
   Loader2,
   MoonStar,
   RotateCw,
   Wallet,
-  type LucideIcon,
 } from "lucide-react"
 import { call, getCurrentProperty, isAuthError } from "../lib/api"
 import { listResource, serverError, type Row } from "../lib/resource"
@@ -20,6 +17,7 @@ import { cur, moneyLocale, dateLocale, taxLabel } from "../lib/money"
 import { cn } from "../lib/utils"
 import { ScreenHeader, type HeaderStat } from "../components/ScreenHeader"
 import { OnboardingEmptyState } from "../components/OnboardingEmptyState"
+import { folioStatusCell } from "./folioCells"
 import { Badge } from "../components/ui/badge"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
@@ -50,32 +48,6 @@ function Money({ value, className }: { value: unknown; className?: string }) {
       {cur()}
       {inr(value)}
     </bdi>
-  )
-}
-
-// Folio lifecycle status — semantic colour + icon + text (never colour alone),
-// same vocabulary as screens/roomCells.tsx. Status text stays raw so the live
-// translator localises it via the ar.ts keys.
-const FOLIO_STATUS: Record<string, { icon: LucideIcon; cls: string }> = {
-  Open: { icon: CreditCard, cls: "bg-amber-50 text-amber-700 ring-amber-200" },
-  Settled: { icon: CheckCircle2, cls: "bg-emerald-50 text-emerald-700 ring-emerald-200" },
-  Closed: { icon: CheckCircle2, cls: "bg-emerald-50 text-emerald-700 ring-emerald-200" },
-}
-function folioStatusPill(status: unknown) {
-  const st = String(status ?? "")
-  const m =
-    FOLIO_STATUS[st] ?? { icon: HelpCircle, cls: "bg-zinc-100 text-zinc-600 ring-zinc-200" }
-  const Icon = m.icon
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1",
-        m.cls,
-      )}
-    >
-      <Icon className="size-3.5 shrink-0" aria-hidden />
-      {st}
-    </span>
   )
 }
 
@@ -430,7 +402,7 @@ export default function Billing() {
                           <bdi dir="ltr">{f.name}</bdi>
                         </td>
                         <td className="py-2.5 pe-4">{String(f.guest_name ?? "-")}</td>
-                        <td className="py-2.5 pe-4">{folioStatusPill(f.status)}</td>
+                        <td className="py-2.5 pe-4">{folioStatusCell(f.status)}</td>
                         <td className="py-2.5 pe-4 text-zinc-500">
                           {f.invoice_number ? (
                             <bdi dir="ltr">{String(f.invoice_number)}</bdi>
@@ -483,7 +455,7 @@ export default function Billing() {
                             ) : null}
                           </div>
                         </div>
-                        {folioStatusPill(f.status)}
+                        {folioStatusCell(f.status)}
                       </div>
                       <dl className="mt-2.5 grid grid-cols-3 gap-2 text-xs">
                         <div>

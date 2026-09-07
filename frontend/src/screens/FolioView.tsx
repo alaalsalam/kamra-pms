@@ -1,12 +1,25 @@
 import { Fragment, useCallback, useEffect, useState } from "react"
-import { ArrowLeft, ArrowRightLeft, Printer, Trash2, X } from "lucide-react"
+import {
+  ArrowLeft,
+  ArrowRightLeft,
+  Printer,
+  Receipt,
+  RotateCw,
+  Scale,
+  Trash2,
+  Wallet,
+  X,
+} from "lucide-react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { call, getCurrentProperty } from "../lib/api"
+import { call, getCurrentProperty, isAuthError } from "../lib/api"
 import EditableNationality from "../components/EditableNationality"
 import LinkedRecords from "../components/LinkedRecords"
 import { loadLocale, taxRates } from "../lib/money"
 import { serverError } from "../lib/resource"
-import { Badge } from "../components/ui/badge"
+import { cn } from "../lib/utils"
+import { ScreenHeader, type HeaderStat } from "../components/ScreenHeader"
+import { OnboardingEmptyState } from "../components/OnboardingEmptyState"
+import { folioStatusCell } from "./folioCells"
 import { Button } from "../components/ui/button"
 import { cur, moneyLocale, taxLabel } from "../lib/money"
 import {
@@ -18,6 +31,29 @@ import {
 
 const inr = (n: unknown) =>
   Number(n ?? 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 2 })
+
+/** A currency amount, bidi-isolated so it reads correctly inside RTL. */
+function Amt({ value, className }: { value: unknown; className?: string }) {
+  return (
+    <bdi dir="ltr" className={cn("tabular-nums", className)}>
+      {cur()}
+      {inr(value)}
+    </bdi>
+  )
+}
+
+function FolioSkeleton() {
+  return (
+    <div className="space-y-4" aria-busy="true" aria-label="Loading folio">
+      <div className="h-28 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100" />
+      <div className="h-[28rem] animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100" />
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="h-40 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100" />
+        <div className="h-40 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100" />
+      </div>
+    </div>
+  )
+}
 
 interface InvoiceData {
   folio: {
@@ -185,6 +221,7 @@ export default function FolioView() {
   const [data, setData] = useState<InvoiceData | null>(null)
   const [siblings, setSiblings] = useState<SiblingFolio[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [denied, setDenied] = useState(false)
   const [busy, setBusy] = useState(false)
 
   const [charge, setCharge] = useState({
@@ -209,13 +246,18 @@ export default function FolioView() {
       call<InvoiceData>("hotelpms.api.folio_invoice", { folio: name })
         .then((d) => {
           setData(d)
+          setError(null)
+          setDenied(false)
           setPayment((p) => ({ ...p, amount: String(d.folio.balance || "") }))
           return call<SiblingFolio[]>("hotelpms.api.reservation_folios", {
             reservation: d.stay.reservation,
           })
         })
         .then((s) => s && setSiblings(s))
-        .catch((e) => setError(serverError(e)))
+        .catch((e) => {
+          setDenied(isAuthError(e))
+          setError(serverError(e))
+        })
   }, [name])
 
   useEffect(load, [load])
@@ -262,8 +304,36 @@ export default function FolioView() {
     })
   }
 
-  if (!data)
-    return <p className="py-10 text-center text-sm text-zinc-400">Loading…</p>
+  if (!data) {
+    if (denied)
+      return (
+        <OnboardingEmptyState
+          variant="denied"
+          title="You don't have access to billing"
+          message="Billing is for reception, finance and management. Ask a hotel administrator if you need access."
+        />
+      )
+    if (error)
+      return (
+        <Card>
+          <CardContent className="py-10 text-center">
+            <p className="text-sm font-medium text-rose-700">{error}</p>
+            <Button
+              variant="outline"
+              className="mt-3 min-h-11"
+              onClick={() => {
+                setError(null)
+                setDenied(false)
+                load()
+              }}
+            >
+              <RotateCw className="size-4" aria-hidden /> Try again
+            </Button>
+          </CardContent>
+        </Card>
+      )
+    return <FolioSkeleton />
+  }
 
   const { folio, property, stay, gst_summary } = data
   const doc = data.document
@@ -273,8 +343,80 @@ export default function FolioView() {
   const taxRows = data.tax_summary ?? []
   const open = folio.status === "Open"
 
+  const guestName = data.guest?.name ?? folio.guest_name
+  const roomNo = stay.room ? stay.room.split("-").pop() : null
+  const headerStats: HeaderStat[] = [
+    {
+      key: "grand",
+      label: "Grand total",
+      value: <Amt value={folio.grand_total} />,
+      icon: Receipt,
+      tone: "brand",
+    },
+    {
+      key: "paid",
+      label: "Paid",
+      value: <Amt value={folio.payments_total} />,
+      icon: Wallet,
+      tone: "brand",
+    },
+    {
+      key: "balance",
+      label: "Balance",
+      value: (
+        <Amt
+          value={folio.balance}
+          className={folio.balance > 0 ? "text-gold-700" : undefined}
+        />
+      ),
+      icon: Scale,
+      tone: folio.balance > 0 ? "gold" : "zinc",
+    },
+    {
+      key: "status",
+      label: "Status",
+      value: folioStatusCell(folio.status),
+    },
+  ]
+
   return (
     <div>
+      <div className="mb-4 print:hidden">
+        <ScreenHeader
+          title={
+            <span className="flex flex-wrap items-baseline gap-x-2">
+              <span>{guestName}</span>
+              <bdi
+                dir="ltr"
+                className="font-mono text-base font-semibold text-zinc-400"
+              >
+                {folio.name}
+              </bdi>
+            </span>
+          }
+          context={
+            <>
+              <bdi dir="ltr">{stay.reservation}</bdi>
+              {roomNo && (
+                <>
+                  <span aria-hidden className="text-zinc-300">·</span>
+                  <span>
+                    Room <bdi dir="ltr">{roomNo}</bdi>
+                  </span>
+                </>
+              )}
+              <span aria-hidden className="text-zinc-300">·</span>
+              <bdi dir="ltr" className="font-semibold tabular-nums">
+                {stay.check_in} → {stay.check_out}
+              </bdi>
+              <span className="text-zinc-400">
+                {`${stay.nights} night${stay.nights === 1 ? "" : "s"}`}
+              </span>
+            </>
+          }
+          stats={headerStats}
+        />
+      </div>
       <div className="mb-4 flex items-center justify-between print:hidden">
         <Link
           to="/billing"
@@ -309,14 +451,10 @@ export default function FolioView() {
                       }
                     >
                       {folioLabel(siblings, s)}
-                      <span
-                        className={
-                          "tabular-nums " +
-                          (s.balance > 0 ? "text-amber-600" : "text-zinc-400")
-                        }
-                      >
-                        {cur()}{inr(s.balance)}
-                      </span>
+                      <Amt
+                        value={s.balance}
+                        className={s.balance > 0 ? "text-amber-600" : "text-zinc-400"}
+                      />
                     </Link>
                     {canDelete && (
                       <button
@@ -324,7 +462,7 @@ export default function FolioView() {
                         title="Delete this empty folio"
                         disabled={busy}
                         onClick={() => removeFolio(s)}
-                        className="pr-1.5 text-zinc-300 hover:text-rose-500"
+                        className="pe-1.5 text-zinc-300 hover:text-rose-500"
                       >
                         <X className="size-3.5" />
                       </button>
@@ -573,12 +711,14 @@ export default function FolioView() {
                 </p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <p className="font-mono text-lg font-semibold">
-                {doc?.number ?? folio.invoice_number ?? folio.name}
+                <bdi dir="ltr">
+                  {doc?.number ?? folio.invoice_number ?? folio.name}
+                </bdi>
               </p>
               <p className="text-sm text-zinc-500">
-                {doc?.date ?? ""}
+                <bdi dir="ltr">{doc?.date ?? ""}</bdi>
               </p>
               {property.place_of_supply && (
                 <p className="mt-1 text-xs text-zinc-500">
@@ -591,7 +731,9 @@ export default function FolioView() {
                   is settled.
                 </p>
               )}
-              <Badge tone={open ? "amber" : "green"}>{folio.status}</Badge>
+              <div className="mt-2 flex justify-end">
+                {folioStatusCell(folio.status)}
+              </div>
             </div>
           </div>
 
@@ -617,7 +759,7 @@ export default function FolioView() {
               )}
             </Fact>
             <Fact label="Room">
-              {stay.room ? stay.room.split("-").pop() : "—"}
+              <bdi dir="ltr">{stay.room ? stay.room.split("-").pop() : "—"}</bdi>
               {stay.room_type && (
                 <span className="text-zinc-500">
                   {" "}
@@ -626,8 +768,10 @@ export default function FolioView() {
               )}
             </Fact>
             <Fact label="Stay">
-              {stay.check_in} → {stay.check_out} · {stay.nights} night
-              {stay.nights === 1 ? "" : "s"}
+              <bdi dir="ltr" className="tabular-nums">
+                {stay.check_in} → {stay.check_out}
+              </bdi>{" · "}
+              {`${stay.nights} night${stay.nights === 1 ? "" : "s"}`}
             </Fact>
             <Fact label="Pax / plan">
               {stay.pax || stay.adults || "—"}
@@ -641,9 +785,11 @@ export default function FolioView() {
             </Fact>
             {(stay.arrival || stay.departure) && (
               <Fact label="In / out">
-                {(stay.arrival ?? "").slice(0, 16).replace("T", " ") || "—"}
-                {" → "}
-                {(stay.departure ?? "").slice(0, 16).replace("T", " ") || "—"}
+                <bdi dir="ltr" className="tabular-nums">
+                  {(stay.arrival ?? "").slice(0, 16).replace("T", " ") || "—"}
+                  {" → "}
+                  {(stay.departure ?? "").slice(0, 16).replace("T", " ") || "—"}
+                </bdi>
               </Fact>
             )}
             {data.guest?.guest_id && (
@@ -761,7 +907,7 @@ export default function FolioView() {
                           </span>
                         )}
                         <button
-                          className="ml-auto text-xs text-zinc-400 hover:text-zinc-700"
+                          className="ms-auto text-xs text-zinc-400 hover:text-zinc-700"
                           onClick={() => {
                             setSelected(new Set())
                             setPartVal("")
@@ -821,21 +967,21 @@ export default function FolioView() {
                 })()}
                 <table className="mb-5 w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-200 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                    <tr className="border-b border-zinc-200 text-start text-xs font-medium uppercase tracking-wider text-zinc-500">
                       {open && (
-                        <th className="w-6 py-2 pr-2 print:hidden" aria-label="Select" />
+                        <th className="w-6 py-2 pe-2 print:hidden" aria-label="Select" />
                       )}
-                      <th className="py-2 pr-3">Date</th>
-                      <th className="py-2 pr-3">Item</th>
-                      <th className="hidden py-2 pr-3 print:table-cell">
+                      <th className="py-2 pe-3 text-start">Date</th>
+                      <th className="py-2 pe-3 text-start">Item</th>
+                      <th className="hidden py-2 pe-3 text-start print:table-cell">
                         {doc?.service_code_label ?? "SAC"}
                       </th>
-                      <th className="py-2 pr-3 text-right">Amount {cur()}</th>
-                      <th className="py-2 pr-3 text-right">{taxLabel()} %</th>
-                      <th className="py-2 pr-3 text-right">{taxLabel()} {cur()}</th>
-                      <th className="py-2 text-right">Total {cur()}</th>
+                      <th className="py-2 pe-3 text-end">Amount {cur()}</th>
+                      <th className="py-2 pe-3 text-end">{taxLabel()} %</th>
+                      <th className="py-2 pe-3 text-end">{taxLabel()} {cur()}</th>
+                      <th className="py-2 text-end">Total {cur()}</th>
                       {editable && (
-                        <th className="py-2 pl-3 print:hidden" aria-label="Actions" />
+                        <th className="py-2 ps-3 print:hidden" aria-label="Actions" />
                       )}
                     </tr>
                   </thead>
@@ -844,7 +990,7 @@ export default function FolioView() {
                       <Fragment key={c.name ?? i}>
                         <tr>
                           {open && (
-                            <td className="py-2 pr-2 print:hidden">
+                            <td className="py-2 pe-2 print:hidden">
                               <input
                                 type="checkbox"
                                 className="size-3.5 accent-brand-600"
@@ -861,22 +1007,32 @@ export default function FolioView() {
                               />
                             </td>
                           )}
-                          <td className="py-2 pr-3 text-zinc-500">{c.posting_date}</td>
-                          <td className="py-2 pr-3">
+                          <td className="py-2 pe-3 text-zinc-500">
+                            <bdi dir="ltr">{c.posting_date}</bdi>
+                          </td>
+                          <td className="py-2 pe-3">
                             <span className="font-medium">{c.charge_type}</span>
                             {c.description && (
                               <span className="text-zinc-500"> - {c.description}</span>
                             )}
                           </td>
-                          <td className="hidden py-2 pr-3 font-mono text-xs text-zinc-400 print:table-cell">
+                          <td className="hidden py-2 pe-3 font-mono text-xs text-zinc-400 print:table-cell">
                             {lines.find((l) => l.row === c.name)?.service_code ?? ""}
                           </td>
-                          <td className="py-2 pr-3 text-right">{inr(c.amount)}</td>
-                          <td className="py-2 pr-3 text-right">{c.gst_rate}%</td>
-                          <td className="py-2 pr-3 text-right">{inr(c.gst_amount)}</td>
-                          <td className="py-2 text-right font-medium">{inr(c.total)}</td>
+                          <td className="py-2 pe-3 text-end">
+                            <bdi dir="ltr" className="tabular-nums">{inr(c.amount)}</bdi>
+                          </td>
+                          <td className="py-2 pe-3 text-end">
+                            <bdi dir="ltr" className="tabular-nums">{c.gst_rate}%</bdi>
+                          </td>
+                          <td className="py-2 pe-3 text-end">
+                            <bdi dir="ltr" className="tabular-nums">{inr(c.gst_amount)}</bdi>
+                          </td>
+                          <td className="py-2 text-end font-medium">
+                            <bdi dir="ltr" className="tabular-nums">{inr(c.total)}</bdi>
+                          </td>
                           {editable && (
-                            <td className="relative whitespace-nowrap py-2 pl-3 text-right print:hidden">
+                            <td className="relative whitespace-nowrap py-2 ps-3 text-end print:hidden">
                               {c.charge_type !== "Allowance" &&
                                 (voidFor === c.name ? (
                                   <span className="mr-1.5 inline-flex items-center gap-1">
@@ -945,18 +1101,18 @@ export default function FolioView() {
                     <tr key={h.head}>
                       <td className="py-1">
                         {h.head}
-                        <span className="ml-1.5 text-xs text-zinc-400">
+                        <span className="ms-1.5 text-xs text-zinc-400">
                           {h.lines} line{h.lines === 1 ? "" : "s"}
                         </span>
                       </td>
-                      <td className="py-1 text-right text-zinc-500">
-                        {cur()}{inr(h.amount)}
+                      <td className="py-1 text-end text-zinc-500">
+                        <Amt value={h.amount} />
                       </td>
-                      <td className="py-1 text-right text-zinc-400">
-                        + {cur()}{inr(h.tax)} {taxLabel().toLowerCase()}
+                      <td className="py-1 text-end text-zinc-400">
+                        + <Amt value={h.tax} /> {taxLabel().toLowerCase()}
                       </td>
-                      <td className="py-1 text-right font-medium">
-                        {cur()}{inr(h.total)}
+                      <td className="py-1 text-end font-medium">
+                        <Amt value={h.total} />
                       </td>
                     </tr>
                   ))}
@@ -982,29 +1138,33 @@ export default function FolioView() {
                         ],
                   }))).map((r) => (
                     <tr key={r.rate}>
-                      <td className="py-1.5 pr-3">{r.rate}%</td>
-                      <td className="py-1.5 pr-3 text-right text-zinc-500">
-                        taxable {cur()}{inr(r.taxable)}
+                      <td className="py-1.5 pe-3">
+                        <bdi dir="ltr" className="tabular-nums">{r.rate}%</bdi>
                       </td>
-                      <td className="py-1.5 text-right">
-                        {r.parts
-                          .map((x) => `${x.label} @ ${x.rate}% ${cur()}${inr(x.amount)}`)
-                          .join(" · ")}
+                      <td className="py-1.5 pe-3 text-end text-zinc-500">
+                        taxable <Amt value={r.taxable} />
+                      </td>
+                      <td className="py-1.5 text-end">
+                        <bdi dir="ltr">
+                          {r.parts
+                            .map((x) => `${x.label} @ ${x.rate}% ${cur()}${inr(x.amount)}`)
+                            .join(" · ")}
+                        </bdi>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="space-y-1.5 text-sm sm:text-right">
+            <div className="space-y-1.5 text-sm sm:text-end">
               <p className="text-zinc-500">
-                Charges: <span className="text-zinc-900">{cur()}{inr(folio.charges_total)}</span>
+                Charges: <Amt value={folio.charges_total} className="text-zinc-900" />
               </p>
               <p className="text-zinc-500">
-                {taxLabel()}: <span className="text-zinc-900">{cur()}{inr(folio.tax_total)}</span>
+                {taxLabel()}: <Amt value={folio.tax_total} className="text-zinc-900" />
               </p>
               <p className="text-lg font-semibold">
-                Grand total: {cur()}{inr(folio.grand_total)}
+                Grand total: <Amt value={folio.grand_total} />
               </p>
               {doc?.amount_in_words && (
                 <p className="text-xs italic text-zinc-500">
@@ -1012,16 +1172,15 @@ export default function FolioView() {
                 </p>
               )}
               <p className="text-zinc-500">
-                Paid: {cur()}{inr(folio.payments_total)} · Balance:{" "}
-                <span
+                Paid: <Amt value={folio.payments_total} /> · Balance:{" "}
+                <Amt
+                  value={folio.balance}
                   className={
                     folio.balance > 0
                       ? "font-medium text-amber-600"
                       : "font-medium text-emerald-600"
                   }
-                >
-                  {cur()}{inr(folio.balance)}
-                </span>
+                />
               </p>
             </div>
           </div>
@@ -1035,9 +1194,9 @@ export default function FolioView() {
                 {folio.payments.map((p, i) => (
                   <li key={i} className="flex justify-between py-1.5">
                     <span>
-                      {p.posting_date} · {p.mode}
+                      <bdi dir="ltr">{p.posting_date}</bdi> · {p.mode}
                       {p.payment_kind && p.payment_kind !== "Payment" && (
-                        <span className={"ml-1.5 rounded px-1.5 py-0.5 text-[10px] font-semibold " +
+                        <span className={"ms-1.5 rounded px-1.5 py-0.5 text-[10px] font-semibold " +
                           (p.payment_kind === "Refund" ? "bg-rose-50 text-rose-600"
                             : p.payment_kind === "Security Deposit" ? "bg-violet-50 text-violet-700"
                               : "bg-sky-50 text-sky-700")}>
@@ -1048,7 +1207,10 @@ export default function FolioView() {
                         <span className="text-zinc-400"> · {p.reference}</span>
                       )}
                     </span>
-                    <span className={Number(p.amount) < 0 ? "font-medium text-rose-600" : ""}>{cur()}{inr(p.amount)}</span>
+                    <Amt
+                      value={p.amount}
+                      className={Number(p.amount) < 0 ? "font-medium text-rose-600" : undefined}
+                    />
                   </li>
                 ))}
               </ul>
