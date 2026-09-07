@@ -5,7 +5,7 @@ import GroupControl from "../components/GroupControl"
 import RoomTypeMedia from "../components/RoomTypeMedia"
 import ReservationDetail from "./ReservationDetail"
 import ReservationSummary from "../components/ReservationSummary"
-import { guestCell, stayCell, roomCell, balanceCell } from "./reservationCells"
+import { guestCell, stayCell, roomCell, balanceCell, reservationStatusCell } from "./reservationCells"
 import { cur, taxLabel } from "../lib/money"
 import {
   experiencePriceCell,
@@ -619,7 +619,7 @@ export const reservationsConfig: ScreenConfig = {
     { field: "guest_name", label: "Guest", render: guestCell },
     { field: "check_in_date", label: "Stay", render: stayCell },
     { field: "room", label: "Room", render: roomCell },
-    { field: "status", label: "Status", badge: true },
+    { field: "status", label: "Status", render: reservationStatusCell },
     { field: "amount_after_tax", label: "Balance", render: balanceCell },
   ],
   extraFields: ["check_out_date", "advance_paid", "source", "booking_type"],
