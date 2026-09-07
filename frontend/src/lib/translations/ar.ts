@@ -1350,6 +1350,34 @@ export const AR: Record<string, string> = {
   "Targets vs performance, and where the business comes from.": "المستهدفات مقابل الأداء ومصادر الأعمال.",
   "Who brings the business - revenue and share by channel.": "مصادر الأعمال — الإيرادات والحصة حسب القناة.",
   "Download the current view as CSV (Excel-ready)": "تنزيل العرض الحالي بصيغة CSV جاهزة لـ Excel",
+  // Manager flash — KPI labels + subtitles
+  "RevPAX": "إيراد النزيل",
+  "Report date": "تاريخ التقرير",
+  "room rate / room sold": "سعر الغرفة / غرفة مباعة",
+  "room rev / room": "إيراد الغرف / غرفة",
+  "total spend / guest · {pax} pax": "إجمالي الإنفاق / ضيف · {pax} شخص",
+  "{sold} of {total} rooms": "{sold} من {total} غرفة",
+  "room {room} · F&B {fnb} · other {other}": "غرف {room} · أطعمة {fnb} · أخرى {other}",
+  "RevPAX = total guest spend (room + F&B + experiences + extras) per in-house guest - the ancillary revenue RevPAR can't see.":
+    "RevPAX = إجمالي إنفاق الضيف (غرفة + أطعمة ومشروبات + تجارب + إضافات) لكل نزيل مقيم — الإيراد الإضافي الذي لا يُظهره RevPAR.",
+  // Revenue reports — budget vs actual + contribution
+  "Metric": "المقياس",
+  "Edit targets": "تعديل المستهدفات",
+  "Set targets": "تحديد المستهدفات",
+  "Save targets": "حفظ المستهدفات",
+  "Saving...": "جارٍ الحفظ...",
+  "No targets set for {period} yet - \"Set targets\" to track attainment.":
+    "لم تُحدَّد مستهدفات لـ {period} بعد — استخدم «تحديد المستهدفات» لتتبع نسبة التحقيق.",
+  "Contribution analysis": "تحليل المساهمة",
+  "Room nights": "ليالي الغرف",
+  "Share %": "الحصة %",
+  "Group by": "التجميع حسب",
+  "source": "المصدر",
+  "company": "الشركة",
+  "travel agent": "وكيل السفر",
+  // Budget-vs-actual metric names (from reports.py)
+  "Room Revenue": "إيراد الغرف",
+  "ADR / ARR": "متوسط السعر اليومي",
 
   // Complete rendered-screen coverage (public booking, operations and setup)
   "5 Star": "٥ نجوم",

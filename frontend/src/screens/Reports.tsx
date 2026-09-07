@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react"
 import { Printer } from "lucide-react"
 import { call, getCurrentProperty } from "../lib/api"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { cur, moneyLocale } from "../lib/money"
+import { useT, fill } from "../lib/i18n"
 
 /** The manager's flash - sign it off with the morning chai. */
 
@@ -52,7 +53,7 @@ function trendValue(row: Day, key: SortKey): number {
   }
 }
 
-function Stat(props: { label: string; value: string; sub?: string }) {
+function Stat(props: { label: string; value: string; sub?: ReactNode }) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3">
       <div className="text-xl font-semibold">{props.value}</div>
@@ -69,6 +70,7 @@ export default function Reports() {
   const [sortBy, setSortBy] = useState<SortKey>("date")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
   const [d, setD] = useState<Flash | null>(null)
+  const { t } = useT()
 
   const load = useCallback(() => {
     call<Flash>("hotelpms.reports.manager_flash", {
@@ -87,19 +89,20 @@ export default function Reports() {
   }, [d, sortBy, sortDirection])
 
   if (!d) return <p className="py-10 text-center text-zinc-400">Loading…</p>
-  const t = d.today
+  const today = d.today
 
   const trendCols: {
     key: SortKey
     label: string
     align: "left" | "right"
+    money?: boolean
     last?: boolean
   }[] = [
     { key: "date", label: "Date", align: "left" },
     { key: "occupancy", label: "Occ %", align: "right" },
-    { key: "adr", label: `ADR ${cur()}`, align: "right" },
-    { key: "revpar", label: `RevPAR ${cur()}`, align: "right" },
-    { key: "revenue", label: `Revenue ${cur()}`, align: "right", last: true },
+    { key: "adr", label: "ADR", align: "right", money: true },
+    { key: "revpar", label: "RevPAR", align: "right", money: true },
+    { key: "revenue", label: "Revenue", align: "right", money: true, last: true },
   ]
 
   return (
@@ -123,25 +126,41 @@ export default function Reports() {
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <Stat
           label="Occupancy"
-          value={`${t?.occupancy_pct ?? 0}%`}
-          sub={`${t?.rooms_sold ?? 0} of ${d.total_rooms} rooms`}
+          value={`${today?.occupancy_pct ?? 0}%`}
+          sub={fill(t("{sold} of {total} rooms"), {
+            sold: today?.rooms_sold ?? 0,
+            total: d.total_rooms,
+          })}
         />
-        <Stat label="ADR" value={`${cur()}${inr(t?.adr ?? 0)}`} sub="room rate / room sold" />
-        <Stat label="RevPAR" value={`${cur()}${inr(t?.revpar ?? 0)}`} sub="room rev / room" />
+        <Stat
+          label="ADR"
+          value={`${cur()}${inr(today?.adr ?? 0)}`}
+          sub={t("room rate / room sold")}
+        />
+        <Stat
+          label="RevPAR"
+          value={`${cur()}${inr(today?.revpar ?? 0)}`}
+          sub={t("room rev / room")}
+        />
         <Stat
           label="RevPAX"
-          value={`${cur()}${inr(t?.revpax ?? 0)}`}
-          sub={`total spend / guest · ${t?.pax ?? 0} pax`}
+          value={`${cur()}${inr(today?.revpax ?? 0)}`}
+          sub={fill(t("total spend / guest · {pax} pax"), { pax: today?.pax ?? 0 })}
         />
         <Stat
           label="Revenue (day)"
-          value={`${cur()}${inr(t?.total_revenue ?? 0)}`}
-          sub={`room ${cur()}${inr(t?.room_revenue ?? 0)} · F&B ${cur()}${inr(t?.fnb_revenue ?? 0)} · other ${cur()}${inr(t?.other_revenue ?? 0)}`}
+          value={`${cur()}${inr(today?.total_revenue ?? 0)}`}
+          sub={fill(t("room {room} · F&B {fnb} · other {other}"), {
+            room: `${cur()}${inr(today?.room_revenue ?? 0)}`,
+            fnb: `${cur()}${inr(today?.fnb_revenue ?? 0)}`,
+            other: `${cur()}${inr(today?.other_revenue ?? 0)}`,
+          })}
         />
       </div>
       <p className="-mt-2 mb-4 text-xs text-zinc-400">
-        RevPAX = total guest spend (room + F&amp;B + experiences + extras) per
-        in-house guest - the ancillary revenue RevPAR can't see.
+        {t(
+          "RevPAX = total guest spend (room + F&B + experiences + extras) per in-house guest - the ancillary revenue RevPAR can't see.",
+        )}
       </p>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -152,7 +171,7 @@ export default function Reports() {
           <CardContent className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wider text-zinc-500">
+                <tr className="border-b border-zinc-200 text-start text-xs uppercase tracking-wider text-zinc-500">
                   {trendCols.map((col) => {
                     const active = sortBy === col.key
                     const arrow = active ? (sortDirection === "asc" ? " ▲" : " ▼") : ""
@@ -166,7 +185,7 @@ export default function Reports() {
                               : "descending"
                             : "none"
                         }
-                        className={`py-1.5 ${col.last ? "" : "pr-3"} ${col.align === "right" ? "text-right" : ""}`}
+                        className={`py-1.5 ${col.last ? "" : "pe-3"} ${col.align === "right" ? "text-end" : ""}`}
                       >
                         <button
                           type="button"
@@ -180,7 +199,8 @@ export default function Reports() {
                           }}
                           className="inline-flex items-center gap-1 hover:text-brand-600"
                         >
-                          {col.label}
+                          {t(col.label)}
+                          {col.money && <bdi dir="ltr">{cur()}</bdi>}
                           {arrow}
                         </button>
                       </th>
@@ -191,11 +211,13 @@ export default function Reports() {
               <tbody className="divide-y divide-zinc-100">
                 {sortedTrend.map((r) => (
                   <tr key={r.date}>
-                    <td className="py-1.5 pr-3 text-zinc-500">{r.date}</td>
-                    <td className="py-1.5 pr-3 text-right">{r.occupancy_pct}</td>
-                    <td className="py-1.5 pr-3 text-right">{inr(r.adr)}</td>
-                    <td className="py-1.5 pr-3 text-right">{inr(r.revpar)}</td>
-                    <td className="py-1.5 text-right">
+                    <td className="py-1.5 pe-3 text-zinc-500">
+                      <bdi dir="ltr">{r.date}</bdi>
+                    </td>
+                    <td className="py-1.5 pe-3 text-end">{r.occupancy_pct}</td>
+                    <td className="py-1.5 pe-3 text-end">{inr(r.adr)}</td>
+                    <td className="py-1.5 pe-3 text-end">{inr(r.revpar)}</td>
+                    <td className="py-1.5 text-end">
                       {inr(r.room_revenue + r.fnb_revenue + r.other_revenue)}
                     </td>
                   </tr>
@@ -203,11 +225,11 @@ export default function Reports() {
               </tbody>
               <tfoot>
                 <tr className="border-t border-zinc-300 font-medium">
-                  <td className="py-2 pr-3">Month to date</td>
-                  <td className="py-2 pr-3 text-right">{d.mtd.occupancy_pct}</td>
-                  <td className="py-2 pr-3 text-right">{inr(d.mtd.adr)}</td>
-                  <td className="py-2 pr-3 text-right">{inr(d.mtd.revpar)}</td>
-                  <td className="py-2 text-right">
+                  <td className="py-2 pe-3">Month to date</td>
+                  <td className="py-2 pe-3 text-end">{d.mtd.occupancy_pct}</td>
+                  <td className="py-2 pe-3 text-end">{inr(d.mtd.adr)}</td>
+                  <td className="py-2 pe-3 text-end">{inr(d.mtd.revpar)}</td>
+                  <td className="py-2 text-end">
                     {inr(d.mtd.room_revenue + d.mtd.fnb_revenue + d.mtd.other_revenue)}
                   </td>
                 </tr>
@@ -222,10 +244,10 @@ export default function Reports() {
               <CardTitle>Movement</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-2 text-sm">
-              <div>Arrivals <span className="float-right font-medium">{d.movement.arrivals}</span></div>
-              <div>Departures <span className="float-right font-medium">{d.movement.departures}</span></div>
-              <div>In-house <span className="float-right font-medium">{d.movement.in_house}</span></div>
-              <div>No-shows <span className="float-right font-medium">{d.movement.no_shows}</span></div>
+              <div>Arrivals <span className="float-end font-medium">{d.movement.arrivals}</span></div>
+              <div>Departures <span className="float-end font-medium">{d.movement.departures}</span></div>
+              <div>In-house <span className="float-end font-medium">{d.movement.in_house}</span></div>
+              <div>No-shows <span className="float-end font-medium">{d.movement.no_shows}</span></div>
             </CardContent>
           </Card>
           <Card>
@@ -262,7 +284,7 @@ export default function Reports() {
                       style={{ width: `${Math.min(100, o.occupancy_pct)}%` }}
                     />
                   </div>
-                  <span className="w-10 text-right">{o.occupancy_pct}%</span>
+                  <span className="w-10 text-end">{o.occupancy_pct}%</span>
                 </div>
               ))}
             </CardContent>

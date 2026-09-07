@@ -6,6 +6,7 @@ import { serverError } from "../lib/resource"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { cur, moneyLocale } from "../lib/money"
+import { useT, fill } from "../lib/i18n"
 
 const inr = (n: number) =>
   Number(n || 0).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
@@ -51,6 +52,7 @@ function attainTone(a: number | null) {
 
 function BudgetVsActual() {
   const property = getCurrentProperty()
+  const { t } = useT()
   const [period, setPeriod] = useState(() =>
     new Date().toISOString().slice(0, 7),
   )
@@ -131,26 +133,26 @@ function BudgetVsActual() {
         {data && (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <th className="py-2 pr-3">Metric</th>
-                <th className="py-2 pr-3 text-right">Actual (MTD)</th>
-                <th className="py-2 pr-3 text-right">Target</th>
-                <th className="py-2 pr-3 text-right">Variance</th>
-                <th className="py-2 text-right">Attainment</th>
+              <tr className="border-b border-zinc-200 text-start text-xs font-medium uppercase tracking-wider text-zinc-500">
+                <th className="py-2 pe-3">Metric</th>
+                <th className="py-2 pe-3 text-end">Actual (MTD)</th>
+                <th className="py-2 pe-3 text-end">Target</th>
+                <th className="py-2 pe-3 text-end">Variance</th>
+                <th className="py-2 text-end">Attainment</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
               {data.rows.map((r) => (
                 <tr key={r.key}>
-                  <td className="py-2.5 pr-3 font-medium">{r.metric}</td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums">
+                  <td className="py-2.5 pe-3 font-medium">{r.metric}</td>
+                  <td className="py-2.5 pe-3 text-end tabular-nums">
                     {fmt(r.key, r.actual)}
                   </td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums">
+                  <td className="py-2.5 pe-3 text-end tabular-nums">
                     {edit ? (
                       <input
                         type="number"
-                        className="w-24 rounded-lg border border-zinc-300 px-2 py-1 text-right text-sm"
+                        className="w-24 rounded-lg border border-zinc-300 px-2 py-1 text-end text-sm"
                         value={draft[r.key] ?? ""}
                         onChange={(e) =>
                           setDraft((d) => ({ ...d, [r.key]: e.target.value }))
@@ -164,7 +166,7 @@ function BudgetVsActual() {
                   </td>
                   <td
                     className={
-                      "py-2.5 pr-3 text-right tabular-nums " +
+                      "py-2.5 pe-3 text-end tabular-nums " +
                       (r.variance >= 0 ? "text-emerald-600" : "text-rose-600")
                     }
                   >
@@ -172,7 +174,7 @@ function BudgetVsActual() {
                       ? (r.variance >= 0 ? "+" : "") + fmt(r.key, r.variance)
                       : "-"}
                   </td>
-                  <td className="py-2.5 text-right">
+                  <td className="py-2.5 text-end">
                     {r.attainment !== null ? (
                       <span
                         className={
@@ -200,8 +202,10 @@ function BudgetVsActual() {
         )}
         {data && !data.has_budget && !edit && (
           <p className="mt-3 text-xs text-zinc-400">
-            No targets set for {data.period} yet - "Set targets" to track
-            attainment.
+            {fill(
+              t('No targets set for {period} yet - "Set targets" to track attainment.'),
+              { period: data.period },
+            )}
           </p>
         )}
       </CardContent>
@@ -284,22 +288,22 @@ function Contribution() {
         {data && data.rows.length > 0 && (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <th className="py-2 pr-3">{BY_OPTIONS.find((o) => o.key === by)?.label.replace("By ", "")}</th>
-                <th className="py-2 pr-3 text-right">Bookings</th>
-                <th className="py-2 pr-3 text-right">Room nights</th>
-                <th className="py-2 pr-3 text-right">Revenue {cur()}</th>
-                <th className="py-2 text-right">Share</th>
+              <tr className="border-b border-zinc-200 text-start text-xs font-medium uppercase tracking-wider text-zinc-500">
+                <th className="py-2 pe-3">{BY_OPTIONS.find((o) => o.key === by)?.label.replace("By ", "")}</th>
+                <th className="py-2 pe-3 text-end">Bookings</th>
+                <th className="py-2 pe-3 text-end">Room nights</th>
+                <th className="py-2 pe-3 text-end">Revenue {cur()}</th>
+                <th className="py-2 text-end">Share %</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
               {data.rows.map((r) => (
                 <tr key={r.label}>
-                  <td className="py-2.5 pr-3 font-medium">{r.label}</td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums">{r.bookings}</td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums">{r.room_nights}</td>
-                  <td className="py-2.5 pr-3 text-right tabular-nums">{inr(r.revenue)}</td>
-                  <td className="py-2.5 text-right">
+                  <td className="py-2.5 pe-3 font-medium">{r.label}</td>
+                  <td className="py-2.5 pe-3 text-end tabular-nums">{r.bookings}</td>
+                  <td className="py-2.5 pe-3 text-end tabular-nums">{r.room_nights}</td>
+                  <td className="py-2.5 pe-3 text-end tabular-nums">{inr(r.revenue)}</td>
+                  <td className="py-2.5 text-end">
                     <div className="flex items-center justify-end gap-2">
                       <div className="h-1.5 w-16 overflow-hidden rounded-full bg-zinc-100">
                         <div
@@ -307,7 +311,7 @@ function Contribution() {
                           style={{ width: `${r.share}%` }}
                         />
                       </div>
-                      <span className="w-10 text-right tabular-nums">{r.share}%</span>
+                      <span className="w-10 text-end tabular-nums">{r.share}%</span>
                     </div>
                   </td>
                 </tr>
@@ -315,11 +319,11 @@ function Contribution() {
             </tbody>
             <tfoot>
               <tr className="border-t border-zinc-200 font-semibold">
-                <td className="py-2 pr-3">Total</td>
+                <td className="py-2 pe-3">Total</td>
                 <td />
                 <td />
-                <td className="py-2 pr-3 text-right tabular-nums">{inr(data.total)}</td>
-                <td className="py-2 text-right">100%</td>
+                <td className="py-2 pe-3 text-end tabular-nums">{inr(data.total)}</td>
+                <td className="py-2 text-end">100%</td>
               </tr>
             </tfoot>
           </table>
