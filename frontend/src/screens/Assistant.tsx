@@ -14,6 +14,7 @@ import {
 } from "../lib/api"
 import { cn } from "../lib/utils"
 import { Markdown } from "../lib/markdown"
+import { fill, useT } from "../lib/i18n"
 
 const TOOL_LABEL: Record<string, string> = {
   availability: "Checked availability",
@@ -58,7 +59,7 @@ function AiSetupNotice() {
   return (
     <div className="mx-auto max-w-lg space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
       <p className="font-semibold">HotelPMS Assistant needs an AI key to start working.</p>
-      <ol className="list-decimal space-y-1 pl-5">
+      <ol className="list-decimal space-y-1 ps-5">
         <li>
           Get an OpenAI API key at{" "}
           <a
@@ -86,6 +87,7 @@ function AiSetupNotice() {
 }
 
 export default function Assistant() {
+  const { t } = useT()
   const [convos, setConvos] = useState<ConversationSummary[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [msgs, setMsgs] = useState<ChatMsg[]>([])
@@ -280,8 +282,9 @@ export default function Assistant() {
           <Sparkles className="size-4 text-brand-600" />
           <span className="text-sm font-semibold">HotelPMS Assistant</span>
           <span className="text-[10px] uppercase tracking-wider text-zinc-400">
-            your AI, acting as you · on{" "}
-            {getCurrentProperty()?.split("-")[0] ?? "your hotel"}
+            {fill(t("your AI, acting as you · on {hotel}"), {
+              hotel: getCurrentProperty()?.split("-")[0] ?? t("your hotel"),
+            })}
           </span>
         </div>
 
@@ -307,7 +310,7 @@ export default function Assistant() {
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="rounded-lg border border-zinc-200 px-3 py-2 text-left text-sm text-zinc-600 hover:border-brand-400 hover:bg-zinc-50"
+                    className="rounded-lg border border-zinc-200 px-3 py-2 text-start text-sm text-zinc-600 hover:border-brand-400 hover:bg-zinc-50"
                   >
                     {s}
                   </button>
@@ -332,8 +335,8 @@ export default function Assistant() {
                 className={cn(
                   "max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm",
                   m.role === "user"
-                    ? "whitespace-pre-wrap rounded-br-md bg-brand-600 text-white"
-                    : "space-y-2 rounded-bl-md border border-zinc-100 bg-white text-zinc-800",
+                    ? "whitespace-pre-wrap rounded-ee-md bg-brand-600 text-white"
+                    : "space-y-2 rounded-es-md border border-zinc-100 bg-white text-zinc-800",
                 )}
               >
                 {m.role === "assistant" ? (

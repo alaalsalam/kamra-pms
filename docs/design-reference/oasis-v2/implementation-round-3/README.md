@@ -109,3 +109,12 @@ Verified live (1440 AR, Hotel Admin `gm@`). All structurally sound: RTL correct,
 - **`/settings` (المنشأة)** — structurally fine; scattered UI-label leaks remain (e.g. "Slab threshold", "staff", "Your … data model", "book"; proper-noun integrations TripAdvisor/Razorpay/Frappe/Webhook are acceptable). Also note **Razorpay** appears as a payment option — an India-market gateway; a Saudi/SAR product likely wants a regional PSP (config/backend decision).
 
 **Deep-screen label-i18n backlog (frontend polish, lower priority):** a long tail of scattered English UI labels remains on the Pkg 9–10 config/report/admin screens (Settings, Revenue, Assistant, Marketplace, Channel Manager, Developers, Setup, etc.). None are broken — RTL/overflow/console all clean — they just need exact-match `ar.ts` keys (or `fill()` for interpolated labels). Best done as a dedicated i18n sweep, one owner for `ar.ts`, after the higher-value screens (all done). The marquee operational/financial/guest/calendar surfaces are complete.
+
+## Package 10 polish — Settings · Assistant · Marketplace i18n + a live laundry bug
+| Screen | Status | Notes |
+|---|---|---|
+| Settings `/settings` | **much improved** (1440 AR ✓) | "Slab threshold / staff / Your data model / book" and most config copy now AR. Residual English = AI-provider brands (OpenRouter/Groq/Ollama), model slugs, and laundry garment config-data (Blazer/Kurta/…) — all acceptable. |
+| Marketplace `/marketplace` | **much improved** (1440 AR ✓) | The marketing hero copy ("Every app included, plus channels/payments/accounting/country packs") + card copy now AR. Residual = OTA/integration brand names (Agoda/Expedia/Airbnb/Meta/HeyKoala) + a minor "connect" — acceptable. |
+| Assistant `/assistant` | **partial** (1440 AR ✓, non-regressive) | Intro caption ("acting as you · on {hotel}" via fill()) + much copy translated. **Residual (backlog):** a description block still English — "Chat console", "Claude acts with your role limits · same governed tools". Low-visibility admin/AI screen; observer falls back to English so no regression. |
+
+**Live bug fixed in the same pass:** the laundry service `<option>` (Settings) had no `value`, so the observer-translated **Arabic** option text was being sent as `service_type` to `save_laundry_rate` — corrupting the saved value. Fixed with `value={s}` (English value, Arabic display). +122 net-new AR keys (0 duplicates; catalogue now 1,730). Zero logic/API changes otherwise; tsc 0, build green, auth-isolation 5/5.

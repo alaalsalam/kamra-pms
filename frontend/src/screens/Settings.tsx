@@ -12,6 +12,7 @@ import { Button } from "../components/ui/button"
 import ImageField from "../components/ImageField"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { cur, moneyLocale, taxLabel } from "../lib/money"
+import { fill, useT } from "../lib/i18n"
 
 /** Settings hub - everything an owner/GM configures once and forgets:
  * property identity, tax, privacy, booking page, payments, agent access. */
@@ -628,6 +629,7 @@ interface LaundryRate {
 /** The laundry rate card - what the floor team quotes and bills from.
  * Express defaults to 1.5x when its column is left blank. */
 function LaundryRatesCard({ property }: { property: string }) {
+  const { t } = useT()
   const [rates, setRates] = useState<LaundryRate[]>([])
   const [form, setForm] = useState<{ name?: string; item: string; service: string; rate: string; express: string } | null>(null)
   const [err, setErr] = useState<string | null>(null)
@@ -721,11 +723,11 @@ function LaundryRatesCard({ property }: { property: string }) {
               value={form.item} onChange={(e) => setForm({ ...form, item: e.target.value })} autoFocus />
             <select className="rounded-lg border border-zinc-300 px-2 py-1.5 text-sm"
               value={form.service} onChange={(e) => setForm({ ...form, service: e.target.value })}>
-              {["Wash & Iron", "Dry Clean", "Iron Only"].map((s) => <option key={s}>{s}</option>)}
+              {["Wash & Iron", "Dry Clean", "Iron Only"].map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <input className="w-24 rounded-lg border border-zinc-300 px-2 py-1.5 text-sm" placeholder={`Rate ${cur()}`} inputMode="numeric"
+            <input className="w-24 rounded-lg border border-zinc-300 px-2 py-1.5 text-sm" placeholder={`${t("Rate")} ${cur()}`} inputMode="numeric"
               value={form.rate} onChange={(e) => setForm({ ...form, rate: e.target.value.replace(/[^\d.]/g, "") })} />
-            <input className="w-28 rounded-lg border border-zinc-300 px-2 py-1.5 text-sm" placeholder={`Express ${cur()} (opt)`} inputMode="numeric"
+            <input className="w-28 rounded-lg border border-zinc-300 px-2 py-1.5 text-sm" placeholder={`${t("Express")} ${cur()} ${t("(opt)")}`} inputMode="numeric"
               value={form.express} onChange={(e) => setForm({ ...form, express: e.target.value.replace(/[^\d.]/g, "") })} />
             <Button disabled={!form.item.trim() || !form.rate} onClick={save}>Save</Button>
             <Button variant="ghost" onClick={() => setForm(null)}>Cancel</Button>
@@ -736,9 +738,9 @@ function LaundryRatesCard({ property }: { property: string }) {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-zinc-400">
+              <tr className="text-start text-xs uppercase tracking-wide text-zinc-400">
                 <th className="py-1.5">Item</th><th>Service</th>
-                <th className="text-right">Rate</th><th className="text-right">Express</th><th />
+                <th className="text-end">Rate</th><th className="text-end">Express</th><th />
               </tr>
             </thead>
             <tbody>
@@ -746,14 +748,14 @@ function LaundryRatesCard({ property }: { property: string }) {
                 <tr key={r.name} className="border-t border-zinc-100">
                   <td className="py-1.5 font-medium">{r.item_name}</td>
                   <td className="text-zinc-500">{r.service_type}</td>
-                  <td className="text-right tabular-nums">{cur()}{r.rate.toLocaleString(moneyLocale())}</td>
-                  <td className="text-right tabular-nums text-zinc-500">{cur()}{r.express_rate.toLocaleString(moneyLocale())}</td>
-                  <td className="text-right">
+                  <td className="text-end tabular-nums">{cur()}{r.rate.toLocaleString(moneyLocale())}</td>
+                  <td className="text-end tabular-nums text-zinc-500">{cur()}{r.express_rate.toLocaleString(moneyLocale())}</td>
+                  <td className="text-end">
                     <button className="text-xs font-medium text-brand-700 hover:underline"
                       onClick={() => setForm({ name: r.name, item: r.item_name, service: r.service_type, rate: String(r.rate), express: "" })}>
                       Edit
                     </button>
-                    <button className="ml-2 text-xs text-zinc-400 hover:text-rose-600"
+                    <button className="ms-2 text-xs text-zinc-400 hover:text-rose-600"
                       onClick={async () => { await call("hotelpms.laundry.delete_laundry_rate", { name: r.name }); load() }}>
                       Delete
                     </button>
@@ -779,6 +781,7 @@ interface HurdleTier {
 /** Demand tiers: at each occupancy threshold, quotes carry a premium and
  * manual rates can't undercut the hurdle (the minimum sell rate). */
 function HurdleRatesCard({ property }: { property: string }) {
+  const { t: tr } = useT()
   const [tiers, setTiers] = useState<HurdleTier[]>([])
   const [form, setForm] = useState<{ name?: string; from: string; premium: string; min: string } | null>(null)
   const [err, setErr] = useState<string | null>(null)
@@ -845,29 +848,32 @@ function HurdleRatesCard({ property }: { property: string }) {
         )}
         {tiers.length === 0 ? (
           <p className="py-3 text-sm text-zinc-400">
-            No tiers yet — e.g. `at 80% occupancy, +15% premium, minimum ${cur()}6,000`.
+            {fill(
+              tr("No tiers yet — e.g. `at 80% occupancy, +15% premium, minimum {amount}`."),
+              { amount: `${cur()}6,000` },
+            )}
           </p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-zinc-400">
+              <tr className="text-start text-xs uppercase tracking-wide text-zinc-400">
                 <th className="py-1.5">When occupancy ≥</th>
-                <th className="text-right">Premium</th>
-                <th className="text-right">Hurdle (min rate)</th><th />
+                <th className="text-end">Premium</th>
+                <th className="text-end">Hurdle (min rate)</th><th />
               </tr>
             </thead>
             <tbody>
               {tiers.map((t) => (
                 <tr key={t.name} className="border-t border-zinc-100">
                   <td className="py-1.5 font-medium">{t.occupancy_from}%</td>
-                  <td className="text-right tabular-nums">{t.premium_pct ? `+${t.premium_pct}%` : "—"}</td>
-                  <td className="text-right tabular-nums">{t.min_rate ? `${cur()}${t.min_rate.toLocaleString(moneyLocale())}` : "—"}</td>
-                  <td className="text-right">
+                  <td className="text-end tabular-nums">{t.premium_pct ? `+${t.premium_pct}%` : "—"}</td>
+                  <td className="text-end tabular-nums">{t.min_rate ? `${cur()}${t.min_rate.toLocaleString(moneyLocale())}` : "—"}</td>
+                  <td className="text-end">
                     <button className="text-xs font-medium text-brand-700 hover:underline"
                       onClick={() => setForm({ name: t.name, from: String(t.occupancy_from), premium: String(t.premium_pct || ""), min: String(t.min_rate || "") })}>
                       Edit
                     </button>
-                    <button className="ml-2 text-xs text-zinc-400 hover:text-rose-600"
+                    <button className="ms-2 text-xs text-zinc-400 hover:text-rose-600"
                       onClick={async () => { await call("hotelpms.api.delete_hurdle_rate", { name: t.name }); load() }}>
                       Delete
                     </button>

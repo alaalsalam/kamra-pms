@@ -5,6 +5,7 @@ import { Check, Copy, Store, Terminal } from "lucide-react"
 import { call, getCurrentProperty } from "../lib/api"
 import { serverError } from "../lib/resource"
 import { Button } from "../components/ui/button"
+import { fill, useT } from "../lib/i18n"
 
 interface Card {
   kind: "module" | "connector" | "bench_app" | "enterprise"
@@ -70,6 +71,7 @@ function Copyable({ value }: { value: string }) {
 }
 
 export default function Marketplace() {
+  const { t } = useT()
   const [cats, setCats] = useState<Category[]>([])
   const [error, setError] = useState<string | null>(null)
   const [wizard, setWizard] = useState<string | null>(null) // card name
@@ -109,7 +111,7 @@ export default function Marketplace() {
       <header className="flex items-center gap-2">
         <Store className="size-5 text-brand-600" aria-hidden />
         <h1 className="text-xl font-semibold tracking-tight">Marketplace</h1>
-        <p className="ml-2 text-sm text-zinc-500">
+        <p className="ms-2 text-sm text-zinc-500">
           Every app included, plus the AI, channels, payments, accounting and
           country packs you can plug in.
         </p>
@@ -163,7 +165,7 @@ export default function Marketplace() {
                     <div className="mt-3 flex items-center gap-2 rounded-lg bg-zinc-900 px-3 py-2 font-mono text-xs text-zinc-100">
                       <Terminal className="size-3.5 shrink-0 text-zinc-400" />
                       <span className="truncate">{c.command}</span>
-                      <span className="ml-auto">
+                      <span className="ms-auto">
                         <Copyable value={c.command} />
                       </span>
                     </div>
@@ -171,7 +173,9 @@ export default function Marketplace() {
                   {c.kind === "enterprise" && (
                     enquired.has(c.name) ? (
                       <p className="mt-3 text-sm text-violet-700">
-                        Thanks - our team will reach out about {c.name}.
+                        {fill(t("Thanks - our team will reach out about {name}."), {
+                          name: c.name,
+                        })}
                       </p>
                     ) : (
                       <Button
@@ -235,7 +239,7 @@ export default function Marketplace() {
                       {!result ? (
                         <>
                           <label className="block text-xs font-medium text-zinc-600">
-                            {c.channel} number
+                            {fill(t("{channel} number"), { channel: c.channel })}
                           </label>
                           <input
                             className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm"
