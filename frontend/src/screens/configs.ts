@@ -3,8 +3,10 @@ import BillingRulesEditor from "../components/BillingRulesEditor"
 import EventLinks from "../components/EventLinks"
 import GroupControl from "../components/GroupControl"
 import RoomTypeMedia from "../components/RoomTypeMedia"
+import { createElement } from "react"
 import ReservationDetail from "./ReservationDetail"
 import ReservationSummary from "../components/ReservationSummary"
+import { BlockableRoomField } from "../components/BlockableRoomField"
 import { guestCell, stayCell, roomCell, balanceCell, reservationStatusCell } from "./reservationCells"
 import { cur, taxLabel } from "../lib/money"
 import {
@@ -338,11 +340,19 @@ export const roomBlocksConfig: ScreenConfig = {
     { field: "block_status", label: "Status", render: statusCellFor("block_status") },
     { field: "note", label: "Note" },
   ],
+  // dates first so the room picker can offer only rooms free for that range
   form: [
-    { field: "room", label: "Room", type: "link", linkDoctype: "Room", required: true },
-    { field: "reason", label: "Reason", type: "select", options: ["House Use", "VIP Hold", "Owner", "Maintenance", "Other"], required: true },
     { field: "from_date", label: "From date", type: "date", required: true },
     { field: "to_date", label: "To date (exclusive)", type: "date", required: true },
+    {
+      field: "room",
+      label: "Room",
+      type: "link",
+      linkDoctype: "Room",
+      required: true,
+      render: (p) => createElement(BlockableRoomField, p),
+    },
+    { field: "reason", label: "Reason", type: "select", options: ["House Use", "VIP Hold", "Owner", "Maintenance", "Other"], required: true },
     { field: "block_status", label: "Status", type: "select", options: ["Active", "Released"] },
     { field: "note", label: "Note", type: "data" },
   ],

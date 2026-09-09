@@ -38,6 +38,12 @@ export interface FieldSpec {
   required?: boolean
   hint?: string // for image: recommended size/format
   dependsOn?: (draft: Record<string, unknown>) => boolean
+  /** Custom input renderer (gets the live draft) — overrides the default field. */
+  render?: (props: {
+    value: unknown
+    onChange: (v: unknown) => void
+    draft: Record<string, unknown>
+  }) => ReactNode
 }
 
 export interface ScreenConfig {
@@ -907,14 +913,23 @@ export function ResourceScreen({
                       {spec.label}
                       {spec.required && <span className="text-rose-500"> *</span>}
                     </span>
-                    <FieldInput
-                      spec={spec}
-                      value={draft[spec.field]}
-                      onChange={(v) =>
-                        setDraft((d) => ({ ...d, [spec.field]: v }))
-                      }
-                      linkOptions={linkOptions}
-                    />
+                    {spec.render ? (
+                      spec.render({
+                        value: draft[spec.field],
+                        onChange: (v) =>
+                          setDraft((d) => ({ ...d, [spec.field]: v })),
+                        draft,
+                      })
+                    ) : (
+                      <FieldInput
+                        spec={spec}
+                        value={draft[spec.field]}
+                        onChange={(v) =>
+                          setDraft((d) => ({ ...d, [spec.field]: v }))
+                        }
+                        linkOptions={linkOptions}
+                      />
+                    )}
                   </label>
                 ))}
               </div>
