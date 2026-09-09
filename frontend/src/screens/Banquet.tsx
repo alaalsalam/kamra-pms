@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { qty } from "../lib/i18n"
+import { dateMin } from "../lib/date"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import {
   AlertTriangle,
@@ -753,6 +754,7 @@ function EnquirySheet({
               type="date"
               className={inputCls}
               value={form.event_date}
+              min={dateMin(form.event_date)}
               onChange={(e) => set("event_date", e.target.value)}
             />
           </Field>
@@ -761,6 +763,7 @@ function EnquirySheet({
               type="date"
               className={inputCls}
               value={form.end_date}
+              min={form.event_date || dateMin(form.end_date)}
               onChange={(e) => set("end_date", e.target.value)}
             />
           </Field>

@@ -18,6 +18,7 @@ import {
   type FunctionStatus,
 } from "../lib/api"
 import { serverError } from "../lib/resource"
+import { dateMin } from "../lib/date"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Sheet } from "../components/ui/sheet"
@@ -295,6 +296,7 @@ function AvailabilitySheet({ onClose }: { onClose: () => void }) {
             type="date"
             className={inputCls}
             value={form.event_date}
+            min={dateMin(form.event_date)}
             onChange={(e) => set("event_date", e.target.value)}
           />
         </Field>
@@ -303,6 +305,7 @@ function AvailabilitySheet({ onClose }: { onClose: () => void }) {
             type="date"
             className={inputCls}
             value={form.end_date}
+            min={form.event_date || dateMin(form.end_date)}
             onChange={(e) => set("end_date", e.target.value)}
           />
         </Field>

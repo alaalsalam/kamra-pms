@@ -11,6 +11,7 @@ import { Sheet } from "./ui/sheet"
 import { ContextPanel } from "./ContextPanel"
 import { OnboardingEmptyState } from "./OnboardingEmptyState"
 import { getCurrentProperty } from "../lib/api"
+import { dateMin, plusDays } from "../lib/date"
 import {
   createResource,
   deleteResource,
@@ -38,6 +39,11 @@ export interface FieldSpec {
   required?: boolean
   hint?: string // for image: recommended size/format
   dependsOn?: (draft: Record<string, unknown>) => boolean
+  /** For "date" fields: floor the picker at today (past days greyed out). */
+  minToday?: boolean
+  /** For "date" fields: floor the picker at another field's value (+ offset days). */
+  minField?: string
+  minFieldOffset?: number
   /** Custom input renderer (gets the live draft) — overrides the default field. */
   render?: (props: {
     value: unknown
@@ -125,11 +131,28 @@ const inputCls =
   "focus:outline-2 focus:outline-offset-1 focus:outline-brand-600 " +
   "disabled:bg-zinc-50 disabled:text-zinc-400"
 
+/** min= for a forward date field: today (floor), or another field's value + offset. */
+function dateFieldMin(
+  spec: FieldSpec,
+  draft: Record<string, unknown>,
+): string | undefined {
+  if (spec.type !== "date") return undefined
+  if (spec.minToday) return dateMin(draft[spec.field] as string | undefined)
+  if (spec.minField) {
+    const start = draft[spec.minField]
+    return start
+      ? plusDays(String(start), spec.minFieldOffset ?? 0)
+      : dateMin(draft[spec.field] as string | undefined)
+  }
+  return undefined
+}
+
 function FieldInput(props: {
   spec: FieldSpec
   value: unknown
   onChange: (v: unknown) => void
   linkOptions: Record<string, string[]>
+  min?: string
 }) {
   const { spec, value, onChange } = props
   switch (spec.type) {
@@ -178,6 +201,7 @@ function FieldInput(props: {
           type="date"
           className={inputCls}
           value={String(value ?? "")}
+          min={props.min}
           onChange={(e) => onChange(e.target.value)}
         />
       )
@@ -928,6 +952,7 @@ export function ResourceScreen({
                           setDraft((d) => ({ ...d, [spec.field]: v }))
                         }
                         linkOptions={linkOptions}
+                        min={dateFieldMin(spec, draft)}
                       />
                     )}
                   </label>

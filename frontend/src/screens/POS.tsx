@@ -7,6 +7,7 @@ import {
   ChevronLeft, Sparkles, BadgeCheck, LogOut,
 } from "lucide-react"
 import { call, getCurrentProperty } from "../lib/api"
+import { dateTimeMin } from "../lib/date"
 import { useAuth } from "../lib/auth"
 import { subscribeRealtime } from "../lib/realtime"
 import { serverError } from "../lib/resource"
@@ -1214,7 +1215,7 @@ export default function POS() {
                 </select>
               </label>
               <label className="block text-xs font-semibold text-zinc-500">{t("When")}
-                <input className={cn(inputCls, "mt-1")} type="datetime-local" value={resForm.at} onChange={(e) => setResForm({ ...resForm, at: e.target.value })} />
+                <input className={cn(inputCls, "mt-1")} type="datetime-local" value={resForm.at} min={dateTimeMin(resForm.at)} onChange={(e) => setResForm({ ...resForm, at: e.target.value })} />
               </label>
             </div>
             <div className="grid grid-cols-2 gap-3">

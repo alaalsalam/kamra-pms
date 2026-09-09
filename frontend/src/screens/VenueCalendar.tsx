@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Button } from "../components/ui/button"
 import { Sheet } from "../components/ui/sheet"
 import { cur, moneyLocale } from "../lib/money"
+import { dateMin } from "../lib/date"
 
 const DAYS = 14
 const EVENT_TYPES = ["Wedding", "Reception", "Sangeet", "Mehendi", "Engagement",
@@ -373,6 +374,7 @@ export default function VenueCalendar() {
               </Field>
               <Field label="Date">
                 <input type="date" className={inputCls} value={draft.event_date}
+                  min={dateMin(draft.event_date)}
                   onChange={(e) => setField("event_date", e.target.value)} />
               </Field>
             </div>

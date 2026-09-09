@@ -27,6 +27,7 @@ import {
 } from "../lib/api"
 import { Button } from "./ui/button"
 import { cn } from "../lib/utils"
+import { dateMin, dateTimeMin } from "../lib/date"
 import { primaryLabel } from "../lib/dir"
 import { cur, moneyLocale, taxLabel } from "../lib/money"
 import { useT, fill, qty } from "../lib/i18n"
@@ -906,6 +907,7 @@ export function BookingDialog(props: {
                       type="date"
                       className={inputCls}
                       value={form.check_in_date}
+                      min={dateMin(form.check_in_date)}
                       onChange={(e) => set("check_in_date", e.target.value)}
                     />
                   </Field>
@@ -1340,6 +1342,7 @@ export function BookingDialog(props: {
                                   type="datetime-local"
                                   className={inputCls}
                                   value={extra.arrival_datetime}
+                                  min={dateTimeMin(extra.arrival_datetime)}
                                   onChange={(e) =>
                                     setX("arrival_datetime", e.target.value)
                                   }

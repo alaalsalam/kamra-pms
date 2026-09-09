@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { Plus, Trash2 } from "lucide-react"
 
 import { call } from "../lib/api"
+import { dateMin } from "../lib/date"
 import { useRealtime } from "../lib/realtime"
 import { listResource, serverError, type Row } from "../lib/resource"
 import LinkedRecords from "./LinkedRecords"
@@ -206,6 +207,7 @@ export default function GroupControl({
               type="date"
               className="rounded-lg border border-zinc-300 px-2 py-1 text-xs"
               value={cutoff}
+              min={dateMin(cutoff)}
               onChange={(e) => setCutoff(e.target.value)}
               title="Unsold blocked rooms release back to sale after this date"
             />

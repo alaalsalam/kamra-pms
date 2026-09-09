@@ -36,6 +36,7 @@ import {
   type ReceiptDocument,
 } from "../lib/api"
 import { listResource, serverError, type Row } from "../lib/resource"
+import { dateMin, dateTimeMin } from "../lib/date"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Sheet } from "../components/ui/sheet"
@@ -395,6 +396,7 @@ function DetailTab({
                 type="date"
                 className={inputCls}
                 value={get("event_date", "")}
+                min={dateMin(get("event_date", ""))}
                 onChange={(e) => set("event_date", e.target.value)}
               />
             </Field>
@@ -403,6 +405,7 @@ function DetailTab({
                 type="date"
                 className={inputCls}
                 value={get("end_date", "")}
+                min={get("event_date", "") || dateMin(get("end_date", ""))}
                 onChange={(e) => set("end_date", e.target.value || null)}
               />
             </Field>
@@ -445,6 +448,7 @@ function DetailTab({
                 type="datetime-local"
                 className={inputCls}
                 value={String(get("setup_from", "")).replace(" ", "T").slice(0, 16)}
+                min={dateTimeMin(get("setup_from", ""))}
                 onChange={(e) => set("setup_from", e.target.value || null)}
               />
             </Field>
@@ -453,6 +457,7 @@ function DetailTab({
                 type="datetime-local"
                 className={inputCls}
                 value={String(get("teardown_by", "")).replace(" ", "T").slice(0, 16)}
+                min={dateTimeMin(get("teardown_by", ""))}
                 onChange={(e) => set("teardown_by", e.target.value || null)}
               />
             </Field>
@@ -547,6 +552,7 @@ function DetailTab({
                 type="date"
                 className={inputCls}
                 value={get("follow_up_date", "")}
+                min={dateMin(get("follow_up_date", ""))}
                 onChange={(e) => set("follow_up_date", e.target.value || null)}
               />
             </Field>
@@ -559,6 +565,7 @@ function DetailTab({
                   type="date"
                   className={inputCls}
                   value={get("tentative_until", "")}
+                  min={dateMin(get("tentative_until", ""))}
                   onChange={(e) =>
                     set("tentative_until", e.target.value || null)
                   }

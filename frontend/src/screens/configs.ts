@@ -342,8 +342,8 @@ export const roomBlocksConfig: ScreenConfig = {
   ],
   // dates first so the room picker can offer only rooms free for that range
   form: [
-    { field: "from_date", label: "From date", type: "date", required: true },
-    { field: "to_date", label: "To date (exclusive)", type: "date", required: true },
+    { field: "from_date", label: "From date", type: "date", required: true, minToday: true },
+    { field: "to_date", label: "To date (exclusive)", type: "date", required: true, minField: "from_date", minFieldOffset: 1 },
     {
       field: "room",
       label: "Room",
@@ -412,8 +412,8 @@ export const venueBookingsConfig: ScreenConfig = {
     { field: "venue", label: "Hall", type: "link", linkDoctype: "Venue", required: true },
     { field: "event_type", label: "Event type", type: "select", options: ["Wedding", "Reception", "Sangeet", "Mehendi", "Engagement", "Conference", "Seminar", "Training", "Product Launch", "Birthday", "Anniversary", "Corporate Offsite", "Exhibition", "Other"] },
     { field: "event_name", label: "Event name", type: "data" },
-    { field: "event_date", label: "Event date", type: "date", required: true },
-    { field: "end_date", label: "Ends (multi-day only)", type: "date" },
+    { field: "event_date", label: "Event date", type: "date", required: true, minToday: true },
+    { field: "end_date", label: "Ends (multi-day only)", type: "date", minField: "event_date" },
     { field: "customer_name", label: "Customer name", type: "data", required: true },
     { field: "customer_phone", label: "Customer phone", type: "data" },
     { field: "customer_email", label: "Customer email", type: "data" },
@@ -421,7 +421,7 @@ export const venueBookingsConfig: ScreenConfig = {
     { field: "attendees", label: "Expected pax", type: "int" },
     { field: "pax_guaranteed", label: "Guaranteed pax", type: "int" },
     { field: "status", label: "Status", type: "select", options: FUNCTION_STATUSES },
-    { field: "follow_up_date", label: "Next follow-up", type: "date" },
+    { field: "follow_up_date", label: "Next follow-up", type: "date", minToday: true },
     { field: "grand_total", label: "Quote total", type: "readonly" },
     { field: "advance_received", label: "Received", type: "readonly" },
     { field: "balance_due", label: "Balance due", type: "readonly" },

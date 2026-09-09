@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react"
 import { call, getCurrentProperty, isAuthError } from "../lib/api"
+import { dateMin, checkoutMin } from "../lib/date"
 import { listResource, serverError } from "../lib/resource"
 import { useAuth } from "../lib/auth"
 import { useEnabledModules } from "../lib/modules"
@@ -1233,11 +1234,13 @@ export default function TapeChart() {
               <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-zinc-600">Check-in</span>
                 <input type="date" className={inputCls} value={draft.check_in}
+                  min={dateMin(draft.check_in)}
                   onChange={(e) => setDraft({ ...draft, check_in: e.target.value })} />
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-zinc-600">Check-out</span>
                 <input type="date" className={inputCls} value={draft.check_out}
+                  min={checkoutMin(draft.check_in)}
                   onChange={(e) => setDraft({ ...draft, check_out: e.target.value })} />
               </label>
             </div>
