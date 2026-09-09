@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { X, LogIn, LogOut, FileText, PanelRightOpen } from "lucide-react"
-import { checkOut } from "../lib/api"
+import { X, LogIn, LogOut, FileText, PanelRightOpen, Wallet } from "lucide-react"
+import { checkOut, call } from "../lib/api"
 import { serverError } from "../lib/resource"
 import { cur, moneyLocale } from "../lib/money"
 import { Badge } from "./ui/badge"
@@ -14,6 +14,13 @@ const s = (v: unknown) => (v == null ? "" : String(v))
 const n = (v: unknown) => Number(v ?? 0)
 const money = (v: unknown) =>
   n(v).toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
+
+// Modes the Folio Payment doctype actually accepts (Mada isn't in its Select
+// options yet — it 417s server-side, so it's left out until the backend adds it).
+const PAY_MODES = ["Cash", "Card", "Bank Transfer", "Payment Link"]
+const payInputCls =
+  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm " +
+  "focus:outline-2 focus:outline-offset-1 focus:outline-brand-600"
 
 const STATUS_TONE: Record<string, "green" | "brand" | "amber" | "sky" | "zinc" | "rose"> = {
   Confirmed: "brand",
@@ -74,8 +81,48 @@ export default function ReservationSummary({
   const nights = nightsBetween(ci, co)
   const roomNo = row.room ? s(row.room).split("-").pop() : ""
   const total = n(row.amount_after_tax)
-  const advance = n(row.advance_paid)
-  const balance = Math.max(0, total - advance)
+  const [advancePaid, setAdvancePaid] = useState(n(row.advance_paid))
+  const balance = Math.max(0, total - advancePaid)
+
+  // collect payment on arrival (record_advance opens the folio + posts the money)
+  const [payAmount, setPayAmount] = useState(balance > 0 ? String(balance) : "")
+  const [payMode, setPayMode] = useState("Cash")
+  const [payRef, setPayRef] = useState("")
+  const [collecting, setCollecting] = useState(false)
+  const [collectedNow, setCollectedNow] = useState<number | null>(null)
+
+  const canCollect =
+    status !== "Cancelled" &&
+    status !== "Checked Out" &&
+    status !== "No Show" &&
+    balance > 0
+
+  async function collect() {
+    const amt = Number(payAmount)
+    if (!(amt > 0)) return
+    setCollecting(true)
+    setError(null)
+    setCollectedNow(null)
+    try {
+      await call("hotelpms.api.record_advance", {
+        reservation: name,
+        amount: amt,
+        mode: payMode,
+        reference: payRef || undefined,
+      })
+      const nextPaid = advancePaid + amt
+      setAdvancePaid(nextPaid)
+      const nextBalance = Math.max(0, total - nextPaid)
+      setPayAmount(nextBalance > 0 ? String(nextBalance) : "")
+      setPayRef("")
+      setCollectedNow(amt)
+      reload()
+    } catch (e) {
+      setError(serverError(e))
+    } finally {
+      setCollecting(false)
+    }
+  }
 
   async function doCheckOut() {
     setBusy(true)
@@ -150,13 +197,13 @@ export default function ReservationSummary({
             </span>
           </div>
           <div className="flex items-center justify-between py-0.5 text-sm">
-            <span className="text-zinc-500">Advance paid</span>
-            <span className="font-semibold tabular-nums text-zinc-900">
-              {cur()}{money(advance)}
+            <span className="text-zinc-500">Paid</span>
+            <span className="font-semibold tabular-nums text-emerald-700">
+              {cur()}{money(advancePaid)}
             </span>
           </div>
           <div className="mt-1 flex items-center justify-between border-t border-zinc-100 pt-2 text-sm">
-            <span className="font-medium text-zinc-700">Balance</span>
+            <span className="font-medium text-zinc-700">Remaining</span>
             <span
               className={
                 "text-base font-bold tabular-nums " +
@@ -168,9 +215,78 @@ export default function ReservationSummary({
           </div>
         </div>
 
-        {balance > 0 && status !== "Cancelled" && (
-          <div className="flex items-start gap-2 rounded-xl border border-gold-200 bg-gold-50 px-3 py-2.5 text-xs font-medium text-gold-700">
-            <span>Balance due — collect from Billing before checkout.</span>
+        {canCollect && (
+          <div className="space-y-2.5 rounded-xl border border-zinc-200 bg-white p-3.5">
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-zinc-800">
+              <Wallet className="size-4 text-brand-600" aria-hidden />
+              <span>Collect payment</span>
+            </div>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-zinc-500">
+                Amount to collect
+              </span>
+              <input
+                className={payInputCls}
+                type="number"
+                inputMode="decimal"
+                dir="ltr"
+                min="0"
+                value={payAmount}
+                placeholder={money(balance)}
+                onChange={(e) => setPayAmount(e.target.value)}
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-zinc-500">
+                Payment method
+              </span>
+              <select
+                className={payInputCls}
+                value={payMode}
+                onChange={(e) => setPayMode(e.target.value)}
+              >
+                {PAY_MODES.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-zinc-500">
+                Reference
+              </span>
+              <input
+                className={payInputCls}
+                dir="ltr"
+                value={payRef}
+                onChange={(e) => setPayRef(e.target.value)}
+                placeholder="Optional"
+              />
+            </label>
+            <Button
+              variant="gold"
+              className="w-full justify-center"
+              disabled={collecting || !(Number(payAmount) > 0)}
+              onClick={collect}
+            >
+              {collecting ? "Collecting…" : "Collect payment"}
+            </Button>
+          </div>
+        )}
+
+        {collectedNow != null && (
+          <div className="flex items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-800">
+            <span>Payment recorded</span>
+            <bdi dir="ltr" className="tabular-nums">
+              {cur()}{money(collectedNow)}
+            </bdi>
+          </div>
+        )}
+
+        {balance === 0 && advancePaid > 0 && status !== "Cancelled" && status !== "No Show" && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-800">
+            Paid in full
           </div>
         )}
 
