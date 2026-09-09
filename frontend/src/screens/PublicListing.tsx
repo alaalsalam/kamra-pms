@@ -23,6 +23,7 @@ import { Sheet } from "../components/ui/sheet"
 import { cur, moneyLocale, adoptUiLocale } from "../lib/money"
 import { qty } from "../lib/i18n"
 import { formatPhoneDisplay, formatPhoneTel } from "../lib/phone"
+import PhoneField from "../components/PhoneField"
 
 const inr = (n: number) =>
   n.toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
@@ -273,6 +274,8 @@ export default function PublicListing() {
     meal_plan: "",
     special_requests: "",
   })
+  // phone passes per-country length validation (see PhoneField); gates submit
+  const [phoneValid, setPhoneValid] = useState(false)
   // experience add-ons the guest picks in the booking sheet: name -> qty
   const [addons, setAddons] = useState<Record<string, number>>({})
   const [done, setDone] = useState<{ reservation: string; amount: number } | null>(null)
@@ -966,7 +969,7 @@ export default function PublicListing() {
               <Button
                 variant="gold"
                 className="w-full justify-center py-2.5 text-base"
-                disabled={busy || !form.guest_name || !form.phone}
+                disabled={busy || !form.guest_name || !phoneValid}
                 onClick={submitBooking}
               >
                 {busy ? "Booking…" : confirmLabel}
@@ -986,7 +989,7 @@ export default function PublicListing() {
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-zinc-600">
                   Full name
@@ -998,19 +1001,16 @@ export default function PublicListing() {
                   onChange={(e) => setForm({ ...form, guest_name: e.target.value })}
                 />
               </label>
-              <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-zinc-600">
-                  Phone
-                </span>
-                <input
-                  className={inputCls}
-                  type="tel"
-                  dir="ltr"
-                  value={form.phone}
-                  placeholder="+966 5X XXX XXXX"
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                />
-              </label>
+              <PhoneField
+                label="Phone"
+                required
+                value={form.phone}
+                defaultCountryName={p.country}
+                onChange={(e164, valid) => {
+                  setForm((f) => ({ ...f, phone: e164 }))
+                  setPhoneValid(valid)
+                }}
+              />
               <label className="block sm:col-span-2">
                 <span className="mb-1.5 block text-sm font-medium text-zinc-600">
                   Email (optional)
