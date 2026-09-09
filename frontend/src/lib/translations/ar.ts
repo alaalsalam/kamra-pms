@@ -800,6 +800,7 @@ export const AR: Record<string, string> = {
   "Payment recorded": "تم تسجيل الدفعة",
   "Credit balance": "رصيد دائن",
   "Settle the outstanding balance before check-out.": "سدِّد المبلغ المتبقي بالكامل قبل تسجيل المغادرة.",
+  "Collect the booking deposit before check-in.": "حصِّل عربون الحجز قبل تسجيل الوصول.",
   "Loading rooms…": "جارٍ تحميل الغرف…",
   "Only rooms free for these dates": "الغرف المتاحة لهذه التواريخ فقط",
   "Pick the dates first to see available rooms": "اختر التواريخ أولًا لعرض الغرف المتاحة",

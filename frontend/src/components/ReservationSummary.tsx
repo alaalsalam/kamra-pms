@@ -363,7 +363,18 @@ export default function ReservationSummary({
 
       <div className="shrink-0 space-y-2 border-t border-zinc-100 bg-white px-5 py-4">
         {status === "Confirmed" && (
-          <Button className="w-full justify-center" disabled={busy} onClick={() => setCheckingIn(true)}>
+          <Button
+            className="w-full justify-center"
+            disabled={busy}
+            onClick={() =>
+              // require a booking deposit before check-in (Corporate/Group settle centrally)
+              mv.paid <= 0.005 &&
+              bookingType !== "Corporate" &&
+              bookingType !== "Group"
+                ? setError("Collect the booking deposit before check-in.")
+                : setCheckingIn(true)
+            }
+          >
             <LogIn className="size-4" /> Check in
           </Button>
         )}

@@ -520,7 +520,16 @@ export default function ReservationDetail({
           </span>
         )}
         {d.actions.can_check_in && (
-          <Button disabled={busy} onClick={() => act(() => checkIn(name))}>
+          <Button
+            disabled={busy}
+            onClick={() =>
+              d.advance_paid <= 0.005 &&
+              d.booking_type !== "Corporate" &&
+              d.booking_type !== "Group"
+                ? setError("Collect the booking deposit before check-in.")
+                : act(() => checkIn(name))
+            }
+          >
             <LogIn className="size-4" /> Check in
           </Button>
         )}

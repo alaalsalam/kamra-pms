@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { ExternalLink, Sparkles, Star } from "lucide-react"
 import { call } from "../lib/api"
-import { serverError } from "../lib/resource"
+import { listResource, serverError } from "../lib/resource"
 import { toFullPath } from "../lib/routing"
 import { Button } from "./ui/button"
 import { Sheet } from "./ui/sheet"
@@ -85,6 +85,9 @@ export default function CheckInDialog(props: {
   const [room, setRoom] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // the booking deposit (عربون) must be collected before check-in; Corporate /
+  // Group stays settle centrally and are exempt.
+  const [deposit, setDeposit] = useState<{ advance: number; central: boolean } | null>(null)
 
   useEffect(() => {
     call<Context>("hotelpms.api.checkin_context", { reservation: props.reservation })
@@ -93,7 +96,23 @@ export default function CheckInDialog(props: {
         setRoom(c.room_assigned?.name || c.suggestion?.room || "")
       })
       .catch((e) => setError(serverError(e)))
+    listResource("Reservation", {
+      fields: ["advance_paid", "booking_type"],
+      filters: [["name", "=", props.reservation]],
+      limit: 1,
+    })
+      .then((rows) => {
+        const r = rows[0]
+        if (r)
+          setDeposit({
+            advance: Number(r.advance_paid ?? 0),
+            central: r.booking_type === "Corporate" || r.booking_type === "Group",
+          })
+      })
+      .catch(() => setDeposit({ advance: 1, central: false }))
   }, [props.reservation])
+
+  const depositMissing = !!deposit && deposit.advance <= 0.005 && !deposit.central
 
   async function doCheckIn() {
     setBusy(true)
@@ -129,11 +148,16 @@ export default function CheckInDialog(props: {
       footer={
         <div className="flex w-full items-center gap-3">
           {error && <p className="text-sm text-rose-600">{error}</p>}
+          {depositMissing && !error && (
+            <p className="text-sm font-medium text-rose-600">
+              Collect the booking deposit before check-in.
+            </p>
+          )}
           <div className="ms-auto flex items-center gap-2">
             <Button variant="outline" onClick={props.onClose}>
               Cancel
             </Button>
-            <Button disabled={busy || !room || !ctx} onClick={doCheckIn}>
+            <Button disabled={busy || !room || !ctx || depositMissing} onClick={doCheckIn}>
               {busy
                 ? "Checking in…"
                 : chosen
