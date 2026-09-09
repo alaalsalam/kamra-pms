@@ -12,6 +12,7 @@ import { Button } from "../components/ui/button"
 import { cn } from "../lib/utils"
 import { cur } from "../lib/money"
 import { useFloorFullscreen } from "../lib/kiosk"
+import { translateText as tr } from "../lib/i18n"
 
 type LineState = "cooking" | "held" | "cancelled" | "done"
 
@@ -120,10 +121,10 @@ function progressOf(o: KotOrder) {
 /* Where the food goes, in the words the kitchen uses. Takeaway and delivery
    have no table or room, and the pass needs to know to pack them. */
 function destination(o: KotOrder): string {
-  if (o.order_type === "Takeaway") return "TAKEAWAY"
-  if (o.order_type === "Delivery") return "DELIVERY"
-  if (o.room_no) return `Room ${o.room_no}`
-  if (o.table_no) return `Table ${o.table_no}`
+  if (o.order_type === "Takeaway") return tr("TAKEAWAY")
+  if (o.order_type === "Delivery") return tr("DELIVERY")
+  if (o.room_no) return `${tr("Room")} ${o.room_no}`
+  if (o.table_no) return `${tr("Table")} ${o.table_no}`
   return o.outlet_name
 }
 
@@ -349,10 +350,10 @@ function TicketDetail({ order, onClose, onAction, busy, now }: {
             )}
           </div>
           <div className="mt-1 text-sm text-zinc-500">
-            {[order.captain ? `Captain: ${order.captain.split("@")[0]}` : null,
-              order.guests ? `${order.guests} guests` : null,
+            {[order.captain ? `${tr("Captain")}: ${order.captain.split("@")[0]}` : null,
+              order.guests ? `${order.guests} ${tr("guests")}` : null,
               order.outlet_name,
-              order.order_total ? `Order ${cur()}${Math.round(order.order_total)}` : null]
+              order.order_total ? `${tr("Order")} ${cur()}${Math.round(order.order_total)}` : null]
               .filter(Boolean).join(" · ")}
           </div>
         </div>
@@ -605,7 +606,7 @@ export default function Kitchen() {
             className={cn("inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-sm font-medium",
               sound ? "border-amber-300 bg-amber-50 text-amber-700" : "border-zinc-300 bg-white text-zinc-400")}>
             {sound ? <Bell className="size-4" /> : <BellOff className="size-4" />}
-            Sound {sound ? "on" : "off"}
+            {sound ? "Sound on" : "Sound off"}
           </button>
           <button onClick={toggleBrowserFs}
             className="rounded-lg border border-zinc-300 bg-white p-2 text-zinc-600 hover:bg-zinc-50"
@@ -677,8 +678,8 @@ export default function Kitchen() {
                     </span>
                   </div>
                   <div className="truncate text-xs text-zinc-400">
-                    {[o.guests ? `${o.guests} guests` : null,
-                      o.captain ? `Capt. ${o.captain.split("@")[0]}` : null].filter(Boolean).join(" · ")}
+                    {[o.guests ? `${o.guests} ${tr("guests")}` : null,
+                      o.captain ? `${tr("Capt.")} ${o.captain.split("@")[0]}` : null].filter(Boolean).join(" · ")}
                   </div>
                   {tags.length > 0 && (
                     <div className="mt-1.5 flex flex-wrap gap-1">
