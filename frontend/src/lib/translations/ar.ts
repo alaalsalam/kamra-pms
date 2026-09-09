@@ -798,6 +798,7 @@ export const AR: Record<string, string> = {
   "Remaining": "المتبقي",
   "Paid in full": "مدفوع بالكامل",
   "Payment recorded": "تم تسجيل الدفعة",
+  "Credit balance": "رصيد دائن",
   "Collecting…": "جارٍ التحصيل…",
   "Payment Link": "رابط دفع",
   "Post": "ترحيل",

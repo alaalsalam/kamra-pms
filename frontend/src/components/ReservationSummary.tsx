@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { X, LogIn, LogOut, FileText, PanelRightOpen, Wallet } from "lucide-react"
 import { checkOut, call } from "../lib/api"
@@ -42,6 +42,10 @@ function nightsBetween(a: string, b: string) {
   )
 }
 
+const MoneySkel = () => (
+  <span className="inline-block h-4 w-14 animate-pulse rounded bg-zinc-200 align-middle" />
+)
+
 function KV({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-3 py-1 text-sm">
@@ -80,22 +84,72 @@ export default function ReservationSummary({
   const co = s(row.check_out_date)
   const nights = nightsBetween(ci, co)
   const roomNo = row.room ? s(row.room).split("-").pop() : ""
-  const total = n(row.amount_after_tax)
-  const [advancePaid, setAdvancePaid] = useState(n(row.advance_paid))
-  const balance = Math.max(0, total - advancePaid)
+  const rowTotal = n(row.amount_after_tax)
+  const rowPaid = n(row.advance_paid)
+  // Drive the figures from the guest folio (room + every charge + payments) once
+  // it exists. The reservation's amount_after_tax is room-only, so it diverges the
+  // moment extras are posted — which is why "paid" could read higher than "total".
+  const [mv, setMv] = useState({
+    total: rowTotal,
+    paid: rowPaid,
+    balance: rowTotal - rowPaid,
+    hasFolio: false,
+  })
+  const due = Math.max(0, mv.balance)
+  const credit = Math.max(0, -mv.balance)
+  const [loadingMoney, setLoadingMoney] = useState(
+    status !== "Cancelled" && status !== "No Show",
+  )
 
   // collect payment on arrival (record_advance opens the folio + posts the money)
-  const [payAmount, setPayAmount] = useState(balance > 0 ? String(balance) : "")
+  const [payAmount, setPayAmount] = useState(due > 0 ? String(due) : "")
   const [payMode, setPayMode] = useState("Cash")
   const [payRef, setPayRef] = useState("")
   const [collecting, setCollecting] = useState(false)
   const [collectedNow, setCollectedNow] = useState<number | null>(null)
 
   const canCollect =
+    !loadingMoney &&
     status !== "Cancelled" &&
     status !== "Checked Out" &&
     status !== "No Show" &&
-    balance > 0
+    due > 0
+
+  // pull the real folio balance/total/paid; keep the row-level fallback if none
+  async function loadMoney() {
+    try {
+      const folios = await call<
+        {
+          folio_type: string
+          grand_total: number
+          payments_total: number
+          balance: number
+        }[]
+      >("hotelpms.api.reservation_folios", { reservation: name })
+      const f = folios.find((x) => x.folio_type === "Guest") ?? folios[0]
+      if (f) {
+        // the room charge only posts to the folio at check-in, so before then the
+        // folio grand_total understates the stay — floor Total at the room total.
+        const total = Math.max(rowTotal, n(f.grand_total))
+        const paid = n(f.payments_total)
+        setMv({ total, paid, balance: total - paid, hasFolio: true })
+        const bal = Math.max(0, total - paid)
+        setPayAmount(bal > 0 ? String(bal) : "")
+      } else {
+        // no folio yet (still Confirmed) — the reservation figures are the truth
+        setMv({ total: rowTotal, paid: rowPaid, balance: rowTotal - rowPaid, hasFolio: false })
+      }
+    } catch {
+      setMv({ total: rowTotal, paid: rowPaid, balance: rowTotal - rowPaid, hasFolio: false })
+    } finally {
+      setLoadingMoney(false)
+    }
+  }
+
+  useEffect(() => {
+    if (status !== "Cancelled" && status !== "No Show") loadMoney()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function collect() {
     const amt = Number(payAmount)
@@ -110,12 +164,9 @@ export default function ReservationSummary({
         mode: payMode,
         reference: payRef || undefined,
       })
-      const nextPaid = advancePaid + amt
-      setAdvancePaid(nextPaid)
-      const nextBalance = Math.max(0, total - nextPaid)
-      setPayAmount(nextBalance > 0 ? String(nextBalance) : "")
       setPayRef("")
       setCollectedNow(amt)
+      await loadMoney()
       reload()
     } catch (e) {
       setError(serverError(e))
@@ -193,13 +244,13 @@ export default function ReservationSummary({
           <div className="flex items-center justify-between py-0.5 text-sm">
             <span className="text-zinc-500">Total</span>
             <span className="font-semibold tabular-nums text-zinc-900">
-              {cur()}{money(total)}
+              {loadingMoney ? <MoneySkel /> : <>{cur()}{money(mv.total)}</>}
             </span>
           </div>
           <div className="flex items-center justify-between py-0.5 text-sm">
             <span className="text-zinc-500">Paid</span>
             <span className="font-semibold tabular-nums text-emerald-700">
-              {cur()}{money(advancePaid)}
+              {loadingMoney ? <MoneySkel /> : <>{cur()}{money(mv.paid)}</>}
             </span>
           </div>
           <div className="mt-1 flex items-center justify-between border-t border-zinc-100 pt-2 text-sm">
@@ -207,12 +258,20 @@ export default function ReservationSummary({
             <span
               className={
                 "text-base font-bold tabular-nums " +
-                (balance > 0 ? "text-gold-700" : "text-zinc-900")
+                (due > 0 ? "text-gold-700" : "text-emerald-700")
               }
             >
-              {cur()}{money(balance)}
+              {loadingMoney ? <MoneySkel /> : <>{cur()}{money(due)}</>}
             </span>
           </div>
+          {!loadingMoney && credit > 0 && (
+            <div className="mt-1 flex items-center justify-between text-sm">
+              <span className="font-medium text-sky-700">Credit balance</span>
+              <span className="font-semibold tabular-nums text-sky-700">
+                {cur()}{money(credit)}
+              </span>
+            </div>
+          )}
         </div>
 
         {canCollect && (
@@ -232,7 +291,7 @@ export default function ReservationSummary({
                 dir="ltr"
                 min="0"
                 value={payAmount}
-                placeholder={money(balance)}
+                placeholder={money(due)}
                 onChange={(e) => setPayAmount(e.target.value)}
               />
             </label>
@@ -284,7 +343,7 @@ export default function ReservationSummary({
           </div>
         )}
 
-        {balance === 0 && advancePaid > 0 && status !== "Cancelled" && status !== "No Show" && (
+        {!loadingMoney && due === 0 && mv.paid > 0 && status !== "Cancelled" && status !== "No Show" && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-800">
             Paid in full
           </div>

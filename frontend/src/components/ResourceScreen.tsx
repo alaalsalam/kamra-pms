@@ -937,6 +937,7 @@ export function ResourceScreen({
           onClose={() => setContextRow(null)}
         >
           <config.contextPanel
+            key={String(contextRow.name)}
             row={contextRow}
             reload={load}
             onClose={() => setContextRow(null)}
