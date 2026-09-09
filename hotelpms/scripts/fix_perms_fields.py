@@ -39,6 +39,13 @@ ALL_DOCTYPES = [
 	"Housekeeping Task", "Agent Action Log", "Meal Plan", "Season",
 	"Discount Voucher", "Company", "Group Booking", "Folio",
 	"Night Audit Run", "Service Ticket",
+	# Added post-v1. seed_users scopes these to Housekeeping / Restaurant POS /
+	# Finance via Custom DocPerm, which overrides the JSON perms and silently
+	# locks System Manager + Hotel Admin out of their /api/resource screens
+	# (Lost & Found, POS). Listing them here restores the admin tier's full
+	# grant. Keep in sync whenever a new doctype gets a scoped seed grant.
+	"Lost And Found Item", "POS Outlet", "Menu Item", "POS Order",
+	"POS Table Reservation", "Cancelled Invoice",
 ]
 
 EXTRA_GRANTS = {
