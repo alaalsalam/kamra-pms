@@ -795,6 +795,7 @@ export const AR: Record<string, string> = {
   "Collect payment": "تحصيل دفعة",
   "Payment method": "طريقة الدفع",
   "Amount to collect": "المبلغ المطلوب تحصيله",
+  "After this payment": "بعد هذه الدفعة",
   "Remaining": "المتبقي",
   "Paid in full": "مدفوع بالكامل",
   "Payment recorded": "تم تسجيل الدفعة",

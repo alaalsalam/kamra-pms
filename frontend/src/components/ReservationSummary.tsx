@@ -107,6 +107,11 @@ export default function ReservationSummary({
   const [payRef, setPayRef] = useState("")
   const [collecting, setCollecting] = useState(false)
   const [collectedNow, setCollectedNow] = useState<number | null>(null)
+  // live preview: type a deposit (عربون) and see paid/remaining before collecting
+  const payNum = Number(payAmount) || 0
+  const paidAfter = mv.paid + payNum
+  const remAfter = Math.max(0, due - payNum)
+  const overpay = Math.max(0, payNum - due)
 
   const canCollect =
     !loadingMoney &&
@@ -300,6 +305,38 @@ export default function ReservationSummary({
                 onChange={(e) => setPayAmount(e.target.value)}
               />
             </label>
+            {payNum > 0 && (
+              <div className="rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-2 text-xs">
+                <div className="mb-1 font-medium text-zinc-500">
+                  After this payment
+                </div>
+                <div className="flex items-center justify-between py-0.5">
+                  <span className="text-zinc-600">Paid</span>
+                  <span className="font-semibold tabular-nums text-emerald-700">
+                    {cur()}{money(paidAfter)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-0.5">
+                  <span className="text-zinc-600">Remaining</span>
+                  <span
+                    className={
+                      "font-semibold tabular-nums " +
+                      (remAfter > 0 ? "text-gold-700" : "text-emerald-700")
+                    }
+                  >
+                    {cur()}{money(remAfter)}
+                  </span>
+                </div>
+                {overpay > 0 && (
+                  <div className="flex items-center justify-between py-0.5">
+                    <span className="text-sky-700">Credit balance</span>
+                    <span className="font-semibold tabular-nums text-sky-700">
+                      {cur()}{money(overpay)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
             <label className="block">
               <span className="mb-1 block text-xs font-medium text-zinc-500">
                 Payment method
