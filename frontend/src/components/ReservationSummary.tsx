@@ -176,6 +176,11 @@ export default function ReservationSummary({
   }
 
   async function doCheckOut() {
+    if (due > 0.005) {
+      // a departing guest must clear their bill first — collect it above
+      setError("Settle the outstanding balance before check-out.")
+      return
+    }
     setBusy(true)
     setError(null)
     try {

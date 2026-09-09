@@ -525,7 +525,14 @@ export default function ReservationDetail({
           </Button>
         )}
         {d.actions.can_check_out && (
-          <Button disabled={busy} onClick={() => act(() => checkOut(name))}>
+          <Button
+            disabled={busy}
+            onClick={() =>
+              money.due > 0.005
+                ? setError("Settle the outstanding balance before check-out.")
+                : act(() => checkOut(name))
+            }
+          >
             <LogOut className="size-4" /> Check out
           </Button>
         )}

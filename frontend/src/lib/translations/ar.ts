@@ -799,6 +799,7 @@ export const AR: Record<string, string> = {
   "Paid in full": "مدفوع بالكامل",
   "Payment recorded": "تم تسجيل الدفعة",
   "Credit balance": "رصيد دائن",
+  "Settle the outstanding balance before check-out.": "سدِّد المبلغ المتبقي بالكامل قبل تسجيل المغادرة.",
   "Loading rooms…": "جارٍ تحميل الغرف…",
   "Only rooms free for these dates": "الغرف المتاحة لهذه التواريخ فقط",
   "Pick the dates first to see available rooms": "اختر التواريخ أولًا لعرض الغرف المتاحة",

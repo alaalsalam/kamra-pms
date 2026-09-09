@@ -553,7 +553,11 @@ export default function Today() {
                         variant="outline"
                         className="min-h-11 shrink-0"
                         disabled={busy === row.name}
-                        onClick={() => act(row.name, () => checkOut(row.name))}
+                        onClick={() =>
+                          Number(row.balance_due ?? 0) > 0.005
+                            ? setError("Settle the outstanding balance before check-out.")
+                            : act(row.name, () => checkOut(row.name))
+                        }
                       >
                         Check out
                       </Button>
