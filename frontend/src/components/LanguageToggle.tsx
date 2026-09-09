@@ -16,7 +16,7 @@ export default function LanguageToggle() {
   if (!show) return null
 
   return (
-    <div className="fixed bottom-4 end-4 z-[100] rounded-full border border-zinc-200 bg-white/95 px-1.5 py-1 shadow-lg dark:border-zinc-200 dark:bg-zinc-100">
+    <div className="fixed bottom-[4.75rem] end-3 z-[100] rounded-full border border-zinc-200 bg-white/95 px-1.5 py-1 shadow-lg dark:border-zinc-200 dark:bg-zinc-100">
       <UtilityControls tone="light" />
     </div>
   )
