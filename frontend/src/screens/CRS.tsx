@@ -14,8 +14,9 @@ import {
   Wallet,
   X,
 } from "lucide-react"
-import { call, isAuthError, myProperties, type PropertyRow } from "../lib/api"
+import { call, isAuthError, myProperties, type PropertyRow, type BookingOptions } from "../lib/api"
 import { serverError } from "../lib/resource"
+import PhoneField from "../components/PhoneField"
 import type { ShellContext } from "../AppShell"
 import { useT, qty, fill } from "../lib/i18n"
 import { cur, moneyLocale, dateLocale } from "../lib/money"
@@ -118,7 +119,15 @@ export default function CRS() {
     property_name: string
     rt: RoomTypeAvail
   } | null>(null)
-  const [guest, setGuest] = useState({ name: "", phone: "" })
+  const [guest, setGuest] = useState({
+    name: "",
+    phone: "",
+    nationality: "",
+    specialRequests: "",
+    mealPlan: "",
+  })
+  const [phoneValid, setPhoneValid] = useState(false)
+  const [mealPlans, setMealPlans] = useState<BookingOptions["meal_plans"]>([])
   const [bookBusy, setBookBusy] = useState(false)
   const [bookError, setBookError] = useState<string | null>(null)
   const [done, setDone] = useState<{ ref: string; property: string } | null>(null)
@@ -176,6 +185,11 @@ export default function CRS() {
           phone: guest.phone || null,
           adults,
           children,
+          meal_plan: guest.mealPlan || undefined,
+          nationality: guest.nationality.trim() || null,
+          instructions: guest.specialRequests.trim()
+            ? [{ department: "Front Desk", instruction: guest.specialRequests.trim() }]
+            : undefined,
           source: "Manual",
         },
       )
@@ -626,8 +640,14 @@ export default function CRS() {
         type="button"
         onClick={() => {
           setBooking({ property: p.property, property_name: p.property_name, rt })
-          setGuest({ name: "", phone: "" })
+          setGuest({ name: "", phone: "", nationality: "", specialRequests: "", mealPlan: "" })
+          setPhoneValid(false)
           setBookError(null)
+          // meal plans are per-property — load the chosen property's plans
+          setMealPlans([])
+          call<BookingOptions>("hotelpms.api.booking_options", { property: p.property })
+            .then((o) => setMealPlans(o.meal_plans))
+            .catch(() => setMealPlans([]))
         }}
         className={cn(
           "flex w-full items-stretch gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-start transition-colors",
@@ -674,7 +694,11 @@ export default function CRS() {
               <Button
                 variant="primary"
                 className="min-h-11"
-                disabled={bookBusy || !guest.name.trim()}
+                disabled={
+                  bookBusy ||
+                  !guest.name.trim() ||
+                  (guest.phone !== "" && !phoneValid)
+                }
                 onClick={() => book()}
               >
                 {bookBusy ? (
@@ -701,17 +725,53 @@ export default function CRS() {
                 onChange={(e) => setGuest({ ...guest, name: e.target.value })}
               />
             </label>
+            <PhoneField
+              label={t("Phone")}
+              value={guest.phone}
+              onChange={(e164, valid) => {
+                setGuest((g) => ({ ...g, phone: e164 }))
+                setPhoneValid(valid)
+              }}
+            />
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-zinc-600">
-                {t("Phone")}
+                {t("Meal plan")}
+              </span>
+              <select
+                className={inputCls}
+                value={guest.mealPlan}
+                onChange={(e) => setGuest({ ...guest, mealPlan: e.target.value })}
+              >
+                <option value="">{t("Room only")}</option>
+                {mealPlans.map((mp) => (
+                  <option key={mp.name} value={mp.name}>
+                    {mp.label}
+                    {mp.price_per_adult
+                      ? ` (+${cur()}${inr(mp.price_per_adult)}/${t("adult")}/${t("night")})`
+                      : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium text-zinc-600">
+                {t("Nationality")}
               </span>
               <input
                 className={inputCls}
-                type="tel"
-                dir="ltr"
-                value={guest.phone}
-                placeholder="+966 5X XXX XXXX"
-                onChange={(e) => setGuest({ ...guest, phone: e.target.value })}
+                value={guest.nationality}
+                onChange={(e) => setGuest({ ...guest, nationality: e.target.value })}
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium text-zinc-600">
+                {t("Special requests")}
+              </span>
+              <textarea
+                className={inputCls}
+                rows={2}
+                value={guest.specialRequests}
+                onChange={(e) => setGuest({ ...guest, specialRequests: e.target.value })}
               />
             </label>
 
