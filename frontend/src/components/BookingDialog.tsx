@@ -636,7 +636,7 @@ export function BookingDialog(props: {
                   </div>
                 )}
 
-                <h3 className="-mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
                   Guest details
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -784,7 +784,7 @@ export function BookingDialog(props: {
                   )}
                 </div>
 
-                <h3 className="-mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
                   Stay &amp; rate
                 </h3>
                 <div>
