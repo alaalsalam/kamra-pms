@@ -183,7 +183,7 @@ export const AR: Record<string, string> = {
   "New Property": "منشأة جديدة",
   "Manage Users": "إدارة المستخدمين",
   "Frappe Desk": "مكتب فرابيه",
-  "Banquets & Groups": "الحفلات والمجموعات",
+  "Banquets & Events": "الحفلات والفعاليات",
   "Group bookings": "حجوزات المجموعات",
   "Halls & Venues": "القاعات والأماكن",
   "Group": "المجموعة",

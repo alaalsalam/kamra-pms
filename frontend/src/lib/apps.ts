@@ -158,7 +158,7 @@ export const APPS: AppDef[] = [
   },
   {
     id: "events",
-    name: "Banquets & Groups",
+    name: "Banquets & Events",
     icon: CalendarRange,
     tint: APP_TILE,
     description:

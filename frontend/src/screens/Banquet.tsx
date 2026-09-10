@@ -162,7 +162,7 @@ export default function Banquet() {
           </Button>
           <Button onClick={() => setEnquiry(true)}>
             <Plus className="size-4" />
-            New enquiry
+            New
           </Button>
         </div>
       </div>
