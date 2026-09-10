@@ -43,6 +43,7 @@
   "column_break_b",
   "billing_name",
   "gstin",
+  "po_number",
   "billing_address",
   "place_of_supply",
   "sb_pax",
@@ -347,6 +348,12 @@
    "fieldtype": "Data",
    "label": "GSTIN",
    "description": "The customer's tax registration - printed on the contract and the invoice."
+  },
+  {
+   "fieldname": "po_number",
+   "fieldtype": "Data",
+   "label": "PO Number / Reference",
+   "description": "Purchase order or reference from the billing party"
   },
   {
    "fieldname": "billing_address",
@@ -857,7 +864,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-31 21:00:00.000000",
+ "modified": "2026-09-10 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "HotelPMS",
  "name": "Venue Booking",

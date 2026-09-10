@@ -587,6 +587,8 @@ export interface FunctionSheet {
   gstin: string | null
   billing_address: string | null
   place_of_supply: string | null
+  /** Optional — present only after the backend adds the field (renders then). */
+  po_number?: string | null
   attendees: number
   pax_guaranteed: number
   pax_actual: number

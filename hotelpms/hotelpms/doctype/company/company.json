@@ -10,12 +10,15 @@
  "field_order": [
   "company_name",
   "gstin",
+  "commercial_registration",
   "column_break_a",
   "contact_name",
   "contact_phone",
   "contact_email",
   "sb_terms",
   "negotiated_rate_plan",
+  "default_payment_terms",
+  "billing_address",
   "column_break_b",
   "credit_allowed",
   "disabled",
@@ -35,6 +38,12 @@
    "fieldname": "gstin",
    "fieldtype": "Data",
    "label": "GSTIN"
+  },
+  {
+   "description": "السجل التجاري — Commercial Registration number",
+   "fieldname": "commercial_registration",
+   "fieldtype": "Data",
+   "label": "Commercial Registration"
   },
   {
    "fieldname": "column_break_a",
@@ -71,6 +80,17 @@
    "options": "Rate Plan"
   },
   {
+   "description": "Prefilled into a function's billing when this company is the billing party",
+   "fieldname": "default_payment_terms",
+   "fieldtype": "Small Text",
+   "label": "Default Payment Terms"
+  },
+  {
+   "fieldname": "billing_address",
+   "fieldtype": "Small Text",
+   "label": "Billing Address"
+  },
+  {
    "fieldname": "column_break_b",
    "fieldtype": "Column Break",
    "label": "Column Break B"
@@ -104,7 +124,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-04 16:01:36.742061",
+ "modified": "2026-09-10 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "HotelPMS",
  "name": "Company",

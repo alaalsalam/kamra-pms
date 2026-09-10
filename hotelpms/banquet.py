@@ -324,7 +324,7 @@ def update_function(function: str, fields):
 		"start_time", "end_time", "setup_style", "setup_notes", "setup_from",
 		"teardown_by", "customer_name", "customer_phone", "customer_email",
 		"company", "travel_agent", "billing_name", "gstin", "billing_address",
-		"place_of_supply", "attendees", "pax_guaranteed", "pax_actual",
+		"place_of_supply", "po_number", "attendees", "pax_guaranteed", "pax_actual",
 		"rate_basis", "source", "sales_owner", "follow_up_date",
 		"tentative_until", "quote_valid_till", "contract_signed_on",
 		"requirements", "beo_notes", "internal_notes", "payment_terms_note",
@@ -1120,7 +1120,9 @@ def banquet_document(function: str, kind: str = "quote"):
 		"phone": doc.customer_phone, "email": doc.customer_email,
 		"company": doc.company, "gstin": doc.gstin,
 		"address": doc.billing_address,
-		"place_of_supply": doc.place_of_supply,
+		# Inferred, not entered per event: fall back to the property's city so the
+		# invoice always carries a place of supply (the manual field was removed).
+		"place_of_supply": doc.place_of_supply or prop.get("city"),
 	}
 	event = {
 		"event_name": doc.event_name, "event_type": doc.event_type,

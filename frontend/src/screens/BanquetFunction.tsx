@@ -27,6 +27,7 @@ import {
 
 import {
   banquet,
+  frappeFetch,
   type BanquetCatalogue,
   type FunctionItem,
   type FunctionSheet,
@@ -337,6 +338,15 @@ function DetailTab({
 }) {
   const [draft, setDraft] = useState<Record<string, unknown>>({})
   const [rooms, setRooms] = useState<Row[]>([])
+  const [companies, setCompanies] = useState<
+    { name: string; company_name: string; gstin?: string | null }[]
+  >([])
+  const [companyDoc, setCompanyDoc] = useState<Record<string, unknown> | null>(null)
+  // Billing party is derived, not a stored field: a linked company => Company;
+  // a manual billing name with no company => Other party; otherwise the guest.
+  const [party, setParty] = useState<"guest" | "company" | "other">(
+    fn.company ? "company" : fn.billing_name ? "other" : "guest",
+  )
   const dirty = Object.keys(draft).length > 0
   const get = <T,>(k: keyof FunctionSheet, fallback: T) =>
     (draft[k as string] ?? fn[k] ?? fallback) as T
@@ -344,6 +354,8 @@ function DetailTab({
 
   useEffect(() => {
     setDraft({})
+    setParty(fn.company ? "company" : fn.billing_name ? "other" : "guest")
+    setCompanyDoc(null)
   }, [fn])
 
   useEffect(() => {
@@ -355,6 +367,80 @@ function DetailTab({
       .then(setRooms)
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    listResource("Company", {
+      filters: [["disabled", "=", 0]],
+      fields: ["name", "company_name", "gstin"],
+      orderBy: "company_name asc",
+      limit: 200,
+    })
+      .then((r) =>
+        setCompanies(
+          r as { name: string; company_name: string; gstin?: string | null }[],
+        ),
+      )
+      .catch(() => {})
+  }, [])
+
+  // Read the linked company's master record for the read-only pulled details.
+  const linkedCompany = get<string>("company", "")
+  useEffect(() => {
+    if (!linkedCompany) {
+      setCompanyDoc(null)
+      return
+    }
+    frappeFetch<{ data: Record<string, unknown> }>(
+      "/api/resource/Company/" + encodeURIComponent(linkedCompany),
+    )
+      .then((r) => setCompanyDoc(r.data))
+      .catch(() => setCompanyDoc(null))
+  }, [linkedCompany])
+
+  async function pickCompany(name: string) {
+    set("company", name)
+    const light = companies.find((c) => c.name === name)
+    if (light) {
+      set("billing_name", light.company_name)
+      if (light.gstin) set("gstin", light.gstin)
+    }
+    try {
+      const doc = (
+        await frappeFetch<{ data: Record<string, unknown> }>(
+          "/api/resource/Company/" + encodeURIComponent(name),
+        )
+      ).data
+      setCompanyDoc(doc)
+      if (doc.company_name) set("billing_name", String(doc.company_name))
+      if (doc.gstin) set("gstin", String(doc.gstin))
+      // Opportunistic: these Company fields ship dormant. Once they migrate in,
+      // the fuller auto-fill lights up with no frontend change.
+      if (doc.billing_address) set("billing_address", String(doc.billing_address))
+      if (doc.default_payment_terms)
+        set("payment_terms_note", String(doc.default_payment_terms))
+    } catch {
+      /* keep the values already filled from the light list */
+    }
+  }
+
+  // draft-until-Save: switching only stages the change; nothing persists until
+  // the Save bar is used.
+  function changeParty(next: "guest" | "company" | "other") {
+    setParty(next)
+    if (next !== "company") {
+      set("company", "")
+      setCompanyDoc(null)
+    }
+    if (next === "guest") {
+      set("billing_name", "")
+      set("gstin", "")
+    }
+  }
+
+  const companyContact = companyDoc
+    ? [companyDoc.contact_name, companyDoc.contact_phone].filter(Boolean).join(" · ")
+    : ""
+  const companyCR = companyDoc ? String(companyDoc.commercial_registration ?? "") : ""
 
   return (
     <div className="space-y-4">
@@ -577,56 +663,162 @@ function DetailTab({
 
         <Card>
           <CardHeader>
-            <CardTitle>Billing & {taxLabel()}</CardTitle>
+            <CardTitle>Billing details</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
-            <Field
-              label="Invoice name"
-              hint="If the legal name differs from the contact"
-            >
-              <input
-                className={inputCls}
-                value={get("billing_name", "")}
-                onChange={(e) => set("billing_name", e.target.value)}
-              />
-            </Field>
-            <Field label={`${taxLabel()} number`}>
-              <input
-                className={inputCls}
-                placeholder="29AABCU9603R1ZM"
-                value={get("gstin", "")}
-                onChange={(e) => set("gstin", e.target.value.toUpperCase())}
-              />
-            </Field>
-            <Field
-              label="Place of supply"
-              hint="Customer tax registration number"
-            >
-              <input
-                className={inputCls}
-                placeholder="Karnataka"
-                value={get("place_of_supply", "")}
-                onChange={(e) => set("place_of_supply", e.target.value)}
-              />
-            </Field>
-            <Field label="Contract signed on">
-              <input
-                type="date"
-                className={inputCls}
-                value={get("contract_signed_on", "")}
-                onChange={(e) =>
-                  set("contract_signed_on", e.target.value || null)
-                }
-              />
-            </Field>
-            <Field label="Billing address" className="sm:col-span-2">
-              <textarea
-                rows={2}
-                className={inputCls}
-                value={get("billing_address", "")}
-                onChange={(e) => set("billing_address", e.target.value)}
-              />
-            </Field>
+            <div className="sm:col-span-2">
+              <span className="mb-1 block text-xs font-medium text-zinc-500">
+                Billing party
+              </span>
+              <div className="flex gap-1 rounded-lg border border-zinc-200 bg-zinc-50 p-1">
+                {(
+                  [
+                    ["guest", "Guest"],
+                    ["company", "Company"],
+                    ["other", "Other party"],
+                  ] as const
+                ).map(([val, label]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    aria-pressed={party === val}
+                    onClick={() => changeParty(val)}
+                    className={
+                      "flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition " +
+                      (party === val
+                        ? "bg-brand-600 text-white shadow-sm"
+                        : "text-zinc-600 hover:bg-white")
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {party === "guest" && (
+              <div className="sm:col-span-2 rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-2.5 text-sm text-zinc-600">
+                <p>
+                  The invoice is raised in the guest's name. Switch to Company to
+                  bill an organisation from its account.
+                </p>
+                {fn.customer_name && (
+                  <p className="mt-1 font-medium text-zinc-800" dir="auto">
+                    {fn.customer_name}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {party === "company" && (
+              <Field label="Company" className="sm:col-span-2">
+                <select
+                  className={inputCls}
+                  value={get("company", "")}
+                  onChange={(e) => {
+                    if (e.target.value) void pickCompany(e.target.value)
+                    else set("company", "")
+                  }}
+                >
+                  <option value="">Choose a company…</option>
+                  {companies.map((c) => (
+                    <option key={c.name} value={c.name}>
+                      {c.company_name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
+
+            {party === "company" && (companyContact || companyCR) && (
+              <div className="sm:col-span-2 grid gap-x-4 gap-y-1.5 rounded-lg border border-brand-100 bg-brand-50/40 px-3 py-2.5 text-sm sm:grid-cols-2">
+                {companyCR && (
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-zinc-500">Commercial registration</span>
+                    <span className="font-medium text-zinc-800" dir="ltr">
+                      {companyCR}
+                    </span>
+                  </div>
+                )}
+                {companyContact && (
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-zinc-500">Contact</span>
+                    <span className="font-medium text-zinc-800" dir="auto">
+                      {companyContact}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {party !== "guest" && (
+              <>
+                <Field
+                  label="Billing party name"
+                  hint={
+                    party === "company"
+                      ? "Pulled from the company account"
+                      : "If the legal name differs from the contact"
+                  }
+                >
+                  <input
+                    className={inputCls}
+                    value={get("billing_name", "")}
+                    onChange={(e) => set("billing_name", e.target.value)}
+                  />
+                </Field>
+                <Field label={`${taxLabel()} number`}>
+                  <input
+                    className={inputCls}
+                    inputMode="numeric"
+                    dir="ltr"
+                    placeholder="300000000000003"
+                    value={get("gstin", "")}
+                    onChange={(e) => set("gstin", e.target.value)}
+                  />
+                </Field>
+                {fn.po_number !== undefined && (
+                  <Field label="PO number / reference">
+                    <input
+                      className={inputCls}
+                      value={get("po_number", "")}
+                      onChange={(e) => set("po_number", e.target.value)}
+                    />
+                  </Field>
+                )}
+                <Field label="Contract date">
+                  <input
+                    type="date"
+                    className={inputCls}
+                    value={get("contract_signed_on", "")}
+                    onChange={(e) =>
+                      set("contract_signed_on", e.target.value || null)
+                    }
+                  />
+                </Field>
+                <Field label="Invoice address" className="sm:col-span-2">
+                  <textarea
+                    rows={2}
+                    className={inputCls}
+                    value={get("billing_address", "")}
+                    onChange={(e) => set("billing_address", e.target.value)}
+                  />
+                </Field>
+                <Field
+                  label="Payment terms"
+                  hint="Free-text summary; set the schedule in the Money step"
+                  className="sm:col-span-2"
+                >
+                  <textarea
+                    rows={2}
+                    className={inputCls}
+                    value={get("payment_terms_note", "")}
+                    onChange={(e) => set("payment_terms_note", e.target.value)}
+                  />
+                </Field>
+              </>
+            )}
+
             {fn.group_detail && (
               <p className="sm:col-span-2 text-xs text-zinc-500">
                 Tied to group{" "}
