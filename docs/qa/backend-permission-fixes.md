@@ -12,7 +12,7 @@ backend run — commands in [How to apply](#how-to-apply).
 
 | # | Item | Source change (done) | Activation |
 |---|------|----------------------|------------|
-| 1 | Admin tier locked out of Lost & Found + POS `/api/resource` screens | `ALL_DOCTYPES` in `fix_perms_fields.py` extended with the 6 drifted doctypes | `fix_perms_fields.execute()` + `seed_rbac_v2.execute()` |
+| 1 | Admin tier locked out of Lost & Found + POS `/api/resource` screens | `ALL_DOCTYPES` extended (6 doctypes) **+** an `after_migrate` hook (`hotelpms.install.sync_permissions`) that auto-repairs perms | `bench migrate` (runs the hook) |
 | 2 | "Mada" not a selectable payment mode | `Folio Payment.mode` options gained `Mada` (`folio_payment.json`) | `bench migrate` |
 | 3 | Frontend re-add of "Mada" | **intentionally deferred** — see [Frontend follow-up](#frontend-follow-up) | after item 2 is live |
 
@@ -104,16 +104,25 @@ The doctype's `modified` timestamp was bumped so `bench migrate` does not skip t
 ---
 
 ## How to apply
-From the bench directory, against this site:
+One command, from the bench directory, against this site:
 
 ```bash
-bench --site <site> migrate                                    # picks up Folio Payment.mode + any doctype sync
-bench --site <site> execute hotelpms.scripts.fix_perms_fields.execute   # System Manager belt + sync_standard_perms
-bench --site <site> execute hotelpms.scripts.seed_rbac_v2.execute       # Hotel Admin belt (+ clears cache)
+bench --site <site> migrate
 ```
 
-Both `execute` scripts are idempotent and call `frappe.clear_cache()`. No UI reload flag
-needed beyond a normal browser refresh.
+`migrate` now runs the `after_migrate` hook `hotelpms.install.sync_permissions`
+(wired in `hooks.py`), which:
+1. applies the **System Manager** belt over `ALL_DOCTYPES` (`fix_permissions`),
+2. applies the **Hotel Admin** belt over `ALL_DOCTYPES` (guarded inline grant — not
+   `seed_rbac_v2.ensure_hotel_admin`, which mutates the demo `admin@` user and would
+   crash migrate on a fresh tenant, and not `seed_rbac_v2.execute`, which rotates the
+   agent API secret as a side effect),
+3. mirrors each doctype JSON's remaining declared roles (`sync_standard_perms`), then
+4. clears the cache.
+
+It is idempotent and safe to run on every deploy — so this drift can no longer persist:
+any future doctype that gets a scoped seed grant is repaired on the next migrate. No
+manual `execute` step is needed; a browser refresh picks it up.
 
 ### Verify after applying
 - `gm@` (Hotel Admin) loads `/lost-found` and `/pos` — list renders, **New** works.

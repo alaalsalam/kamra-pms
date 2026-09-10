@@ -162,6 +162,12 @@ website_redirects = [
 # before_install = "hotelpms.install.before_install"
 after_install = "hotelpms.install.after_install"
 
+# Re-sync the admin tier's Custom DocPerms after every migrate. seed_users
+# scopes doctypes to operator roles via Custom DocPerm (which overrides their
+# JSON perms), so without this System Manager + Hotel Admin drift out of
+# Lost & Found / POS. Idempotent.
+after_migrate = ["hotelpms.install.sync_permissions"]
+
 # Uninstallation
 # ------------
 
