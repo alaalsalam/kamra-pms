@@ -129,7 +129,7 @@ export const AR: Record<string, string> = {
   "Phone App": "تطبيق الهاتف",
   "WhatsApp": "واتساب",
   "Channels": "القنوات",
-  "Banquets": "الحفلات والمآدب",
+  "Banquets": "الحفلات والفعاليات",
   "Month Availability": "توفر الشهر",
   "Function Diary": "يومية الفعاليات",
   "Registers": "السجلات",
