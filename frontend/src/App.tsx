@@ -37,6 +37,8 @@ const BanquetRegisters = lazy(() => import("./screens/BanquetRegisters"))
 const BanquetCatalogue = lazy(() => import("./screens/BanquetCatalogue"))
 const BanquetFunction = lazy(() => import("./screens/BanquetFunction"))
 const BanquetDocument = lazy(() => import("./screens/BanquetDocument"))
+const BanquetKitchen = lazy(() => import("./screens/BanquetKitchen"))
+const BanquetKitchenFunction = lazy(() => import("./screens/BanquetKitchenFunction"))
 const Agents = lazy(() => import("./screens/Agents"))
 const Activity = lazy(() => import("./screens/Activity"))
 const AppLauncher = lazy(() => import("./screens/AppLauncher"))
@@ -334,6 +336,8 @@ export default function App() {
           <Route path="banquet-month" element={<BanquetMonth />} />
           <Route path="banquet-registers" element={<BanquetRegisters />} />
           <Route path="banquet-catalogue" element={<BanquetCatalogue />} />
+          <Route path="banquet-kitchen" element={<BanquetKitchen />} />
+          <Route path="banquet-kitchen/:name" element={<BanquetKitchenFunction />} />
           <Route path="banquet/:name" element={<BanquetFunction />} />
           <Route path="banquet/:name/:kind" element={<BanquetDocument />} />
           <Route

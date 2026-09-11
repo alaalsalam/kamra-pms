@@ -589,6 +589,16 @@ export interface FunctionSheet {
   place_of_supply: string | null
   /** Optional — present only after the backend adds the field (renders then). */
   po_number?: string | null
+  /** Banquet-kitchen state, independent of the function status. Present only
+   *  after the backend adds the field; until then the page derives a chip. */
+  kitchen_status?:
+    | "Unplanned"
+    | "Planned"
+    | "In Preparation"
+    | "Ready to Serve"
+    | "Served"
+    | "Closed"
+    | null
   attendees: number
   pax_guaranteed: number
   pax_actual: number
@@ -1077,6 +1087,10 @@ export interface KitchenIndent {
       food_type: string | null
       portions: number
       note: string | null
+      /** Present only after the backend enriches the indent (renders the
+       *  per-dish prep toggle then). */
+      name?: string
+      prep_status?: "Not Started" | "In Progress" | "Ready"
     }[]
   }[]
 }
@@ -1284,6 +1298,18 @@ export const banquet = {
   // the kitchen, and the night itself
   indent: (fn: string) =>
     call<KitchenIndent>("hotelpms.banquet.kitchen_indent", { function: fn }),
+  // The banquet-kitchen state lives on the function itself (reuses update_function);
+  // per-dish prep has its own small setter. Both backends ship dormant.
+  setKitchenStatus: (fn: string, kitchen_status: string) =>
+    call<{ ok: boolean; grand_total: number; balance_due: number }>(
+      "hotelpms.banquet.update_function",
+      { function: fn, fields: { kitchen_status } },
+    ),
+  setDishPrep: (fn: string, selection: string, prep_status: string) =>
+    call<{ ok: boolean; prep_status: string }>(
+      "hotelpms.banquet.set_dish_prep",
+      { function: fn, selection, prep_status },
+    ),
   issueIndent: (fn: string, outlet: string) =>
     call<{ ok: boolean; issued: number }>("hotelpms.banquet.issue_indent", {
       function: fn,

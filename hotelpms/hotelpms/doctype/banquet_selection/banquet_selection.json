@@ -16,7 +16,8 @@
   "supplement_per_pax",
   "cost_per_portion",
   "portion_per_pax",
-  "note"
+  "note",
+  "prep_status"
  ],
  "fields": [
   {
@@ -83,11 +84,19 @@
    "fieldtype": "Data",
    "label": "Note",
    "description": "Less spicy, no garlic, serve at 8:30…"
+  },
+  {
+   "description": "Banquet kitchen per-dish prep state",
+   "fieldname": "prep_status",
+   "fieldtype": "Select",
+   "label": "Prep Status",
+   "default": "Not Started",
+   "options": "Not Started\nIn Progress\nReady"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-31 14:00:00.000000",
+ "modified": "2026-09-11 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "HotelPMS",
  "name": "Banquet Selection",

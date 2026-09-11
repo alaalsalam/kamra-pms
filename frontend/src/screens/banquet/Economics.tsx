@@ -22,11 +22,12 @@ import {
 
 import {
   banquet,
+  call,
   type FunctionEconomics,
   type FunctionSheet,
   type KitchenIndent,
 } from "../../lib/api"
-import { listResource, serverError, type Row } from "../../lib/resource"
+import { serverError, type Row } from "../../lib/resource"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Sheet } from "../../components/ui/sheet"
@@ -428,7 +429,7 @@ function Line({
   )
 }
 
-function IndentSheet({
+export function IndentSheet({
   indent,
   property,
   busy,
@@ -444,12 +445,13 @@ function IndentSheet({
   const [outlets, setOutlets] = useState<Row[]>([])
   const [outlet, setOutlet] = useState("")
   useEffect(() => {
-    listResource("POS Outlet", {
-      fields: ["name", "outlet_name"],
-      filters: [["property", "=", property]],
+    // Whitelisted (require_roles allows admins) — avoids the /api/resource
+    // "POS Outlet" 403 the banquet roles hit on that (perm-drifted) doctype.
+    call<{ name: string; outlet_name: string }[]>("hotelpms.pos.outlets", {
+      property,
     })
       .then((r) => {
-        setOutlets(r)
+        setOutlets(r as unknown as Row[])
         if (r.length) setOutlet(String(r[0].name))
       })
       .catch(() => {})
@@ -570,7 +572,7 @@ function IndentSheet({
   )
 }
 
-function CountSheet({
+export function CountSheet({
   data,
   pax,
   busy,
@@ -667,7 +669,7 @@ function CountSheet({
   )
 }
 
-function SupplementarySheet({
+export function SupplementarySheet({
   busy,
   onClose,
   onAdd,

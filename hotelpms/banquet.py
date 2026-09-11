@@ -324,7 +324,8 @@ def update_function(function: str, fields):
 		"start_time", "end_time", "setup_style", "setup_notes", "setup_from",
 		"teardown_by", "customer_name", "customer_phone", "customer_email",
 		"company", "travel_agent", "billing_name", "gstin", "billing_address",
-		"place_of_supply", "po_number", "attendees", "pax_guaranteed", "pax_actual",
+		"place_of_supply", "po_number", "kitchen_status", "attendees",
+		"pax_guaranteed", "pax_actual",
 		"rate_basis", "source", "sales_owner", "follow_up_date",
 		"tentative_until", "quote_valid_till", "contract_signed_on",
 		"requirements", "beo_notes", "internal_notes", "payment_terms_note",
@@ -2177,14 +2178,22 @@ def kitchen_indent(function: str):
 		})
 	rows.sort(key=lambda r: (-r["short_by"], r["ingredient_name"] or ""))
 
+	# The per-dish prep toggle only makes sense once its field exists — gate the
+	# name/prep_status on that so the frontend doesn't render a control that
+	# can't persist until the (dormant) field migrates in.
+	has_prep = frappe.get_meta("Banquet Selection").has_field("prep_status")
 	by_kitchen: dict = {}
 	for s in dishes:
-		by_kitchen.setdefault(s.kitchen or "Main Kitchen", []).append({
+		entry = {
 			"dish": s.dish_name, "course": s.course,
 			"food_type": s.food_type,
 			"portions": round(float(s.portion_per_pax or 1) * pax, 1),
 			"note": s.note,
-		})
+		}
+		if has_prep:
+			entry["name"] = s.name
+			entry["prep_status"] = s.get("prep_status") or "Not Started"
+		by_kitchen.setdefault(s.kitchen or "Main Kitchen", []).append(entry)
 
 	return {
 		"function": doc.name, "customer_name": doc.customer_name,
@@ -2230,6 +2239,22 @@ def issue_indent(function: str, outlet: str, rows=None):
 	           rationale=f"{len(moved)} ingredient line(s) issued for "
 	                     f"{doc.customer_name} ({doc.billable_pax} pax)")
 	return {"ok": True, "issued": len(moved), "lines": moved}
+
+
+@frappe.whitelist(methods=["POST"])
+@require_roles(*BANQUET_ROLES)
+def set_dish_prep(function: str, selection: str, prep_status: str):
+	"""Mark one dish's kitchen prep state (Not Started / In Progress / Ready) -
+	independent of the function status and of the POS kitchen's KOTs."""
+	if prep_status not in ("Not Started", "In Progress", "Ready"):
+		frappe.throw(_("Unknown prep status: {0}").format(prep_status))
+	doc = _fn(function)
+	row = next((s for s in doc.selections if s.name == selection), None)
+	if not row:
+		frappe.throw(_("No such dish on this function."))
+	row.prep_status = prep_status
+	doc.save()
+	return {"ok": True, "prep_status": prep_status}
 
 
 # ══ during the event ═════════════════════════════════════════════════════

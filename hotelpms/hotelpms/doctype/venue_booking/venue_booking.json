@@ -15,6 +15,7 @@
   "event_name",
   "column_break_a",
   "status",
+  "kitchen_status",
   "enquiry_date",
   "source",
   "sales_owner",
@@ -178,6 +179,14 @@
    "in_standard_filter": 1,
    "default": "Enquiry",
    "options": "Enquiry\nTentative\nConfirmed\nCompleted\nCancelled\nLost"
+  },
+  {
+   "description": "Banquet kitchen production state, independent of the function status",
+   "fieldname": "kitchen_status",
+   "fieldtype": "Select",
+   "label": "Kitchen Status",
+   "default": "Unplanned",
+   "options": "Unplanned\nPlanned\nIn Preparation\nReady to Serve\nServed\nClosed"
   },
   {
    "fieldname": "enquiry_date",
@@ -864,7 +873,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-10 00:00:00.000000",
+ "modified": "2026-09-11 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "HotelPMS",
  "name": "Venue Booking",
