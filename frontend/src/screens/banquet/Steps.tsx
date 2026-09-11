@@ -76,7 +76,7 @@ export function stepsFor(fn: FunctionSheet): Step[] {
       n: 3,
       label: "Margin",
       state: costed
-        ? `${fn.margin_percent}% · ${inr(fn.gross_margin)}`
+        ? `${inr(fn.gross_margin)} · ${fn.margin_percent}%`
         : "Not costed",
       done: costed,
       blocker: !costed ? "Choose the dishes, or cost the services" : undefined,

@@ -12,6 +12,7 @@
     the screen states which case you're in rather than quietly assuming. */
 
 import { useCallback, useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 import {
   AlertTriangle,
   ChefHat,
@@ -67,7 +68,7 @@ export default function Economics({
     <div className="space-y-4">
       <ErrorNote error={error} />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-3">
         <Tile label="Revenue" value={inr(data.revenue.taxable)} sub="before tax" />
         <Tile
           label="Cost"
@@ -80,15 +81,9 @@ export default function Economics({
           tone="text-zinc-600"
         />
         <Tile
-          label="Gross margin"
-          value={inr(m.gross)}
+          label="Expected profit"
+          value={`${inr(m.gross)} — ${m.percent}%`}
           sub={`${inr(m.per_pax)} per head`}
-          tone={healthy ? "text-emerald-700" : "text-amber-700"}
-        />
-        <Tile
-          label="Margin"
-          value={`${m.percent}%`}
-          sub={healthy ? "healthy" : "thin — check the discount"}
           tone={healthy ? "text-emerald-700" : "text-amber-700"}
         />
       </div>
@@ -210,6 +205,15 @@ export default function Economics({
               <p className="mt-2 text-xs text-amber-700">
                 Nothing chosen yet — compose the menu first.
               </p>
+            )}
+            {(fn.status === "Confirmed" || fn.status === "Completed") && (
+              <Link
+                to={"/banquet-kitchen/" + encodeURIComponent(fn.name)}
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-violet-700 hover:underline"
+              >
+                <ChefHat className="size-4" />
+                Open in Banquet Kitchen
+              </Link>
             )}
           </CardContent>
         </Card>
