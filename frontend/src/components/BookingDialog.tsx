@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react"
+
+import PhoneField from "./PhoneField"
 import {
   AlertTriangle,
   Ban,
@@ -82,6 +84,9 @@ export function BookingDialog(props: {
   const { t: tt } = useT()
   const [options, setOptions] = useState<BookingOptions | null>(null)
   const [quote, setQuote] = useState<Quote | null>(null)
+  // A typed phone must pass per-country validation before the booking confirms;
+  // an empty phone is allowed (walk-ins without a number).
+  const [phoneValid, setPhoneValid] = useState(false)
   const [quoting, setQuoting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -703,16 +708,14 @@ export function BookingDialog(props: {
                       </span>
                     )}
                   </Field>
-                  <Field label="Phone">
-                    <input
-                      className={inputCls}
-                      type="tel"
-                      dir="ltr"
-                      value={form.phone}
-                      onChange={(e) => set("phone", e.target.value)}
-                      placeholder="+966 5X XXX XXXX"
-                    />
-                  </Field>
+                  <PhoneField
+                    label="Phone"
+                    value={form.phone}
+                    onChange={(e164, valid) => {
+                      set("phone", e164)
+                      setPhoneValid(valid)
+                    }}
+                  />
                 </div>
 
                 <div className="rounded-xl border border-zinc-200 bg-zinc-50/40">
@@ -1227,18 +1230,13 @@ export function BookingDialog(props: {
                                     placeholder="Who arranged this stay"
                                   />
                                 </Field>
-                                <Field label="Booker phone">
-                                  <input
-                                    className={inputCls}
-                                    type="tel"
-                                    dir="ltr"
-                                    value={form.booked_by_phone}
-                                    onChange={(e) =>
-                                      set("booked_by_phone", e.target.value)
-                                    }
-                                    placeholder="+966 5X XXX XXXX"
-                                  />
-                                </Field>
+                                <PhoneField
+                                  label="Booker phone"
+                                  value={form.booked_by_phone}
+                                  onChange={(e164) =>
+                                    set("booked_by_phone", e164)
+                                  }
+                                />
                               </div>
                               <div className="grid gap-3 sm:grid-cols-2">
                                 <Field label="Relation">
@@ -1590,7 +1588,9 @@ export function BookingDialog(props: {
               <div className="shrink-0 space-y-2 border-t border-zinc-200 bg-white px-6 py-4 md:px-7">
                 <Button
                   className="min-h-[44px] w-full justify-center py-2.5 text-base"
-                  disabled={busy || !!blockReason}
+                  disabled={
+                    busy || !!blockReason || (form.phone !== "" && !phoneValid)
+                  }
                   onClick={() => submit()}
                 >
                   {busy ? "Booking…" : "Confirm booking"}

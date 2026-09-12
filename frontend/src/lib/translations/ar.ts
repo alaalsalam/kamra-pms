@@ -1347,6 +1347,7 @@ export const AR: Record<string, string> = {
   "Approve Documents and Continue to Event Execution": "اعتماد المستندات والمتابعة إلى تنفيذ الفعالية",
   "Back to Documents": "الرجوع إلى المستندات",
   "Save and Close Event": "حفظ وإغلاق الفعالية",
+  "Booker phone": "هاتف مُجري الحجز",
   "Generate tasks": "توليد المهام",
   "No checklist tasks yet - generate them from the property's operation templates (Sales, Finance, Housekeeping, F&B), each dated ahead of the event.": "لا توجد مهام بعد — ولِّدها من قوالب التشغيل للمنشأة (المبيعات، المالية، التدبير، الأغذية والمشروبات)، كلٌّ بتاريخ يسبق الفعالية.",
   "Confirm the function first, then generate its tasks.": "أكّد الفعالية أولًا، ثم ولِّد مهامها.",

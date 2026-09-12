@@ -43,6 +43,7 @@ import { dateMin, dateTimeMin } from "../lib/date"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Sheet } from "../components/ui/sheet"
+import PhoneField from "../components/PhoneField"
 import { taxLabel } from "../lib/money"
 import { getLang } from "../lib/dir"
 
@@ -802,13 +803,15 @@ function DetailTab({
                 onChange={(e) => set("customer_name", e.target.value)}
               />
             </Field>
-            <Field label="Phone">
-              <input
-                className={inputCls}
-                value={get("customer_phone", "")}
-                onChange={(e) => set("customer_phone", e.target.value)}
-              />
-            </Field>
+            <PhoneField
+              label="Phone"
+              value={get("customer_phone", "")}
+              onChange={(e164, valid) => {
+                // only commit a valid (or cleared) number to the draft, so a
+                // half-typed invalid phone is never persisted by the stage Save
+                if (valid || e164 === "") set("customer_phone", e164)
+              }}
+            />
             <Field label="Email">
               <input
                 className={inputCls}

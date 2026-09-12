@@ -30,6 +30,7 @@ import { listResource, serverError, type Row } from "../lib/resource"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Sheet } from "../components/ui/sheet"
+import PhoneField from "../components/PhoneField"
 import {
   Empty,
   ErrorNote,
@@ -600,6 +601,7 @@ function EnquirySheet({
   const [companies, setCompanies] = useState<Row[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [phoneValid, setPhoneValid] = useState(false)
 
   const set = (k: keyof typeof form, v: string) =>
     setForm((f) => ({ ...f, [k]: v }))
@@ -692,7 +694,10 @@ function EnquirySheet({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button disabled={busy} onClick={submit}>
+          <Button
+            disabled={busy || (form.customer_phone !== "" && !phoneValid)}
+            onClick={submit}
+          >
             Open the enquiry
           </Button>
         </div>
@@ -708,13 +713,14 @@ function EnquirySheet({
               onChange={(e) => set("customer_name", e.target.value)}
             />
           </Field>
-          <Field label="Phone">
-            <input
-              className={inputCls}
-              value={form.customer_phone}
-              onChange={(e) => set("customer_phone", e.target.value)}
-            />
-          </Field>
+          <PhoneField
+            label="Phone"
+            value={form.customer_phone}
+            onChange={(e164, valid) => {
+              set("customer_phone", e164)
+              setPhoneValid(valid)
+            }}
+          />
           <Field label="Email">
             <input
               className={inputCls}

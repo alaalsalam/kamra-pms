@@ -8,10 +8,13 @@ import {
   PHONE_DEFAULT_ISO,
   findCountryByDial,
   findCountryByIso,
+  formatNational,
   isoForCountryName,
-  phoneDigitsValid,
   phoneLenLabel,
   phoneLens,
+  phoneLenStatus,
+  phoneValid,
+  toE164,
   toLatinDigits,
   type Country,
 } from "../lib/phone"
@@ -31,15 +34,17 @@ function parseInitial(
   value: string,
   defaultCountryName?: string | null,
 ): { iso: string; digits: string } {
-  if (value?.startsWith("+")) {
-    const latin = toLatinDigits(value)
+  const iso = isoForCountryName(defaultCountryName) ?? PHONE_DEFAULT_ISO
+  const raw = (value ?? "").trim()
+  if (raw.startsWith("+")) {
+    const latin = toLatinDigits(raw)
     const c = findCountryByDial(latin)
     if (c) return { iso: c.iso, digits: latin.slice(c.dial.length) }
+    return { iso, digits: latin } // "+" but unknown dial - keep the digits
   }
-  return {
-    iso: isoForCountryName(defaultCountryName) ?? PHONE_DEFAULT_ISO,
-    digits: "",
-  }
+  // A stored local number (e.g. "0555…") is kept under the default country
+  // rather than wiped, so opening an edit form still shows the existing phone.
+  return { iso, digits: toLatinDigits(raw) }
 }
 
 export default function PhoneField({
@@ -67,19 +72,48 @@ export default function PhoneField({
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+  // the E.164 we last emitted upward, so an EXTERNAL change to `value` (e.g. a
+  // guest-profile pre-fill) can be told apart from our own and re-synced in.
+  const lastEmit = useRef(value ?? "")
 
   const country = findCountryByIso(iso) ?? COUNTRIES[0]
-  const valid = digits.length > 0 && phoneDigitsValid(country, digits)
+  const valid = phoneValid(iso, digits)
+  const lenStatus = phoneLenStatus(iso, digits)
   const maxLen = Math.max(...phoneLens(country))
-  const showError = digits.length > 0 && !valid && (touched || digits.length >= maxLen)
+  // too-long is flagged as soon as it happens; too-short / wrong-pattern only
+  // once the user has left the field or filled it to the expected length.
+  const showError =
+    digits.length > 0 &&
+    !valid &&
+    (lenStatus === "long" || touched || digits.length >= maxLen)
 
   const name = (c: Country) => (lang === "ar" ? c.ar : c.en)
 
-  // push the composed number up whenever the country or digits change
+  // push the composed number up whenever the country or digits change. Skip the
+  // mount fire so opening a form (empty create, or an edit whose stored value we
+  // just parsed) doesn't spuriously mark it dirty or flip the validity flag.
+  const mounted = useRef(false)
   useEffect(() => {
-    onChange(digits ? `+${country.dial}${digits}` : "", valid)
+    if (!mounted.current) {
+      mounted.current = true
+      return
+    }
+    const e164 = digits ? toE164(iso, digits) : ""
+    lastEmit.current = e164
+    onChange(e164, valid)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [iso, digits])
+
+  // re-sync when the parent replaces `value` with something we didn't emit
+  // (a profile pre-fill, a reset) - the field owns its state the rest of the time.
+  useEffect(() => {
+    if ((value ?? "") === lastEmit.current) return
+    lastEmit.current = value ?? ""
+    const p = parseInitial(value, defaultCountryName)
+    setIso(p.iso)
+    setDigits(p.digits)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
 
   // close the dropdown on outside click / Escape
   useEffect(() => {
@@ -108,16 +142,23 @@ export default function PhoneField({
 
   function handleNational(raw: string) {
     // let a guest paste/type a full international number and auto-detect the country
-    if (raw.trim().startsWith("+") || raw.trim().startsWith("00")) {
+    const trimmed = raw.trim()
+    if (trimmed.startsWith("+") || trimmed.startsWith("00")) {
       const rest = toLatinDigits(raw)
       const match = findCountryByDial(rest)
       if (match) {
         setIso(match.iso)
-        setDigits(rest.slice(match.dial.length).slice(0, 13))
+        setDigits(rest.slice(match.dial.length).slice(0, 15))
         return
       }
     }
-    setDigits(toLatinDigits(raw).slice(0, 13))
+    let next = toLatinDigits(raw).slice(0, 15)
+    // the input shows the AsYouType-formatted number; backspacing a grouping
+    // space removes no digit, so drop one to keep delete feeling natural.
+    if (raw.length < formatNational(iso, digits).length && next === digits) {
+      next = next.slice(0, -1)
+    }
+    setDigits(next)
   }
 
   function pick(c: Country) {
@@ -137,14 +178,15 @@ export default function PhoneField({
       (qDigits && c.dial.startsWith(qDigits)),
   )
 
-  const errMsg =
+  const lenHint =
     lang === "ar"
-      ? `رقم ${name(country)} يجب أن يتكوّن من ${phoneLenLabel(country)} أرقام${
-          digits.length ? ` — أدخلت ${digits.length}` : ""
-        }`
-      : `${name(country)} numbers must be ${phoneLenLabel(country)} digits${
-          digits.length ? ` — you entered ${digits.length}` : ""
-        }`
+      ? ` (${phoneLenLabel(country)} أرقام — أدخلت ${digits.length})`
+      : ` (${phoneLenLabel(country)} digits — you entered ${digits.length})`
+  const errMsg =
+    (lang === "ar"
+      ? "رقم الهاتف غير صحيح لهذه الدولة"
+      : "Invalid phone number for this country") +
+    (lenStatus === "short" || lenStatus === "long" ? lenHint : "")
   const searchPh = lang === "ar" ? "ابحث عن دولة أو مفتاح…" : "Search country or code…"
   const noRes = lang === "ar" ? "لا توجد نتائج" : "No results"
   const pickCountry = lang === "ar" ? "اختر الدولة" : "Select country"
@@ -191,7 +233,7 @@ export default function PhoneField({
             inputMode="numeric"
             autoComplete="tel-national"
             dir="ltr"
-            value={digits}
+            value={formatNational(iso, digits)}
             onChange={(e) => handleNational(e.target.value)}
             onBlur={() => setTouched(true)}
             placeholder={"X".repeat(maxLen)}

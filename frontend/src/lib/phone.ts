@@ -1,6 +1,14 @@
 /** Format property/host phone numbers for guest-facing pages.
  *  Always include an international dial code so guests can tap-to-call. */
 
+import {
+  AsYouType,
+  isValidPhoneNumber,
+  parsePhoneNumber,
+  validatePhoneNumberLength,
+  type CountryCode,
+} from "libphonenumber-js/max"
+
 const DIAL_BY_COUNTRY: Record<string, string> = {
   india: "91",
   in: "91",
@@ -203,4 +211,70 @@ export function formatPhoneTel(
     local = local.slice(dial.length)
   }
   return `+${dial}${local}`
+}
+
+// ── libphonenumber-js-backed validation (real per-country format checks) ──
+
+/** All-same-digit junk (1111111111) is a structurally valid number for many
+ *  countries, so libphonenumber accepts it - reject it explicitly. */
+function looksFake(digits: string): boolean {
+  return /^(\d)\1+$/.test(digits)
+}
+
+/** True per-country validity: libphonenumber-js pattern + length check, plus a
+ *  junk guard. `iso` is a 2-letter country code; `digits` the national number
+ *  (Arabic-Indic digits and any formatting are tolerated). */
+export function phoneValid(iso: string, digits: string): boolean {
+  const d = toLatinDigits(digits)
+  if (!d || looksFake(d)) return false
+  try {
+    return isValidPhoneNumber(d, iso as CountryCode)
+  } catch {
+    return false
+  }
+}
+
+/** Length verdict while typing, so the UI knows WHEN to show the error:
+ *  too-long is flagged immediately, too-short only once they stop / fill up. */
+export function phoneLenStatus(
+  iso: string,
+  digits: string,
+): "empty" | "short" | "long" | "ok" {
+  const d = toLatinDigits(digits)
+  if (!d) return "empty"
+  let verdict: string | undefined
+  try {
+    verdict = validatePhoneNumberLength(d, iso as CountryCode)
+  } catch {
+    return "ok"
+  }
+  if (verdict === "TOO_SHORT") return "short"
+  if (verdict === "TOO_LONG" || verdict === "INVALID_LENGTH") return "long"
+  return "ok"
+}
+
+/** As-you-type national grouping, e.g. "50 123 4567". */
+export function formatNational(iso: string, digits: string): string {
+  const d = toLatinDigits(digits)
+  if (!d) return ""
+  try {
+    return new AsYouType(iso as CountryCode).input(d)
+  } catch {
+    return d
+  }
+}
+
+/** Canonical E.164 for storage (strips the national trunk 0); falls back to a
+ *  best-effort +dial+digits when the number can't be parsed. */
+export function toE164(iso: string, digits: string): string {
+  const d = toLatinDigits(digits)
+  if (!d) return ""
+  try {
+    const parsed = parsePhoneNumber(d, iso as CountryCode)
+    if (parsed?.number) return parsed.number
+  } catch {
+    /* fall through */
+  }
+  const c = findCountryByIso(iso)
+  return c ? `+${c.dial}${d}` : `+${d}`
 }
