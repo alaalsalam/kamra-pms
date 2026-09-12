@@ -2632,6 +2632,7 @@ function ChecklistPanel({
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const [working, setWorking] = useState(false)
   const load = useCallback(() => {
     banquet
       .functionTasks(fn)
@@ -2640,6 +2641,19 @@ function ChecklistPanel({
   }, [fn])
 
   useEffect(load, [load])
+
+  const generate = async () => {
+    setWorking(true)
+    setError(null)
+    try {
+      await banquet.generateChecklist(fn)
+      load()
+    } catch (e) {
+      setError(serverError(e))
+    } finally {
+      setWorking(false)
+    }
+  }
 
   if (error) return <ErrorNote error={error} />
   if (!board) return null
@@ -2653,11 +2667,16 @@ function ChecklistPanel({
               Department checklist
             </span>
           </CardTitle>
+          <Button disabled={working} onClick={generate}>
+            <CheckSquare className="size-4" />
+            Generate tasks
+          </Button>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-zinc-500">
-            No checklist tasks yet. Confirming a function creates Sales,
-            Finance, Housekeeping and F&amp;B tasks from property templates.
+            No checklist tasks yet - generate them from the property's operation
+            templates (Sales, Finance, Housekeeping, F&amp;B), each dated ahead
+            of the event.
           </p>
         </CardContent>
       </Card>

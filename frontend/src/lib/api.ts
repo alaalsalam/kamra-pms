@@ -1515,6 +1515,11 @@ export const banquet = {
       "hotelpms.banquet_ops.complete_function_task",
       { task, done: done ? 1 : 0 },
     ),
+  generateChecklist: (fn: string) =>
+    call<{ ok: boolean; created: number }>(
+      "hotelpms.banquet_ops.generate_checklist",
+      { function: fn },
+    ),
   generateBeo: (fn: string) =>
     call<BanquetDocument>("hotelpms.banquet.generate_beo", { function: fn }),
   generateInvoice: (fn: string) =>

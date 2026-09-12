@@ -381,6 +381,22 @@ def function_tasks(function: str):
 
 
 @frappe.whitelist(methods=["POST"])
+@require_roles(*BANQUET_ROLES)
+def generate_checklist(function: str):
+	"""Create the department checklist for a function from the property's
+	operation templates. This normally fires automatically the first time a
+	function is confirmed; this endpoint lets it be (re-)generated for a
+	function that was confirmed before templates existed - e.g. imported or
+	seeded data. Idempotent: instantiate_checklists skips tasks that already
+	exist, so it is safe to call more than once."""
+	doc = frappe.get_doc("Venue Booking", function)
+	if doc.status not in ("Confirmed", "Completed"):
+		frappe.throw(_("Confirm the function first, then generate its tasks."))
+	created = instantiate_checklists(doc)
+	return {"ok": True, "created": len(created)}
+
+
+@frappe.whitelist(methods=["POST"])
 @require_roles(*BANQUET_ROLES, "Finance", "Housekeeping")
 def complete_function_task(task: str, done: int = 1):
 	"""Mark a department checklist task done (or reopen)."""
