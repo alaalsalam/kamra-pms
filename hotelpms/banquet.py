@@ -2195,6 +2195,13 @@ def kitchen_indent(function: str):
 			entry["prep_status"] = s.get("prep_status") or "Not Started"
 		by_kitchen.setdefault(s.kitchen or "Main Kitchen", []).append(entry)
 
+	# Issue status straight off the shared stock ledger — the audit trail (who,
+	# when, which store) already lives there, so no extra fields are needed.
+	issued = frappe.get_all(
+		"Stock Ledger Entry",
+		filters={"reference_doctype": "Venue Booking",
+		         "reference_name": doc.name, "reason": "Consumption"},
+		fields=["owner", "creation", "outlet"], order_by="creation", limit=1)
 	return {
 		"function": doc.name, "customer_name": doc.customer_name,
 		"event_date": str(doc.event_date), "session": doc.session,
@@ -2205,6 +2212,14 @@ def kitchen_indent(function: str):
 		"by_kitchen": [{"kitchen": k, "dishes": v}
 		               for k, v in sorted(by_kitchen.items())],
 		"uncosted": uncosted,
+		"issued": {
+			"done": bool(issued),
+			"on": str(issued[0].creation)[:16] if issued else None,
+			"by": issued[0].owner if issued else None,
+			"outlet": issued[0].outlet if issued else None,
+		},
+		"material_request_enabled": bool(
+			frappe.db.exists("DocType", "Material Request")),
 	}
 
 
@@ -2220,6 +2235,13 @@ def issue_indent(function: str, outlet: str, rows=None):
 	if doc.status not in ("Confirmed", "Completed"):
 		frappe.throw(_("Issue against a confirmed function, not a {0} one.")
 		             .format(doc.status))
+	# Prevent a double pull: the store must not be drawn down twice for the
+	# same function. The ledger is the source of truth.
+	if frappe.db.exists("Stock Ledger Entry", {
+		"reference_doctype": "Venue Booking", "reference_name": doc.name,
+		"reason": "Consumption"}):
+		frappe.throw(_("This function's indent was already issued — the store "
+		              "can't be pulled twice for it."))
 	wanted = _rows(rows) if rows else kitchen_indent(function)["ingredients"]
 	moved = []
 	for r in wanted:
@@ -2246,7 +2268,7 @@ def issue_indent(function: str, outlet: str, rows=None):
 def set_dish_prep(function: str, selection: str, prep_status: str):
 	"""Mark one dish's kitchen prep state (Not Started / In Progress / Ready) -
 	independent of the function status and of the POS kitchen's KOTs."""
-	if prep_status not in ("Not Started", "In Progress", "Ready"):
+	if prep_status not in ("Not Started", "In Preparation", "Ready", "Served"):
 		frappe.throw(_("Unknown prep status: {0}").format(prep_status))
 	doc = _fn(function)
 	row = next((s for s in doc.selections if s.name == selection), None)
@@ -2255,6 +2277,35 @@ def set_dish_prep(function: str, selection: str, prep_status: str):
 	row.prep_status = prep_status
 	doc.save()
 	return {"ok": True, "prep_status": prep_status}
+
+
+@frappe.whitelist(methods=["POST"])
+@require_roles(*BANQUET_ROLES)
+def create_material_request(function: str):
+	"""Raise a material request to the store for this function's shortfall.
+	Reuses kitchen_indent's shortage math and the same Ingredient master - no
+	new stock logic. (Approval/fulfilment is a phase-2 follow-up.)"""
+	if not frappe.db.exists("DocType", "Material Request"):
+		frappe.throw(_("Material Request isn't set up on this site yet."))
+	doc = _fn(function)
+	short = [r for r in kitchen_indent(function)["ingredients"]
+	         if r["short_by"] > 0]
+	if not short:
+		frappe.throw(_("Nothing short - the store covers this indent."))
+	mr = frappe.get_doc({
+		"doctype": "Material Request",
+		"property": doc.property, "function": doc.name,
+		"status": "Requested", "request_date": nowdate(),
+		"lines": [{
+			"ingredient": r["ingredient"], "ingredient_name": r["ingredient_name"],
+			"uom": r["uom"], "required": r["required"],
+			"on_hand": r["on_hand"], "short_by": r["short_by"],
+		} for r in short],
+	}).insert()
+	from hotelpms.savings import log_action
+	log_action("banquet_material_request", "Venue Booking", doc.name, doc.property,
+	           rationale=f"{len(short)} short line(s) for {doc.customer_name}")
+	return {"ok": True, "name": mr.name, "lines": len(short)}
 
 
 # ══ during the event ═════════════════════════════════════════════════════

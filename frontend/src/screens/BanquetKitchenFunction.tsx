@@ -7,7 +7,15 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, Boxes, ChefHat, PackageCheck, Plus, Users } from "lucide-react"
+import {
+  ArrowLeft,
+  Boxes,
+  ChefHat,
+  ClipboardList,
+  PackageCheck,
+  Plus,
+  Users,
+} from "lucide-react"
 
 import {
   banquet,
@@ -27,10 +35,12 @@ import {
   type KitchenStateKey,
 } from "./BanquetKitchen"
 
-const PREP: { key: "Not Started" | "In Progress" | "Ready"; label: string; tone: string }[] = [
+type PrepKey = "Not Started" | "In Preparation" | "Ready" | "Served"
+const PREP: { key: PrepKey; label: string; tone: string }[] = [
   { key: "Not Started", label: "Not Started", tone: "text-zinc-500" },
-  { key: "In Progress", label: "In Progress", tone: "text-amber-700" },
+  { key: "In Preparation", label: "In Preparation", tone: "text-amber-700" },
   { key: "Ready", label: "Ready", tone: "text-emerald-700" },
+  { key: "Served", label: "Served", tone: "text-sky-700" },
 ]
 
 function PrepToggle({
@@ -40,7 +50,7 @@ function PrepToggle({
 }: {
   status: string
   busy: boolean
-  onSet: (s: "Not Started" | "In Progress" | "Ready") => void
+  onSet: (s: PrepKey) => void
 }) {
   return (
     <div className="mt-1 flex gap-1">
@@ -229,9 +239,27 @@ export default function BanquetKitchenFunction() {
           <Card>
             <CardHeader>
               <CardTitle>Kitchen indent</CardTitle>
-              <Button variant="outline" disabled={busy} onClick={() => setShowIndent(true)}>
-                <Boxes className="size-4" /> Issue ingredients
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                {indent.shortfall_lines > 0 && indent.material_request_enabled && (
+                  <Button
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => run(() => banquet.createMaterialRequest(name))}
+                  >
+                    <ClipboardList className="size-4" /> Create material request
+                  </Button>
+                )}
+                {indent.issued?.done ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700">
+                    <PackageCheck className="size-4" /> Issued
+                    {indent.issued?.on ? " · " + indent.issued?.on : ""}
+                  </span>
+                ) : (
+                  <Button variant="outline" disabled={busy} onClick={() => setShowIndent(true)}>
+                    <Boxes className="size-4" /> Issue ingredients
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
@@ -240,12 +268,16 @@ export default function BanquetKitchenFunction() {
                 </span>
                 {indent.shortfall_lines > 0 ? (
                   <span className="font-medium text-rose-700">
-                    {indent.shortfall_lines} short on the shelf — raise a material
-                    request for the store
+                    {indent.shortfall_lines} short on the shelf
                   </span>
                 ) : (
                   <span className="font-medium text-emerald-700">
                     Stock covers the indent
+                  </span>
+                )}
+                {indent.issued?.done && indent.issued?.outlet && (
+                  <span className="text-emerald-700" dir="auto">
+                    · from {indent.issued?.outlet?.split("-").pop()}
                   </span>
                 )}
               </div>
@@ -302,16 +334,37 @@ export default function BanquetKitchenFunction() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="flex items-center gap-1.5 text-sm text-zinc-500">
-                <Users className="size-4" />
+              <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                <div>
+                  <p className="text-zinc-500">Guaranteed pax</p>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {fn.pax_guaranteed}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-zinc-500">Actual pax</p>
+                  <p className="text-lg font-semibold tabular-nums text-emerald-700">
+                    {fn.pax_actual || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-zinc-500">Extras</p>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {econ ? econ.lines.filter((l) => l.is_supplementary).length : 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-zinc-500">Actual cost</p>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {econ ? inr(econ.cost.net) : "—"}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 flex items-center gap-1.5 text-xs text-zinc-400">
+                <Users className="size-3.5" />
                 Record the actual pax and the quantities used against what was
-                planned.
+                planned. "Served" equals the actual pax counted.
               </p>
-              {fn.pax_actual ? (
-                <p className="mt-1 text-sm font-medium text-emerald-700">
-                  {fn.pax_actual} served.
-                </p>
-              ) : null}
             </CardContent>
           </Card>
         </>

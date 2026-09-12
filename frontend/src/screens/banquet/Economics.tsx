@@ -13,13 +13,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import {
-  AlertTriangle,
-  ChefHat,
-  PackageCheck,
-  Plus,
-  TrendingUp,
-} from "lucide-react"
+import { AlertTriangle, ChefHat, TrendingUp } from "lucide-react"
 
 import {
   banquet,
@@ -34,29 +28,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Sheet } from "../../components/ui/sheet"
 import { taxLabel } from "../../lib/money"
 import { Empty, ErrorNote, Field, inputCls, inr, Select } from "./shared"
+import {
+  deriveKitchenState,
+  KitchenStateChip,
+} from "../BanquetKitchen"
 
-type Act = (work: () => Promise<unknown>) => Promise<void>
-
-export default function Economics({
-  fn,
-  busy,
-  act,
-}: {
-  fn: FunctionSheet
-  busy: boolean
-  act: Act
-}) {
+export default function Economics({ fn }: { fn: FunctionSheet }) {
   const [data, setData] = useState<FunctionEconomics | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const [indent, setIndent] = useState<KitchenIndent | null>(null)
-  const [counting, setCounting] = useState(false)
-  const [supp, setSupp] = useState(false)
+  const [planned, setPlanned] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(() => {
+    banquet.economics(fn.name).then(setData).catch((e) => setError(serverError(e)))
+    // read-only kitchen summary only; a throw just means the menu isn't composed
+    // yet. All kitchen operations live on the Banquet Kitchen page.
     banquet
-      .economics(fn.name)
-      .then(setData)
-      .catch((e) => setError(serverError(e)))
+      .indent(fn.name)
+      .then((d) => {
+        setIndent(d)
+        setPlanned(true)
+      })
+      .catch(() => {
+        setIndent(null)
+        setPlanned(false)
+      })
   }, [fn])
   useEffect(load, [load])
 
@@ -176,44 +172,63 @@ export default function Economics({
             <CardTitle>
               <span className="inline-flex items-center gap-1.5">
                 <ChefHat className="size-4" />
-                The kitchen
+                Kitchen summary
               </span>
             </CardTitle>
-            <Button
-              variant="outline"
-              onClick={() =>
-                act(async () => setIndent(await banquet.indent(fn.name)))
-              }
-              disabled={busy}
-            >
-              Build the indent
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-zinc-500">
-              The chosen dishes, exploded through their recipes at{" "}
-              {fn.billable_pax} pax, checked against what's on the shelf — the
-              sheet that has always been written by hand between the event
-              order and the store room.
-            </p>
-            {fn.selections?.length ? (
-              <p className="mt-2 text-xs text-emerald-700">
-                {fn.selections.length} dish
-                {fn.selections.length === 1 ? "" : "es"} chosen.
-              </p>
-            ) : (
-              <p className="mt-2 text-xs text-amber-700">
-                Nothing chosen yet — compose the menu first.
-              </p>
-            )}
             {(fn.status === "Confirmed" || fn.status === "Completed") && (
               <Link
                 to={"/banquet-kitchen/" + encodeURIComponent(fn.name)}
-                className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-violet-700 hover:underline"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-violet-600 px-3 text-sm font-medium text-white hover:bg-violet-700"
               >
                 <ChefHat className="size-4" />
-                Open in Banquet Kitchen
+                Open Banquet Kitchen
               </Link>
+            )}
+          </CardHeader>
+          <CardContent>
+            {!planned || !indent ? (
+              <p className="text-sm text-amber-700">
+                Menu not composed yet — compose it to plan the kitchen.
+              </p>
+            ) : (
+              <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                <SumRow label="Dishes" value={`${fn.selections?.length ?? 0}`} />
+                <SumRow label="Guests" value={`${indent.pax}`} />
+                <SumRow
+                  label="Expected ingredient cost"
+                  value={inr(indent.total_cost)}
+                />
+                <SumRow label="Actual cost" value={inr(data.cost.net)} />
+                <SumRow
+                  label="Short"
+                  value={`${indent.shortfall_lines}`}
+                  tone={
+                    indent.shortfall_lines > 0
+                      ? "text-rose-700"
+                      : "text-emerald-700"
+                  }
+                />
+                <SumRow
+                  label="Issue status"
+                  value={
+                    indent.issued?.done
+                      ? `Issued · ${indent.issued.on ?? ""}`
+                      : "Not issued"
+                  }
+                  tone={indent.issued?.done ? "text-emerald-700" : "text-zinc-500"}
+                />
+                <div className="flex items-center justify-between gap-2 sm:col-span-2">
+                  <dt className="text-zinc-500">Prep status</dt>
+                  <dd>
+                    <KitchenStateChip
+                      state={deriveKitchenState(
+                        fn as unknown as Record<string, unknown>,
+                        planned,
+                      )}
+                    />
+                  </dd>
+                </div>
+              </dl>
             )}
           </CardContent>
         </Card>
@@ -222,16 +237,9 @@ export default function Economics({
       <Card>
         <CardHeader>
           <CardTitle>Quoted vs served</CardTitle>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setSupp(true)}>
-              <Plus className="size-4" />
-              Ordered on the night
-            </Button>
-            <Button onClick={() => setCounting(true)}>
-              <PackageCheck className="size-4" />
-              Count the night
-            </Button>
-          </div>
+          <p className="text-xs text-zinc-400">
+            Recorded from the Banquet Kitchen.
+          </p>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -310,49 +318,25 @@ export default function Economics({
           </div>
         </CardContent>
       </Card>
+    </div>
+  )
+}
 
-      {indent && (
-        <IndentSheet
-          indent={indent}
-          property={fn.property}
-          busy={busy}
-          onClose={() => setIndent(null)}
-          onIssue={(outlet) =>
-            act(async () => {
-              await banquet.issueIndent(fn.name, outlet)
-              setIndent(null)
-            })
-          }
-        />
-      )}
-      {counting && (
-        <CountSheet
-          data={data}
-          pax={fn.billable_pax}
-          busy={busy}
-          onClose={() => setCounting(false)}
-          onSave={(rows, pax) =>
-            act(async () => {
-              await banquet.recordConsumption(fn.name, rows, pax)
-              setCounting(false)
-              load()
-            })
-          }
-        />
-      )}
-      {supp && (
-        <SupplementarySheet
-          busy={busy}
-          onClose={() => setSupp(false)}
-          onAdd={(params) =>
-            act(async () => {
-              await banquet.addSupplementary(fn.name, params)
-              setSupp(false)
-              load()
-            })
-          }
-        />
-      )}
+function SumRow({
+  label,
+  value,
+  tone = "text-zinc-900",
+}: {
+  label: string
+  value: string
+  tone?: string
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <dt className="text-zinc-500">{label}</dt>
+      <dd className={"font-medium tabular-nums " + tone} dir="auto">
+        {value}
+      </dd>
     </div>
   )
 }

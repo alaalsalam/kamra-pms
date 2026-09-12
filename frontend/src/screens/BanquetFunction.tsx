@@ -212,7 +212,7 @@ export default function BanquetFunction() {
 
       {step === "enquiry" && <DetailTab fn={fn} busy={busy} act={act} />}
       {step === "quote" && <ItemsTab fn={fn} cat={cat} busy={busy} act={act} />}
-      {step === "margin" && <Economics fn={fn} busy={busy} act={act} />}
+      {step === "margin" && <Economics fn={fn} />}
       {step === "money" && <MoneyTab fn={fn} busy={busy} act={act} />}
       {step === "documents" && <PaperTab fn={fn} busy={busy} act={act} />}
       {step === "close" && (

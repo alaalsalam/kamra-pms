@@ -1090,9 +1090,14 @@ export interface KitchenIndent {
       /** Present only after the backend enriches the indent (renders the
        *  per-dish prep toggle then). */
       name?: string
-      prep_status?: "Not Started" | "In Progress" | "Ready"
+      prep_status?: "Not Started" | "In Preparation" | "Ready" | "Served"
     }[]
   }[]
+  /** Issue audit off the shared stock ledger (optional: absent until the
+   *  backend workers reload the enriched indent). */
+  issued?: { done: boolean; on: string | null; by: string | null; outlet: string | null }
+  /** True once the Material Request doctype exists (post-migrate). */
+  material_request_enabled?: boolean
 }
 export interface FunctionEconomics {
   function: string
@@ -1309,6 +1314,11 @@ export const banquet = {
     call<{ ok: boolean; prep_status: string }>(
       "hotelpms.banquet.set_dish_prep",
       { function: fn, selection, prep_status },
+    ),
+  createMaterialRequest: (fn: string) =>
+    call<{ ok: boolean; name: string; lines: number }>(
+      "hotelpms.banquet.create_material_request",
+      { function: fn },
     ),
   issueIndent: (fn: string, outlet: string) =>
     call<{ ok: boolean; issued: number }>("hotelpms.banquet.issue_indent", {

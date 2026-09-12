@@ -66,3 +66,44 @@ bench --site <site> migrate
 ```
 Then the per-dish prep toggle and the editable kitchen-status select light up with no
 frontend release.
+
+---
+
+## Round 2 (2026-09-12) — completion + Economics-as-summary
+
+Per the completion spec, the kitchen is now the sole operational hub and the
+Profitability screen is a read-only summary.
+
+**Live (Python reloads, frontend builds):**
+- `issue_indent` now **blocks a double pull** — throws if a `Stock Ledger Entry`
+  with `reference_doctype="Venue Booking", reference_name=fn, reason="Consumption"`
+  already exists. `kitchen_indent` returns `issued {done, on, by, outlet}` from that
+  same ledger (the audit trail — who/when/which store — already lives there; no new
+  fields), plus `material_request_enabled = frappe.db.exists("DocType","Material
+  Request")` as the button gate.
+- **Economics is summary-only**: the "Build the indent", "Count the night" and
+  "Ordered on the night" actions were removed; a read-only **Kitchen summary** card
+  (dishes, guests, expected/actual ingredient cost, shortage, issue status, prep
+  status) + an **Open Banquet Kitchen** button replaced them. The Quoted-vs-served
+  table stays, read-only.
+- **Cost → profit is already wired** (verified, nothing built): ingredient
+  `cost_per_unit` → dish `cost_per_portion` → menu line `cost_rate` →
+  `function_economics` → the Expected-profit tile, with the existing `uncosted_lines`
+  warning when a recipe has no cost (so an uncosted dish is flagged, not silently
+  treated as free).
+
+**Dormant (one `bench migrate` lights them up):**
+- **Material Request** + **Material Request Item** doctypes (property, function link,
+  status Draft→Requested→Fulfilled, lines {ingredient, required, on_hand, short_by}),
+  full standard perms, added to `fix_perms_fields.ALL_DOCTYPES`. `create_material_request(function)`
+  seeds the lines from `kitchen_indent().ingredients` where `short_by>0` — reuses the
+  indent's shortage math + the Ingredient master, no new stock logic. The frontend
+  "Create material request" button is gated on `material_request_enabled`, so it
+  appears only after migrate. **Approval/fulfilment is the remaining phase-2 step**
+  (a status transition + fulfilment posting stock in via `inventory._apply_move`).
+- `Banquet Selection.prep_status` is now the 4-state **Not Started / In Preparation /
+  Ready / Served** (matches the per-dish toggle); still gated by `has_field` so the
+  toggle only shows post-migrate.
+
+**Not built (noted):** a per-line "issued quantity" editor — the existing `rows`
+param on `issue_indent` already accepts partial quantities; a UI for it is deferred.

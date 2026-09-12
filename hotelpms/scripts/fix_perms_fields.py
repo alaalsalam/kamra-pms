@@ -45,7 +45,7 @@ ALL_DOCTYPES = [
 	# (Lost & Found, POS). Listing them here restores the admin tier's full
 	# grant. Keep in sync whenever a new doctype gets a scoped seed grant.
 	"Lost And Found Item", "POS Outlet", "Menu Item", "POS Order",
-	"POS Table Reservation", "Cancelled Invoice",
+	"POS Table Reservation", "Cancelled Invoice", "Material Request",
 ]
 
 EXTRA_GRANTS = {

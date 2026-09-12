@@ -1,0 +1,73 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-09-12 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "ingredient",
+  "ingredient_name",
+  "uom",
+  "column_break_a",
+  "required",
+  "on_hand",
+  "short_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "ingredient",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Ingredient",
+   "options": "Ingredient",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ingredient_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Ingredient Name"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Data",
+   "label": "UOM"
+  },
+  {
+   "fieldname": "column_break_a",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "required",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Required"
+  },
+  {
+   "fieldname": "on_hand",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "On Hand"
+  },
+  {
+   "fieldname": "short_by",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Short By"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-12 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "HotelPMS",
+ "name": "Material Request Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
