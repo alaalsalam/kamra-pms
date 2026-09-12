@@ -820,6 +820,10 @@ function EnquirySheet({
           </p>
           {avail === null ? (
             <p className="text-sm text-zinc-400">Checking…</p>
+          ) : avail.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-zinc-300 px-3 py-4 text-center text-sm text-zinc-500">
+              No halls yet - add them under Venues.
+            </p>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
               {avail.map((v) => {
