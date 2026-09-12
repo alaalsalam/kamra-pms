@@ -709,6 +709,9 @@ export function BookingDialog(props: {
                     )}
                   </Field>
                   <PhoneField
+                    // remount when a guest profile pre-fills the phone, so the
+                    // field re-reads it (it owns its state the rest of the time)
+                    key={profile?.name ?? "manual"}
                     label="Phone"
                     value={form.phone}
                     onChange={(e164, valid) => {

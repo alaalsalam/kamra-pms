@@ -68,13 +68,13 @@ export default function PhoneField({
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [touched, setTouched] = useState(false)
+  // Type on the raw digits (stable caret, no reformatting jitter); only show the
+  // grouped number once the field is left.
+  const [focused, setFocused] = useState(false)
 
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
-  // the E.164 we last emitted upward, so an EXTERNAL change to `value` (e.g. a
-  // guest-profile pre-fill) can be told apart from our own and re-synced in.
-  const lastEmit = useRef(value ?? "")
 
   const country = findCountryByIso(iso) ?? COUNTRIES[0]
   const valid = phoneValid(iso, digits)
@@ -98,22 +98,9 @@ export default function PhoneField({
       mounted.current = true
       return
     }
-    const e164 = digits ? toE164(iso, digits) : ""
-    lastEmit.current = e164
-    onChange(e164, valid)
+    onChange(digits ? toE164(iso, digits) : "", valid)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [iso, digits])
-
-  // re-sync when the parent replaces `value` with something we didn't emit
-  // (a profile pre-fill, a reset) - the field owns its state the rest of the time.
-  useEffect(() => {
-    if ((value ?? "") === lastEmit.current) return
-    lastEmit.current = value ?? ""
-    const p = parseInitial(value, defaultCountryName)
-    setIso(p.iso)
-    setDigits(p.digits)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value])
 
   // close the dropdown on outside click / Escape
   useEffect(() => {
@@ -152,13 +139,7 @@ export default function PhoneField({
         return
       }
     }
-    let next = toLatinDigits(raw).slice(0, 15)
-    // the input shows the AsYouType-formatted number; backspacing a grouping
-    // space removes no digit, so drop one to keep delete feeling natural.
-    if (raw.length < formatNational(iso, digits).length && next === digits) {
-      next = next.slice(0, -1)
-    }
-    setDigits(next)
+    setDigits(toLatinDigits(raw).slice(0, 15))
   }
 
   function pick(c: Country) {
@@ -233,9 +214,13 @@ export default function PhoneField({
             inputMode="numeric"
             autoComplete="tel-national"
             dir="ltr"
-            value={formatNational(iso, digits)}
+            value={focused ? digits : formatNational(iso, digits)}
             onChange={(e) => handleNational(e.target.value)}
-            onBlur={() => setTouched(true)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => {
+              setFocused(false)
+              setTouched(true)
+            }}
             placeholder={"X".repeat(maxLen)}
             aria-invalid={showError || undefined}
             aria-describedby={showError ? errId : undefined}
