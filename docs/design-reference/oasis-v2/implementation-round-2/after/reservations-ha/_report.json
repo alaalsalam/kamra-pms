@@ -1,0 +1,58 @@
+[
+  {
+    "tag": "desktop-ar",
+    "overflow": false,
+    "dir": "rtl",
+    "finalPath": "/hotelpms/login",
+    "errors": []
+  },
+  {
+    "tag": "desktop-en",
+    "overflow": false,
+    "dir": "ltr",
+    "finalPath": "/hotelpms/login",
+    "errors": []
+  },
+  {
+    "tag": "laptop-ar",
+    "overflow": false,
+    "dir": "rtl",
+    "finalPath": "/hotelpms/login",
+    "errors": []
+  },
+  {
+    "tag": "laptop-en",
+    "overflow": false,
+    "dir": "ltr",
+    "finalPath": "/hotelpms/login",
+    "errors": []
+  },
+  {
+    "tag": "tablet-ar",
+    "overflow": false,
+    "dir": "rtl",
+    "finalPath": "/hotelpms/login",
+    "errors": []
+  },
+  {
+    "tag": "tablet-en",
+    "overflow": false,
+    "dir": "ltr",
+    "finalPath": "/hotelpms/login",
+    "errors": []
+  },
+  {
+    "tag": "mobile-ar",
+    "overflow": false,
+    "dir": "rtl",
+    "finalPath": "/hotelpms/login",
+    "errors": []
+  },
+  {
+    "tag": "mobile-en",
+    "overflow": false,
+    "dir": "ltr",
+    "finalPath": "/hotelpms/login",
+    "errors": []
+  }
+]

@@ -29,5 +29,13 @@ docs-site/.vitepress/cache/
 
 graphify-out/
 
+# Local browser/visual QA artifacts (curated evidence belongs under docs/)
+/.playwright-mcp/
+/screenshots/
+/*.png
+/*.zip
+/folio-snapshot.md
+/folio-view.md
+
 # BildFast keeps its recoverable checkpoint repository as runtime state.
 .bildfast/checkpoints.git/

@@ -1,0 +1,74 @@
+[
+  {
+    "tag": "desktop-ar",
+    "overflow": false,
+    "dir": "rtl",
+    "finalPath": "/hotelpms",
+    "w": 1440,
+    "sw": 1440,
+    "errors": []
+  },
+  {
+    "tag": "desktop-en",
+    "overflow": false,
+    "dir": "ltr",
+    "finalPath": "/hotelpms",
+    "w": 1440,
+    "sw": 1440,
+    "errors": []
+  },
+  {
+    "tag": "laptop-ar",
+    "overflow": false,
+    "dir": "rtl",
+    "finalPath": "/hotelpms",
+    "w": 1024,
+    "sw": 1024,
+    "errors": []
+  },
+  {
+    "tag": "laptop-en",
+    "overflow": false,
+    "dir": "ltr",
+    "finalPath": "/hotelpms",
+    "w": 1024,
+    "sw": 1024,
+    "errors": []
+  },
+  {
+    "tag": "tablet-ar",
+    "overflow": false,
+    "dir": "rtl",
+    "finalPath": "/hotelpms",
+    "w": 768,
+    "sw": 768,
+    "errors": []
+  },
+  {
+    "tag": "tablet-en",
+    "overflow": false,
+    "dir": "ltr",
+    "finalPath": "/hotelpms",
+    "w": 768,
+    "sw": 768,
+    "errors": []
+  },
+  {
+    "tag": "mobile-ar",
+    "overflow": false,
+    "dir": "rtl",
+    "finalPath": "/hotelpms",
+    "w": 390,
+    "sw": 390,
+    "errors": []
+  },
+  {
+    "tag": "mobile-en",
+    "overflow": false,
+    "dir": "ltr",
+    "finalPath": "/hotelpms",
+    "w": 390,
+    "sw": 390,
+    "errors": []
+  }
+]
