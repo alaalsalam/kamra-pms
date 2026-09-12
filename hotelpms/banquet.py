@@ -118,23 +118,34 @@ def _map(value) -> dict:
 def banquet_catalogue(property: str):
 	"""What the property sells: the menu packages (with their courses) and
 	the service list. This is the picker behind every line item."""
+	# Bilingual names, responsible kitchen/department and external supplier
+	# ship dormant: their columns only exist after the next migrate, so gate
+	# each SELECT on the live schema - querying a missing column is an
+	# unknown-column error on an un-migrated tenant, not a silent miss. The UI
+	# reads the `features` flags below to know which inputs to show.
+	has = frappe.db.has_column
+	menu_extra = [f for f in ("menu_name_ar", "kitchen")
+	              if has("Banquet Menu", f)]
 	menus = frappe.get_all(
 		"Banquet Menu",
 		filters={"property": property, "disabled": 0},
 		fields=["name", "menu_name", "menu_code", "meal_period", "food_type",
 		        "service_style", "cuisine", "rate_per_pax", "min_pax",
-		        "gst_rate", "inclusions", "exclusions"],
+		        "gst_rate", "inclusions", "exclusions", *menu_extra],
 		order_by="meal_period, rate_per_pax")
 	for m in menus:
 		m["courses"] = frappe.get_all(
 			"Banquet Menu Course", filters={"parent": m.name},
 			fields=["name", "course", "dishes", "choice_of", "is_live_counter"],
 			order_by="idx")
+	svc_extra = [f for f in ("item_name_ar", "department", "supplier")
+	             if has("Banquet Service Item", f)]
 	services = frappe.get_all(
 		"Banquet Service Item",
 		filters={"property": property, "disabled": 0},
-		fields=["name", "item_name", "category", "uom", "rate", "gst_rate",
-		        "chargeable", "is_alcohol", "on_pack_list", "description"],
+		fields=["name", "item_name", "category", "uom", "rate", "cost_rate",
+		        "gst_rate", "chargeable", "is_alcohol", "on_pack_list",
+		        "description", *svc_extra],
 		order_by="category, item_name")
 	venues = frappe.get_all(
 		"Venue", filters={"property": property, "disabled": 0},
@@ -142,7 +153,16 @@ def banquet_catalogue(property: str):
 		        "min_capacity", "area_sqft", "base_price", "hourly_rate",
 		        "min_hours", "gst_rate", "setup_styles", "amenities"],
 		order_by="venue_name")
-	return {"menus": menus, "services": services, "venues": venues}
+	return {
+		"menus": menus, "services": services, "venues": venues,
+		"features": {
+			"bilingual": "menu_name_ar" in menu_extra
+			             and "item_name_ar" in svc_extra,
+			"menu_kitchen": "kitchen" in menu_extra,
+			"service_department": "department" in svc_extra,
+			"service_supplier": "supplier" in svc_extra,
+		},
+	}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -162,9 +182,11 @@ def save_banquet_menu(property: str, menu_name: str, rate_per_pax: float,
 		"menu_name": menu_name.strip()[:140],
 		"rate_per_pax": float(rate_per_pax),
 	})
-	for field in ("menu_code", "meal_period", "food_type", "service_style",
-	              "cuisine", "min_pax", "gst_rate", "inclusions", "exclusions",
-	              "disabled"):
+	for field in ("menu_name_ar", "menu_code", "meal_period", "food_type",
+	              "service_style", "kitchen", "cuisine", "min_pax", "gst_rate",
+	              "inclusions", "exclusions", "disabled"):
+		# an un-migrated tenant lacks menu_name_ar/kitchen; doc.set on a field
+		# the meta doesn't know silently drops it, so this is safe pre-migrate
 		if field in kw and kw[field] is not None:
 			doc.set(field, kw[field])
 	if courses is not None:
@@ -208,8 +230,11 @@ def save_service_item(property: str, item_name: str, category: str,
 		"property": property, "item_name": item_name.strip()[:140],
 		"category": category, "rate": float(rate or 0), "uom": uom,
 	})
-	for field in ("gst_rate", "chargeable", "is_alcohol", "on_pack_list",
-	              "description", "disabled"):
+	for field in ("item_name_ar", "department", "supplier", "cost_rate",
+	              "cost_gst_rate", "gst_rate", "chargeable", "is_alcohol",
+	              "on_pack_list", "description", "disabled"):
+		# item_name_ar/department/supplier are dormant until migrate; doc.set
+		# drops unknown meta fields, so passing them through is safe pre-migrate
 		if field in kw and kw[field] is not None:
 			doc.set(field, kw[field])
 	doc.save()

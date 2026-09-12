@@ -44,6 +44,11 @@ import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Sheet } from "../components/ui/sheet"
 import { taxLabel } from "../lib/money"
+import { getLang } from "../lib/dir"
+
+/** Show the Arabic catalogue name when the UI is Arabic and one is set. */
+const catLabel = (en: string, ar?: string | null) =>
+  getLang() === "ar" && ar ? ar : en
 import {
   daysAway,
   Empty,
@@ -1530,12 +1535,14 @@ function CataloguePicker({
   const list =
     kind === "menu"
       ? cat.menus.filter((m) =>
-          (m.menu_name + m.meal_period + (m.cuisine ?? ""))
+          (m.menu_name + (m.menu_name_ar ?? "") + m.meal_period + (m.cuisine ?? ""))
             .toLowerCase()
             .includes(q.toLowerCase()),
         )
       : cat.services.filter((s) =>
-          (s.item_name + s.category).toLowerCase().includes(q.toLowerCase()),
+          (s.item_name + (s.item_name_ar ?? "") + s.category)
+            .toLowerCase()
+            .includes(q.toLowerCase()),
         )
 
   return (
@@ -1572,7 +1579,9 @@ function CataloguePicker({
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-medium">
-                      {isMenu ? item.menu_name : item.item_name}
+                      {isMenu
+                        ? catLabel(item.menu_name, item.menu_name_ar)
+                        : catLabel(item.item_name, item.item_name_ar)}
                     </p>
                     <p className="text-xs text-zinc-400">
                       {isMenu

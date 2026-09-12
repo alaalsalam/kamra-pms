@@ -475,10 +475,14 @@ export interface BanquetMenuCourse {
 export interface BanquetMenu {
   name: string
   menu_name: string
+  /** Optional Arabic name; present only after the catalogue migrate. */
+  menu_name_ar?: string | null
   menu_code: string | null
   meal_period: string
   food_type: string
   service_style: string
+  /** Responsible kitchen; present only after the catalogue migrate. */
+  kitchen?: string | null
   cuisine: string | null
   rate_per_pax: number
   min_pax: number
@@ -490,9 +494,16 @@ export interface BanquetMenu {
 export interface BanquetService {
   name: string
   item_name: string
+  /** Optional Arabic name; present only after the catalogue migrate. */
+  item_name_ar?: string | null
   category: string
+  /** Responsible department; present only after the catalogue migrate. */
+  department?: string | null
+  /** External supplier; present only after the catalogue migrate. */
+  supplier?: string | null
   uom: string
   rate: number
+  cost_rate?: number
   gst_rate: number
   chargeable: 0 | 1
   is_alcohol: 0 | 1
@@ -514,10 +525,18 @@ export interface BanquetVenue {
   setup_styles: string | null
   amenities: string | null
 }
+/** Which dormant catalogue fields the live schema supports (post-migrate). */
+export interface BanquetCatalogueFeatures {
+  bilingual: boolean
+  menu_kitchen: boolean
+  service_department: boolean
+  service_supplier: boolean
+}
 export interface BanquetCatalogue {
   menus: BanquetMenu[]
   services: BanquetService[]
   venues: BanquetVenue[]
+  features?: BanquetCatalogueFeatures
 }
 
 export interface FunctionItem {

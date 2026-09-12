@@ -8,11 +8,13 @@
  "field_order": [
   "property",
   "menu_name",
+  "menu_name_ar",
   "menu_code",
   "meal_period",
   "food_type",
   "column_break_a",
   "service_style",
+  "kitchen",
   "cuisine",
   "rate_per_pax",
   "min_pax",
@@ -39,6 +41,11 @@
    "label": "Menu Name",
    "reqd": 1,
    "in_list_view": 1
+  },
+  {
+   "fieldname": "menu_name_ar",
+   "fieldtype": "Data",
+   "label": "Menu Name (Arabic)"
   },
   {
    "fieldname": "menu_code",
@@ -72,6 +79,14 @@
    "label": "Service Style",
    "default": "Buffet",
    "options": "Buffet\nPlated\nFamily Style\nLive Counter\nBoxed\nCocktail"
+  },
+  {
+   "fieldname": "kitchen",
+   "fieldtype": "Select",
+   "label": "Responsible Kitchen",
+   "default": "Main Kitchen",
+   "options": "Main Kitchen\nTandoor\nChinese\nContinental\nBakery\nCold Kitchen\nLive Counter\nOutsourced",
+   "description": "Which kitchen owns this package's dishes for prep and costing."
   },
   {
    "fieldname": "cuisine",

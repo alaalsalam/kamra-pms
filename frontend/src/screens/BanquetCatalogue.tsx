@@ -16,6 +16,7 @@ import { ChefHat, Plus, Search, Trash2, UtensilsCrossed, Wrench } from "lucide-r
 import {
   banquet,
   type BanquetCatalogue as Cat,
+  type BanquetCatalogueFeatures,
   type BanquetMenu,
   type BanquetMenuCourse,
   type BanquetDish,
@@ -29,6 +30,11 @@ import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Sheet } from "../components/ui/sheet"
 import { taxLabel } from "../lib/money"
+import { getLang } from "../lib/dir"
+
+/** Show the Arabic catalogue name when the UI is Arabic and one is set. */
+const catLabel = (en: string, ar?: string | null) =>
+  getLang() === "ar" && ar ? ar : en
 import {
   CATALOGUE_UOMS,
   Empty,
@@ -92,7 +98,7 @@ export default function BanquetCatalogue() {
   const menus = useMemo(
     () =>
       (cat?.menus ?? []).filter((m) =>
-        (m.menu_name + m.meal_period + (m.cuisine ?? ""))
+        (m.menu_name + (m.menu_name_ar ?? "") + m.meal_period + (m.cuisine ?? ""))
           .toLowerCase()
           .includes(query.toLowerCase()),
       ),
@@ -101,7 +107,9 @@ export default function BanquetCatalogue() {
   const services = useMemo(
     () =>
       (cat?.services ?? []).filter((s) =>
-        (s.item_name + s.category).toLowerCase().includes(query.toLowerCase()),
+        (s.item_name + (s.item_name_ar ?? "") + s.category)
+          .toLowerCase()
+          .includes(query.toLowerCase()),
       ),
     [cat, query],
   )
@@ -224,7 +232,7 @@ export default function BanquetCatalogue() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-medium">
-                        {m.menu_name}
+                        {catLabel(m.menu_name, m.menu_name_ar)}
                         {m.menu_code && (
                           <span className="ml-2 font-mono text-xs font-normal text-zinc-400">
                             {m.menu_code}
@@ -309,7 +317,9 @@ export default function BanquetCatalogue() {
                 {services.map((s) => (
                   <tr key={s.name} className="border-b border-zinc-100">
                     <td className="py-2 pr-3">
-                      <span className="font-medium">{s.item_name}</span>
+                      <span className="font-medium">
+                        {catLabel(s.item_name, s.item_name_ar)}
+                      </span>
                       {s.description && (
                         <p className="text-xs text-zinc-400">{s.description}</p>
                       )}
@@ -371,6 +381,7 @@ export default function BanquetCatalogue() {
         <MenuSheet
           draft={menuDraft}
           busy={busy}
+          features={cat?.features}
           onClose={() => setMenuDraft(null)}
           onSave={async (payload) => {
             await act(() => banquet.saveMenu(payload))
@@ -393,6 +404,7 @@ export default function BanquetCatalogue() {
         <ServiceSheet
           draft={svcDraft}
           busy={busy}
+          features={cat?.features}
           onClose={() => setSvcDraft(null)}
           onSave={async (payload) => {
             await act(() => banquet.saveService(payload))
@@ -409,11 +421,13 @@ export default function BanquetCatalogue() {
 function MenuSheet({
   draft,
   busy,
+  features,
   onClose,
   onSave,
 }: {
   draft: Partial<BanquetMenu>
   busy: boolean
+  features?: BanquetCatalogueFeatures
   onClose: () => void
   onSave: (payload: Record<string, unknown>) => void
 }) {
@@ -443,10 +457,12 @@ function MenuSheet({
               onSave({
                 name: draft.name ?? null,
                 menu_name: m.menu_name,
+                menu_name_ar: m.menu_name_ar ?? null,
                 menu_code: m.menu_code ?? null,
                 meal_period: m.meal_period,
                 food_type: m.food_type,
                 service_style: m.service_style,
+                kitchen: m.kitchen ?? null,
                 cuisine: m.cuisine ?? null,
                 rate_per_pax: Number(m.rate_per_pax) || 0,
                 min_pax: Number(m.min_pax) || 0,
@@ -464,7 +480,10 @@ function MenuSheet({
     >
       <div className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field label="Menu name" className="sm:col-span-2">
+          <Field
+            label="Menu name"
+            className={features?.bilingual ? "" : "sm:col-span-2"}
+          >
             <input
               className={inputCls}
               placeholder="Silver Veg Buffet"
@@ -472,6 +491,17 @@ function MenuSheet({
               onChange={(e) => set("menu_name", e.target.value)}
             />
           </Field>
+          {features?.bilingual && (
+            <Field label="Menu name (Arabic)">
+              <input
+                className={inputCls}
+                dir="rtl"
+                placeholder="بوفيه نباتي فضي"
+                value={m.menu_name_ar ?? ""}
+                onChange={(e) => set("menu_name_ar", e.target.value)}
+              />
+            </Field>
+          )}
           <Field label="Code" hint="Prints on the event order">
             <input
               className={inputCls}
@@ -501,6 +531,18 @@ function MenuSheet({
               options={SERVICE_STYLES}
             />
           </Field>
+          {features?.menu_kitchen && (
+            <Field
+              label="Responsible kitchen"
+              hint="Where its dishes are prepped and costed"
+            >
+              <Select
+                value={m.kitchen ?? "Main Kitchen"}
+                onChange={(v) => set("kitchen", v)}
+                options={KITCHENS}
+              />
+            </Field>
+          )}
           <Field label="Cuisine">
             <input
               className={inputCls}
@@ -646,11 +688,13 @@ function MenuSheet({
 function ServiceSheet({
   draft,
   busy,
+  features,
   onClose,
   onSave,
 }: {
   draft: Partial<BanquetService>
   busy: boolean
+  features?: BanquetCatalogueFeatures
   onClose: () => void
   onSave: (payload: Record<string, unknown>) => void
 }) {
@@ -674,9 +718,17 @@ function ServiceSheet({
               onSave({
                 name: draft.name ?? null,
                 item_name: s.item_name,
+                item_name_ar: s.item_name_ar ?? null,
                 category: s.category,
+                department: s.department ?? null,
+                supplier: s.supplier ?? null,
                 uom: s.uom,
                 rate: Number(s.rate) || 0,
+                // undefined = an old-worker read that didn't return cost_rate;
+                // send null so the backend keeps the existing cost instead of
+                // zeroing it (which would read as 100% margin on every function)
+                cost_rate:
+                  s.cost_rate === undefined ? null : Number(s.cost_rate) || 0,
                 gst_rate: Number(s.gst_rate) || 0,
                 chargeable: s.chargeable ? 1 : 0,
                 is_alcohol: s.is_alcohol ? 1 : 0,
@@ -691,7 +743,7 @@ function ServiceSheet({
       }
     >
       <div className="space-y-3">
-        <Field label="What is it">
+        <Field label="Service name">
           <input
             className={inputCls}
             placeholder="LED wall 12×8"
@@ -699,6 +751,17 @@ function ServiceSheet({
             onChange={(e) => set("item_name", e.target.value)}
           />
         </Field>
+        {features?.bilingual && (
+          <Field label="Service name (Arabic)">
+            <input
+              className={inputCls}
+              dir="rtl"
+              placeholder="شاشة LED ١٢×٨"
+              value={s.item_name_ar ?? ""}
+              onChange={(e) => set("item_name_ar", e.target.value)}
+            />
+          </Field>
+        )}
         <div className="grid grid-cols-2 gap-3">
           <Field label="Category">
             <Select
@@ -714,12 +777,20 @@ function ServiceSheet({
               options={CATALOGUE_UOMS}
             />
           </Field>
-          <Field label="Rate">
+          <Field label="Rate" hint="The reference price it's sold at">
             <input
               type="number"
               className={inputCls}
               value={s.rate ?? 0}
               onChange={(e) => set("rate", e.target.value)}
+            />
+          </Field>
+          <Field label="Estimated cost" hint="Hire / sub-contract - drives the margin">
+            <input
+              type="number"
+              className={inputCls}
+              value={s.cost_rate ?? 0}
+              onChange={(e) => set("cost_rate", e.target.value)}
             />
           </Field>
           <Field label={`${taxLabel()} %`}>
@@ -730,6 +801,16 @@ function ServiceSheet({
               onChange={(e) => set("gst_rate", e.target.value)}
             />
           </Field>
+          {features?.service_department && (
+            <Field label="Responsible department">
+              <input
+                className={inputCls}
+                placeholder="AV"
+                value={s.department ?? ""}
+                onChange={(e) => set("department", e.target.value)}
+              />
+            </Field>
+          )}
         </div>
         <Field label="Description">
           <textarea
@@ -739,6 +820,15 @@ function ServiceSheet({
             onChange={(e) => set("description", e.target.value)}
           />
         </Field>
+        {features?.service_supplier && (
+          <Field label="External supplier" hint="The vendor behind the cost, if it's hired in">
+            <input
+              className={inputCls}
+              value={s.supplier ?? ""}
+              onChange={(e) => set("supplier", e.target.value)}
+            />
+          </Field>
+        )}
         <div className="space-y-2 rounded-lg border border-zinc-200 px-3 py-2">
           <Toggle
             checked={Boolean(s.chargeable)}
