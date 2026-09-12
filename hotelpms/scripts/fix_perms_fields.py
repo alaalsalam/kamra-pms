@@ -46,6 +46,7 @@ ALL_DOCTYPES = [
 	# grant. Keep in sync whenever a new doctype gets a scoped seed grant.
 	"Lost And Found Item", "POS Outlet", "Menu Item", "POS Order",
 	"POS Table Reservation", "Cancelled Invoice", "Material Request",
+	"Banquet Item Type",
 ]
 
 EXTRA_GRANTS = {

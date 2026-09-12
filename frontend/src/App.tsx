@@ -69,6 +69,7 @@ import {
   channelRoomMappingsConfig,
   mealPlansConfig,
   experiencesConfig,
+  banquetItemTypesConfig,
   ratePlansConfig,
   reservationsConfig,
   roomBlocksConfig,
@@ -338,6 +339,10 @@ export default function App() {
           <Route path="banquet-catalogue" element={<BanquetCatalogue />} />
           <Route path="banquet-kitchen" element={<BanquetKitchen />} />
           <Route path="banquet-kitchen/:name" element={<BanquetKitchenFunction />} />
+          <Route
+            path="banquet-item-types"
+            element={<ResourceScreen config={banquetItemTypesConfig} />}
+          />
           <Route path="banquet/:name" element={<BanquetFunction />} />
           <Route path="banquet/:name/:kind" element={<BanquetDocument />} />
           <Route

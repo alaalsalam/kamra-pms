@@ -53,3 +53,35 @@ def sync_permissions():
 
 	sync_standard_perms()  # mirror each doctype JSON's remaining declared roles
 	frappe.clear_cache()
+
+
+_BANQUET_ITEM_TYPES = [
+	("Venue Rental", "تأجير قاعة", "Venue", "Events", 1, 0),
+	("Menu", "قائمة الطعام", "F&B", "Kitchen / F&B", 1, 1),
+	("Food & Beverage", "أطعمة ومشروبات", "F&B", "Kitchen / F&B", 1, 1),
+	("Alcohol", "كحول", "Beverage", "Bar", 1, 1),
+	("Audio Visual", "صوتيات ومرئيات", "AV", "AV", 1, 0),
+	("Decor", "ديكور", "Decor", "Events", 1, 0),
+	("Entertainment", "ترفيه", "Entertainment", "Events", 1, 0),
+	("Furniture & Setup", "أثاث وتجهيز", "Setup", "Events", 1, 0),
+	("Staffing", "طاقم عمل", "Services", "Operations", 1, 0),
+	("Accommodation", "إقامة", "Rooms", "Front Desk", 1, 0),
+	("Stationery", "قرطاسية", "Supplies", "Events", 1, 0),
+	("Other", "أخرى", "Other", None, 1, 0),
+]
+
+
+def seed_banquet_item_types():
+	"""Seed the supplementary-order types ONCE, only when the table is empty.
+	After that the master is admin-owned: disabling or deleting a type must
+	stick, so this never re-inserts on a later migrate."""
+	if not frappe.db.exists("DocType", "Banquet Item Type"):
+		return
+	if frappe.db.count("Banquet Item Type"):
+		return
+	for name, label_ar, category, dept, has_price, affects in _BANQUET_ITEM_TYPES:
+		frappe.get_doc({
+			"doctype": "Banquet Item Type", "type_name": name,
+			"label_ar": label_ar, "category": category, "department": dept,
+			"has_price": has_price, "affects_inventory": affects,
+		}).insert(ignore_permissions=True)

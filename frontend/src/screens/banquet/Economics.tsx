@@ -18,10 +18,12 @@ import { AlertTriangle, ChefHat, TrendingUp } from "lucide-react"
 import {
   banquet,
   call,
+  type BanquetItemType,
   type FunctionEconomics,
   type FunctionSheet,
   type KitchenIndent,
 } from "../../lib/api"
+import { primaryLabel } from "../../lib/dir"
 import { serverError, type Row } from "../../lib/resource"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
@@ -677,6 +679,12 @@ export function SupplementarySheet({
   })
   const set = (k: keyof typeof form, v: string | boolean) =>
     setForm((f) => ({ ...f, [k]: v }))
+  // Master-driven types once the doctype ships + seeds; until then (empty list
+  // or a throw from a stale worker) the built-in fallback list is used.
+  const [types, setTypes] = useState<BanquetItemType[]>([])
+  useEffect(() => {
+    banquet.itemTypes().then(setTypes).catch(() => setTypes([]))
+  }, [])
 
   return (
     <Sheet
@@ -718,18 +726,35 @@ export function SupplementarySheet({
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Kind">
-            <Select
-              value={form.item_type}
-              onChange={(v) => set("item_type", v)}
-              options={[
-                "Food & Beverage",
-                "Alcohol",
-                "Audio Visual",
-                "Decor",
-                "Staffing",
-                "Other",
-              ]}
-            />
+            {types.length ? (
+              <select
+                data-no-translate
+                className={inputCls}
+                value={form.item_type}
+                onChange={(e) => set("item_type", e.target.value)}
+              >
+                {types.map((t) => (
+                  <option key={t.name} value={t.name}>
+                    {primaryLabel(
+                      [t.label_ar, t.name].filter(Boolean).join(" | "),
+                    )}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <Select
+                value={form.item_type}
+                onChange={(v) => set("item_type", v)}
+                options={[
+                  "Food & Beverage",
+                  "Alcohol",
+                  "Audio Visual",
+                  "Decor",
+                  "Staffing",
+                  "Other",
+                ]}
+              />
+            )}
           </Field>
           <Field label="Per">
             <Select

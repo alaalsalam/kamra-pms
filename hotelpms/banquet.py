@@ -2308,6 +2308,20 @@ def create_material_request(function: str):
 	return {"ok": True, "name": mr.name, "lines": len(short)}
 
 
+@frappe.whitelist()
+@require_roles(*BANQUET_ROLES)
+def banquet_item_types():
+	"""Active supplementary-order types from the master. Empty until the
+	doctype ships and seeds - the frontend falls back to the built-in list."""
+	if not frappe.db.exists("DocType", "Banquet Item Type"):
+		return []
+	return frappe.get_all(
+		"Banquet Item Type", filters={"disabled": 0},
+		fields=["name", "label_ar", "category", "department",
+		        "has_price", "affects_inventory"],
+		order_by="type_name")
+
+
 # ══ during the event ═════════════════════════════════════════════════════
 
 @frappe.whitelist(methods=["POST"])

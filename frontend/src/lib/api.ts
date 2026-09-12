@@ -1099,6 +1099,14 @@ export interface KitchenIndent {
   /** True once the Material Request doctype exists (post-migrate). */
   material_request_enabled?: boolean
 }
+export interface BanquetItemType {
+  name: string
+  label_ar: string | null
+  category: string | null
+  department: string | null
+  has_price: 0 | 1
+  affects_inventory: 0 | 1
+}
 export interface FunctionEconomics {
   function: string
   pax: number
@@ -1320,6 +1328,8 @@ export const banquet = {
       "hotelpms.banquet.create_material_request",
       { function: fn },
     ),
+  itemTypes: () =>
+    call<BanquetItemType[]>("hotelpms.banquet.banquet_item_types"),
   issueIndent: (fn: string, outlet: string) =>
     call<{ ok: boolean; issued: number }>("hotelpms.banquet.issue_indent", {
       function: fn,

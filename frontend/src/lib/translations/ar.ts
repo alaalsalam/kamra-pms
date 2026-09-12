@@ -2163,4 +2163,11 @@ export const AR: Record<string, string> = {
   "no credit claimable": "لا رصيد ضريبي قابل للاسترداد",
   "free": "مجاني",
   "on the night": "في الليلة",
+  "Function item types": "أنواع الطلبات الإضافية للفعاليات",
+  "The order types offered when adding an extra during a function. Add, rename in Arabic/English, or disable — no code change.": "الأنواع المتاحة عند إضافة طلب إضافي أثناء الفعالية. أضِف نوعًا أو أعِد تسميته بالعربي/الإنجليزي أو عطّله — دون تعديل الكود.",
+  "Name (English)": "الاسم بالإنجليزي",
+  "Name (Arabic)": "الاسم بالعربي",
+  "Department": "القسم",
+  "Has price": "له سعر",
+  "Affects inventory": "يؤثر على المخزون",
 }

@@ -171,6 +171,7 @@ export const APPS: AppDef[] = [
       { to: "/banquet-diary", label: "Function Diary", icon: CalendarDays },
       { to: "/banquet-registers", label: "Registers", icon: ScrollText },
       { to: "/banquet-catalogue", label: "Menus & Services", icon: UtensilsCrossed },
+      { to: "/banquet-item-types", label: "Function item types", icon: Tags },
       { to: "/banquet-kitchen", label: "Banquet Kitchen", icon: ChefHat },
       { to: "/events", label: "All Functions", icon: ListChecks },
       { to: "/groups", label: "Groups", icon: Users },

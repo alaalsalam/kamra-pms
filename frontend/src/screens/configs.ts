@@ -811,3 +811,27 @@ export const channelRoomMappingsConfig: ScreenConfig = {
     { field: "external_rate_id", label: "Provider rate plan ID", type: "data" },
   ],
 }
+
+export const banquetItemTypesConfig: ScreenConfig = {
+  doctype: "Banquet Item Type",
+  title: "Function item types",
+  description:
+    "The order types offered when adding an extra during a function. Add, rename in Arabic/English, or disable — no code change.",
+  searchFields: ["type_name", "label_ar", "category"],
+  columns: [
+    { field: "type_name", label: "Name (English)" },
+    { field: "label_ar", label: "Name (Arabic)" },
+    { field: "category", label: "Category" },
+    { field: "department", label: "Department" },
+    { field: "disabled", label: "Status", render: (r) => (r.disabled ? "Disabled" : "Active") },
+  ],
+  form: [
+    { field: "type_name", label: "Name (English)", type: "data", required: true },
+    { field: "label_ar", label: "Name (Arabic)", type: "data" },
+    { field: "category", label: "Category", type: "data" },
+    { field: "department", label: "Department", type: "data" },
+    { field: "has_price", label: "Has price", type: "check" },
+    { field: "affects_inventory", label: "Affects inventory", type: "check" },
+    { field: "disabled", label: "Disabled", type: "check" },
+  ],
+}

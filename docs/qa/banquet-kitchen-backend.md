@@ -107,3 +107,41 @@ Profitability screen is a read-only summary.
 
 **Not built (noted):** a per-line "issued quantity" editor — the existing `rows`
 param on `issue_indent` already accepts partial quantities; a UI for it is deferred.
+
+---
+
+## Round 3 (2026-09-12) — supplementary types become manageable master data
+
+The supplementary-order "Kind" dropdown was hard-coded (F&B / Alcohol / AV / Decor /
+Staffing / Other). It's now a **master**, manageable from the SPA — add / rename
+(ar+en) / disable without code.
+
+**Live now (unchanged behaviour by design):** the SupplementarySheet fetches
+`banquet.itemTypes()` and, while the master is empty/absent (pre-migrate, or a stale
+worker throws), falls back to the **6 built-in enum members** — the same list as before.
+Verified as gm@: the dropdown still renders the 6 types in Arabic. The master-driven
+`<select>` carries `data-no-translate` so its own Arabic labels win over the DOM
+translator; the fallback `<Select>` stays translator-driven (its values are valid enum
+members).
+
+**Dormant (one `bench migrate`):**
+- New master **Banquet Item Type**: `type_name` (EN, = the value stored on a line),
+  `label_ar`, `category`, `department`, `has_price`, `affects_inventory`, `disabled`.
+  Full standard perms; added to `fix_perms_fields.ALL_DOCTYPES`.
+- **`Banquet Function Item.item_type` relaxed Select → Data** so a newly-added master
+  type is storable. Safe: `banquet.py` only ever *compares* item_type strings (grepped
+  — no meta-options reader), so `== "Venue Rental"` etc. keep working; only the unused
+  Desk-form Select validation is dropped. **Pre-migrate the live Select still rejects
+  non-enum values — which is why the fallback list is the 6 valid enum members, never
+  master names.**
+- `seed_banquet_item_types()` (install.py, wired into `after_migrate`) seeds all 12
+  types **only when the table is empty** (`db.count == 0`) — so a disabled/deleted type
+  never resurrects on a later deploy; the master is admin-owned after first seed.
+- `banquet_item_types()` API returns `[]` when the doctype is absent (same runtime gate
+  as `material_request_enabled`); the frontend fallback covers pre-migrate + pre-seed.
+- Management screen at **/banquet-item-types** (Events nav, next to Menus & Services) —
+  a standard ResourceScreen; 403/empty pre-migrate like the other new doctypes.
+
+**Related but deliberately untouched:** the *service catalogue* path
+(`add_service` → `_CATEGORY_TYPE`, banquet.py:203) is a separate enum with its own
+validation — out of scope for the supplementary dropdown.
