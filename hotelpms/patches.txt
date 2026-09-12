@@ -13,3 +13,5 @@ hotelpms.patches.v28.backfill_property_kind
 hotelpms.patches.v29.backfill_booking_mode
 hotelpms.patches.v30.ensure_turnover_profiles
 hotelpms.patches.v31.backfill_listing_slugs
+hotelpms.patches.v32.seed_cashier_ledger
+hotelpms.patches.v33.seed_banquet_checklists

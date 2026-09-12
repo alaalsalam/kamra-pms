@@ -47,7 +47,9 @@ amount; route lines between Guest/Company/Group folios (alcohol can never
 reach a company folio); night audit that posts room nights idempotently
 and charges no-shows per policy; GST invoices with per-property series;
 allowances, part-settlement, invoice cancellation with a register;
-**GSTR-1 export** in Tally / Zoho Books / ERPNext formats.
+**GSTR-1 export** in Tally / Zoho Books / ERPNext formats. To run full
+company books (and optional HR) on the same Frappe site as HotelPMS, see
+[ERPNext and Frappe HR](/self-hosting/erpnext-hr).
 
 ## Your country's taxes
 
@@ -236,7 +238,7 @@ one.
 
 ## AI & audit
 
-An MCP server with 52 governed tools, one-click Connect Claude, an in-app
+An MCP server with 85 governed tools, one-click Connect Claude, an in-app
 copilot (bring your own key), rate guardrails agents cannot price outside,
 deterministic pricing verified by an automated eval suite, and an activity
 ledger recording every action — human or AI — with who, what and why.

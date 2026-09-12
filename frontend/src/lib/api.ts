@@ -130,6 +130,33 @@ export async function uploadFile(
   return url
 }
 
+/** Upload a file to a custom HotelPMS endpoint (multipart), returning its result.
+ *  Unlike uploadFile (Frappe's built-in upload_file, which authorises against
+ *  the target doctype's own perms), this posts to a @require_roles endpoint that
+ *  handles the File itself — the pattern the rest of HotelPMS uses. */
+export async function uploadTo(
+  method: string,
+  file: File,
+  fields: Record<string, string> = {},
+): Promise<{ file_url: string; file_name: string }> {
+  const token = csrfToken()
+  const fd = new FormData()
+  fd.append("file", file, file.name)
+  for (const [k, v] of Object.entries(fields)) fd.append(k, v)
+  const res = await fetch(`/api/method/${method}`, {
+    method: "POST",
+    headers: token ? { "X-Frappe-CSRF-Token": token } : undefined,
+    body: fd,
+    credentials: "include",
+  })
+  if (!res.ok) throw new Error(`upload failed (${res.status})`)
+  const out = (await res.json()) as {
+    message?: { file_url?: string; file_name?: string }
+  }
+  if (!out.message?.file_url) throw new Error("upload returned no file URL")
+  return out.message as { file_url: string; file_name: string }
+}
+
 export async function frappeFetch<T = unknown>(
   path: string,
   init?: RequestInit,
@@ -263,6 +290,7 @@ export interface BookingOptions {
     cancellation_fee: "None" | "First Night" | "Full Stay"
     no_show_charge: "None" | "First Night" | "Full Stay"
     deposit_pct: number
+    country: string
   }
 }
 
@@ -581,6 +609,10 @@ export interface FunctionSheet {
   customer_name: string
   customer_phone: string | null
   customer_email: string | null
+  customer_confirmed_on: string | null
+  customer_confirm_channel: string | null
+  customer_confirm_outcome: string | null
+  customer_confirm_notes: string | null
   company: string | null
   travel_agent: string | null
   billing_name: string | null
@@ -639,6 +671,7 @@ export interface FunctionSheet {
   closed_out_by: string | null
   quote_version: number
   quote_sent_on: string | null
+  quote_emailed_on: string | null
   quote_valid_till: string | null
   beo_number: string | null
   beo_generated_on: string | null
@@ -1404,6 +1437,58 @@ export const banquet = {
       valid_days: validDays,
       note: note ?? null,
     }),
+  sendQuotation: (fn: string, channels: string[] = ["email"]) =>
+    call<{
+      ok: boolean
+      sent: string[]
+      quote_emailed_on: string
+      quote_version: number
+    }>("hotelpms.banquet_ops.send_quotation", {
+      function: fn,
+      channels,
+    }),
+  recordGuestResponse: (
+    fn: string,
+    outcome: "Confirmed" | "Changes Requested" | "Declined",
+    opts?: { channel?: string; notes?: string; confirmStatus?: boolean },
+  ) =>
+    call<{
+      ok: boolean
+      customer_confirmed_on: string
+      customer_confirm_outcome: string
+      customer_confirm_channel: string
+      status: { ok: boolean; status: string } | null
+    }>("hotelpms.banquet_ops.record_guest_response", {
+      function: fn,
+      outcome,
+      channel: opts?.channel ?? "Phone",
+      notes: opts?.notes ?? null,
+      confirm_status: opts?.confirmStatus ? 1 : 0,
+    }),
+  functionTasks: (fn: string) =>
+    call<{
+      function: string
+      open: number
+      done: number
+      total: number
+      departments: {
+        department: string
+        tasks: {
+          name: string
+          department: string
+          title: string
+          due_date: string | null
+          status: string
+          completed_on: string | null
+          completed_by: string | null
+        }[]
+      }[]
+    }>("hotelpms.banquet_ops.function_tasks", { function: fn }),
+  completeFunctionTask: (task: string, done = true) =>
+    call<{ ok: boolean; name: string; status: string }>(
+      "hotelpms.banquet_ops.complete_function_task",
+      { task, done: done ? 1 : 0 },
+    ),
   generateBeo: (fn: string) =>
     call<BanquetDocument>("hotelpms.banquet.generate_beo", { function: fn }),
   generateInvoice: (fn: string) =>

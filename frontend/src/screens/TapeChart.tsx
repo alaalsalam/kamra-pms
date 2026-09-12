@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import { call, getCurrentProperty, isAuthError } from "../lib/api"
 import { dateMin, checkoutMin } from "../lib/date"
-import { listResource, serverError } from "../lib/resource"
+import { serverError } from "../lib/resource"
 import { useAuth } from "../lib/auth"
 import { useEnabledModules } from "../lib/modules"
 import { canAccessPath } from "../lib/apps"
@@ -318,7 +318,9 @@ export default function TapeChart() {
   const [start, setStart] = useState(() => iso(new Date()))
   const [data, setData] = useState<TapeData | null>(null)
   const [sel, setSel] = useState<TapeBooking | null>(null)
-  const [freeRooms, setFreeRooms] = useState<string[]>([])
+  const [freeRooms, setFreeRooms] = useState<
+    { name: string; room_number: string; room_type_name: string; free: boolean; same_type: boolean }[]
+  >([])
   const [draft, setDraft] = useState({
     room: "", check_in: "", check_out: "", from_time: "", to_time: "",
   })
@@ -477,12 +479,16 @@ export default function TapeChart() {
       from_time: hhmm(b.planned_check_in_time) || hb.from_hour || "",
       to_time: hhmm(b.planned_check_out_time) || hb.to_hour || "",
     })
-    listResource("Room", {
-      fields: ["name"],
-      filters: [["property", "=", getCurrentProperty()]],
-      orderBy: "room_number asc",
-    }).then((r) => setFreeRooms(r.map((x) => x.name)))
   }
+
+  useEffect(() => {
+    if (!sel) return
+    call<typeof freeRooms>("hotelpms.api.movable_rooms", {
+      reservation: sel.name,
+      check_in_date: draft.check_in,
+      check_out_date: draft.check_out,
+    }).then(setFreeRooms).catch(() => setFreeRooms([]))
+  }, [sel, draft.check_in, draft.check_out])
 
   async function act(fn: () => Promise<unknown>) {
     setBusy(true)
@@ -1226,7 +1232,10 @@ export default function TapeChart() {
               <select className={inputCls} value={draft.room}
                 onChange={(e) => setDraft({ ...draft, room: e.target.value })}>
                 {freeRooms.map((r) => (
-                  <option key={r} value={r}>Room {r.split("-").pop()}</option>
+                  <option key={r.name} value={r.name} disabled={!r.free}>
+                    Room {r.room_number} · {r.room_type_name}
+                    {r.same_type ? "" : " ⇅"} · {r.free ? "Free" : "Occupied"}
+                  </option>
                 ))}
               </select>
             </label>

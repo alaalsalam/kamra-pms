@@ -3,6 +3,7 @@ import BillingRulesEditor from "../components/BillingRulesEditor"
 import EventLinks from "../components/EventLinks"
 import GroupControl from "../components/GroupControl"
 import RoomTypeMedia from "../components/RoomTypeMedia"
+import { HkTaskMediaPanel } from "../components/HkMedia"
 import { createElement } from "react"
 import ReservationDetail from "./ReservationDetail"
 import ReservationSummary from "../components/ReservationSummary"
@@ -563,6 +564,7 @@ export const housekeepingConfig: ScreenConfig = {
     { field: "status", label: "Status", type: "select", options: ["Pending", "In Progress", "Done", "Verified"] },
     { field: "notes", label: "Notes", type: "data" },
   ],
+  extra: HkTaskMediaPanel,
   onboarding: {
     icon: Sparkles,
     title: "No housekeeping tasks yet",

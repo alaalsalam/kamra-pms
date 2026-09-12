@@ -1,8 +1,14 @@
 import { createElement, Fragment, useEffect, useState, type ReactNode } from "react"
 import { getLang, type Lang } from "./dir"
 import { AR } from "./translations/ar"
+import OFFICIAL_AR from "../i18n/locales/ar.json"
 
-const DICT: Record<Lang, Record<string, string>> = { en: {}, ar: AR }
+// Upstream translations extend the catalogue; YemenFrappe's curated wording
+// remains authoritative when both catalogues contain the same key.
+const DICT: Record<Lang, Record<string, string>> = {
+  en: {},
+  ar: { ...OFFICIAL_AR, ...AR },
+}
 
 /**
  * Look up a UI string without ever making English rendering dependent on the
@@ -153,9 +159,18 @@ export function translateText(source: string, lang: Lang = getLang()): string {
   return `${leading}${translated}${trailing}`
 }
 
-/** Translate an English string for the current language. */
-export function t(source: string): string {
-  return translateText(source)
+type InterpolationValues = Record<string, string | number>
+
+function interpolate(template: string, values?: InterpolationValues): string {
+  if (!values) return template
+  return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, key: string) =>
+    Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : match,
+  )
+}
+
+/** Translate an English string for the current language and fill simple placeholders. */
+export function t(source: string, values?: InterpolationValues): string {
+  return interpolate(translateText(source), values)
 }
 
 /**
@@ -199,7 +214,11 @@ export function useT() {
     window.addEventListener("hotelpms:lang", onChange)
     return () => window.removeEventListener("hotelpms:lang", onChange)
   }, [])
-  return { lang, t: (source: string) => translateText(source, lang) }
+  return {
+    lang,
+    t: (source: string, values?: InterpolationValues) =>
+      interpolate(translateText(source, lang), values),
+  }
 }
 
 type TextState = { source: string; output: string }

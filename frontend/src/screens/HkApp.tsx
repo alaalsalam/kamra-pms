@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react"
 import { qty, useT, fill } from "../lib/i18n"
-import { BedDouble, LogOut, Plane, RefreshCw, Star, Clock, PackageSearch, WifiOff } from "lucide-react"
+import { BedDouble, Camera, LogOut, Plane, RefreshCw, Star, Clock, PackageSearch, WifiOff, X } from "lucide-react"
 import {
   call,
   getCurrentProperty,
   isNetworkError,
+  uploadTo,
   whoami,
 } from "../lib/api"
 import { useAuth } from "../lib/auth"
@@ -36,6 +37,7 @@ interface HkTask {
   special_requests: string | null
   eta: string | null
   overdue: boolean
+  media: string[]
 }
 
 interface HkRoom {
@@ -112,6 +114,33 @@ export default function HkApp() {
     try {
       await call(method, { task, ...params })
       load()
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function addMedia(task: string, files: FileList | null) {
+    if (!files?.length) return
+    setBusy(task)
+    try {
+      for (const file of Array.from(files))
+        await uploadTo("hotelpms.api.hk_upload_media", file, { task })
+      load()
+    } catch (e) {
+      setLoadError(serverError(e))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function removeMedia(task: string, url: string) {
+    if (!confirm(t("Remove this photo/video?"))) return
+    setBusy(task)
+    try {
+      await call("hotelpms.api.hk_delete_media", { task, file_url: url })
+      load()
+    } catch (e) {
+      setLoadError(serverError(e))
     } finally {
       setBusy(null)
     }
@@ -219,7 +248,35 @@ export default function HkApp() {
         )
       ) : (
         // accepted/mine: work it
-        <div className="mt-3 flex gap-2">
+        <>
+        <div className="mt-3">
+          {(t.media ?? []).length > 0 && (
+            <div className="mb-2 flex gap-2 overflow-x-auto">
+              {t.media.map((url) => (
+                <div key={url} className="relative shrink-0">
+                  {/\.(mp4|mov|webm|m4v|3gp|avi)$/i.test(url) ? (
+                    <video src={url} muted playsInline controls className="size-16 rounded-lg bg-zinc-100 object-cover" />
+                  ) : (
+                    <img src={url} alt="Room cleaning proof" className="size-16 rounded-lg object-cover" />
+                  )}
+                  <button type="button" aria-label="Remove" disabled={busy === t.name}
+                    onClick={() => removeMedia(t.name, url)}
+                    className="absolute -end-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-rose-600 text-white shadow">
+                    <X className="size-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-300 py-2.5 text-sm font-medium text-zinc-600 active:bg-zinc-100">
+            <Camera className="size-4" aria-hidden />
+            {t.media?.length ? "Add another photo / video" : "Add photo / video"}
+            <input type="file" accept="image/*,video/*" capture="environment" multiple hidden
+              disabled={busy === t.name}
+              onChange={(e) => { void addMedia(t.name, e.target.files); e.target.value = "" }} />
+          </label>
+        </div>
+        <div className="mt-2 flex gap-2">
           {t.status === "Pending" ? (
             <button
               disabled={busy === t.name}
@@ -241,6 +298,7 @@ export default function HkApp() {
             Done ✓
           </button>
         </div>
+        </>
       )}
     </li>
   )

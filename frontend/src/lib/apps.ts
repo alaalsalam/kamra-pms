@@ -55,6 +55,13 @@ import {
   Lock,
   AlarmClock,
   LayoutDashboard,
+  Wallet,
+  Banknote,
+  Calculator,
+  BookOpen,
+  History,
+  HeartPulse,
+  TrendingUp,
 } from "lucide-react"
 
 /** Shared tile treatment for switcher and launcher. One quiet system, not a rainbow. */
@@ -67,6 +74,7 @@ export interface AppNavItem {
   label: string
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
   roles?: string[] // per-item gate on top of the app's gate
+  group?: string
 }
 
 export interface AppDef {
@@ -145,6 +153,7 @@ export const APPS: AppDef[] = [
     items: [
       { to: "/pos", label: "Restaurant POS", icon: UtensilsCrossed,
         roles: ["Restaurant POS", "Front Desk", "Finance", "Hotel Admin", "System Manager", "Administrator"] },
+      { to: "/pos-dashboard", label: "F&B Dashboard", icon: TrendingUp },
       { to: "/kitchen", label: "Kitchen Display", icon: ConciergeBell,
         roles: ["Kitchen", "Restaurant POS", "Hotel Admin", "System Manager", "Administrator"] },
       { to: "/inventory", label: "Kitchen Inventory", icon: PackageSearch,
@@ -215,14 +224,23 @@ export const APPS: AppDef[] = [
     name: "Finance",
     icon: Landmark,
     tint: APP_TILE,
-    description: "Folios, invoices, the night audit and reports.",
-    roles: ["Finance", "Hotel Admin", "System Manager", "Administrator"],
+    description: "Cashier till, folios, ledgers, night audit and books export.",
+    roles: ["Finance", "Front Desk", "Hotel Admin", "System Manager", "Administrator"],
     items: [
-      { to: "/billing", label: "Billing", icon: Receipt },
-      { to: "/reports", label: "Reports", icon: BarChart3 },
-      { to: "/accounting-export", label: "Accounting Export", icon: FileSpreadsheet },
+      { to: "/cashier", label: "My Till", icon: Wallet, group: "Cashier" },
+      { to: "/cashier/sessions", label: "Sessions", icon: Clock, group: "Cashier" },
+      { to: "/cashier/petty-cash", label: "Petty Cash", icon: Banknote, group: "Cashier" },
+      { to: "/cashier/shift-report", label: "Shift Report", icon: ScrollText, group: "Cashier" },
+      { to: "/shifts", label: "Shift Handover", icon: Clock, group: "Cashier" },
+      { to: "/cashier/fx", label: "Currency Desk", icon: Calculator, group: "Cashier" },
+      { to: "/billing", label: "Billing", icon: Receipt, group: "Billing" },
+      { to: "/folio-history", label: "Folio History", icon: History, group: "Billing" },
+      { to: "/laundry", label: "Laundry", icon: Shirt, group: "Billing" },
+      { to: "/ledgers", label: "Ledgers", icon: BookOpen, group: "Books" },
+      { to: "/reports", label: "Reports", icon: BarChart3, group: "Books" },
+      { to: "/accounting-export", label: "Accounting Export", icon: FileSpreadsheet, group: "Books" },
     ],
-    extraPrefixes: ["/billing/"],
+    extraPrefixes: ["/billing/", "/cashier/", "/ledgers", "/folio-history"],
   },
   {
     id: "booking-engine",
@@ -251,6 +269,7 @@ export const APPS: AppDef[] = [
     roles: ["Hotel Admin", "System Manager", "Administrator"],
     items: [
       { to: "/settings", label: "Settings", icon: SettingsIcon },
+      { to: "/health", label: "System Health", icon: HeartPulse },
       { to: "/rooms", label: "Rooms", icon: BedDouble },
       { to: "/room-types", label: "Room Types", icon: LayoutGrid },
       { to: "/activity", label: "Activity Log", icon: ScrollText },

@@ -10,6 +10,7 @@ import { initI18n } from "./lib/i18n"
 import { asset } from "./lib/asset"
 import { BRAND_LOGO_URL } from "./lib/brand"
 import { AuthProvider } from "./lib/auth"
+import { CashierAuthProvider } from "./lib/cashierAuth"
 import { ROUTER_BASENAME } from "./lib/routing"
 
 initTheme()
@@ -31,7 +32,9 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter basename={ROUTER_BASENAME}>
       <AuthProvider>
-        <App />
+        <CashierAuthProvider>
+          <App />
+        </CashierAuthProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

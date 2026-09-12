@@ -251,6 +251,22 @@ function OccupantsEditor(props: {
 
 /** One editable "what actually happened" moment - shown on the printed
  * card, corrected inline by the desk (early check-in, late checkout). */
+function toDatetimeLocalValue(raw?: string | null): string {
+  // Frappe sends "YYYY-MM-DD HH:MM:SS"; <input type="datetime-local"> needs
+  // "YYYY-MM-DDTHH:MM". Falling back to local now (not UTC) when empty.
+  if (raw) {
+    const s = String(raw).trim().replace(" ", "T")
+    const m = s.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/)
+    if (m) return `${m[1]}T${m[2]}`
+  }
+  const d = new Date()
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+    `T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  )
+}
+
 function ActualTimeRow(props: {
   label: string
   reservation: string
@@ -260,35 +276,51 @@ function ActualTimeRow(props: {
 }) {
   const [editing, setEditing] = useState(false)
   const [val, setVal] = useState("")
-  const shown = props.value ? props.value.slice(0, 16).replace("T", " ") : "—"
+  const [busy, setBusy] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const shown = props.value ? props.value.replace("T", " ").slice(0, 16) : "—"
   return (
-    <div className="flex items-baseline justify-between gap-2 py-0.5 text-sm">
+    <div className="flex flex-wrap items-center justify-between gap-2 py-0.5 text-sm">
       <span className="shrink-0 text-zinc-500">{props.label}</span>
       {editing ? (
-        <span className="flex items-center gap-1 print:hidden">
-          <input type="datetime-local" className="rounded-lg border border-zinc-300 px-2 py-1 text-sm"
-            value={val} onChange={(e) => setVal(e.target.value)} />
-          <Button variant="outline" className="!px-2 !py-1 text-xs"
+        <span className="flex min-w-0 flex-wrap items-center justify-end gap-1 print:hidden">
+          <input type="datetime-local" className="min-w-0 rounded-lg border border-zinc-300 px-2 py-1 text-sm"
+            value={val} onChange={(e) => { setVal(e.target.value); setSaveError(null) }} />
+          <Button variant="outline" className="!px-2 !py-1 text-xs" disabled={busy || !val}
             onClick={async () => {
               if (!val) return
-              await call("hotelpms.api.set_actual_times", {
-                reservation: props.reservation,
-                [props.field]: val.replace("T", " ") + ":00",
-              })
-              setEditing(false)
-              props.onSaved()
+              setBusy(true)
+              setSaveError(null)
+              try {
+                const local = val.replace("T", " ")
+                const payload = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(local) ? `${local}:00` : local
+                await call("hotelpms.api.set_actual_times", {
+                  reservation: props.reservation,
+                  [props.field]: payload,
+                })
+                setEditing(false)
+                props.onSaved()
+              } catch (e) {
+                setSaveError(e instanceof Error ? e.message : "Could not save")
+              } finally {
+                setBusy(false)
+              }
             }}>
-            Save
+            {busy ? "…" : "Save"}
           </Button>
-          <button className="text-xs text-zinc-400" onClick={() => setEditing(false)}>✕</button>
+          <button type="button" className="text-xs text-zinc-400"
+            onClick={() => { setEditing(false); setSaveError(null) }}>✕</button>
+          {saveError && <span className="basis-full text-end text-xs text-rose-600">{saveError}</span>}
         </span>
       ) : (
         <span className="text-end font-medium">
           <bdi dir="ltr" className="tabular-nums">{shown}</bdi>
           <button
             className="ms-2 text-xs font-medium text-brand-700 hover:underline print:hidden"
+            type="button"
             onClick={() => {
-              setVal((props.value || new Date().toISOString()).slice(0, 16))
+              setVal(toDatetimeLocalValue(props.value))
+              setSaveError(null)
               setEditing(true)
             }}>
             edit
