@@ -16,6 +16,7 @@
   "column_break_a",
   "status",
   "kitchen_status",
+  "workflow_stage",
   "enquiry_date",
   "source",
   "sales_owner",
@@ -192,6 +193,14 @@
    "label": "Kitchen Status",
    "default": "Unplanned",
    "options": "Unplanned\nPlanned\nIn Preparation\nReady to Serve\nServed\nClosed"
+  },
+  {
+   "description": "UI resume marker: which workflow stage the user was last on.",
+   "fieldname": "workflow_stage",
+   "fieldtype": "Data",
+   "label": "Workflow Stage",
+   "hidden": 1,
+   "read_only": 1
   },
   {
    "fieldname": "enquiry_date",

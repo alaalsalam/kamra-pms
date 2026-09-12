@@ -30,12 +30,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Sheet } from "../../components/ui/sheet"
 import { taxLabel } from "../../lib/money"
 import { Empty, ErrorNote, Field, inputCls, inr, Select } from "./shared"
+import { StageActionBar, type StageNav } from "./StageActionBar"
 import {
   deriveKitchenState,
   KitchenStateChip,
 } from "../BanquetKitchen"
 
-export default function Economics({ fn }: { fn: FunctionSheet }) {
+export default function Economics({
+  fn,
+  nav,
+}: {
+  fn: FunctionSheet
+  nav: StageNav
+}) {
   const [data, setData] = useState<FunctionEconomics | null>(null)
   const [indent, setIndent] = useState<KitchenIndent | null>(null)
   const [planned, setPlanned] = useState(true)
@@ -329,6 +336,8 @@ export default function Economics({ fn }: { fn: FunctionSheet }) {
           </div>
         </CardContent>
       </Card>
+
+      <StageActionBar nav={nav} />
     </div>
   )
 }

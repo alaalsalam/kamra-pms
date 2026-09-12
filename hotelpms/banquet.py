@@ -61,6 +61,10 @@ REPORT_ROLES = (*BANQUET_ROLES, "Finance")
 OPEN = ("Enquiry", "Tentative", "Confirmed")
 DEAD = ("Cancelled", "Lost")
 
+# The UI workflow stages (ids stay stable; labels are renamed in the frontend).
+# Persisted as a resume marker so reopening a function returns to its stage.
+_WORKFLOW_STAGES = ("enquiry", "quote", "margin", "money", "documents", "close")
+
 # enquiry -> tentative -> confirmed -> completed, and out at any point.
 # Reopening a dead function is deliberate, not a slip, so it's allowed
 # back to Enquiry only.
@@ -369,6 +373,24 @@ def update_function(function: str, fields):
 	doc.save()
 	return {"ok": True, "grand_total": doc.grand_total,
 	        "balance_due": doc.balance_due}
+
+
+@frappe.whitelist(methods=["POST"])
+@require_roles(*BANQUET_ROLES)
+def set_workflow_stage(function: str, stage: str):
+	"""Persist which workflow stage the user is on, so reopening the function
+	returns to it. A resume marker only: written with update_modified=False and
+	no reprice, and it sidesteps _guard_closed so the stage still saves on a
+	closed function. Dormant until the `workflow_stage` column exists (added by
+	the next migrate) - the UI keeps a localStorage marker and a derived stage
+	meanwhile, so nothing breaks pre-migrate."""
+	if stage not in _WORKFLOW_STAGES:
+		frappe.throw(_("Unknown stage: {0}").format(stage))
+	if not frappe.db.has_column("Venue Booking", "workflow_stage"):
+		return {"ok": False, "dormant": True}
+	frappe.db.set_value("Venue Booking", function, "workflow_stage", stage,
+	                    update_modified=False)
+	return {"ok": True}
 
 
 def _guard_closed(doc):

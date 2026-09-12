@@ -609,6 +609,8 @@ export interface FunctionSheet {
   event_type: string
   event_name: string | null
   status: FunctionStatus
+  /** UI resume marker; present only after the workflow_stage migrate. */
+  workflow_stage?: string | null
   enquiry_date: string
   source: string
   sales_owner: string | null
@@ -1269,6 +1271,11 @@ export const banquet = {
     call<{ ok: boolean; grand_total: number; balance_due: number }>(
       "hotelpms.banquet.update_function",
       { function: fn, fields },
+    ),
+  setWorkflowStage: (fn: string, stage: string) =>
+    call<{ ok: boolean; dormant?: boolean }>(
+      "hotelpms.banquet.set_workflow_stage",
+      { function: fn, stage },
     ),
   setStatus: (fn: string, status: FunctionStatus, reason?: string) =>
     call<{ ok: boolean; status: FunctionStatus; from: string }>(

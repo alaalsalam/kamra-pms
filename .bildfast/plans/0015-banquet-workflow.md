@@ -68,4 +68,6 @@ Phases 2–5 accrete **dormant schema** (already-waiting bilingual catalogue fie
 Post-confirmation edit control / a formal amendment flow has no trace in `business.md`. Proposed as a clickable question (add to business.md / drop / defer). Not designed until answered. Interim: confirmed functions already block edits after Completed via `_guard_closed`; the `revisions` table already logs quote changes.
 
 ## Execution Note
-Phase 1 implemented this turn (i18n + naming + §6 + bypass fix), verified live, committed. Phases 2–5 await approval of this plan; each will be built, verified per stage, and committed independently, with schema shipped dormant per the Migrations note.
+- **Phase 1** — done: i18n + naming + §6 cost-incomplete + close bypass. Verified live, committed.
+- **Phase 2** — done: Back / Save / Save&Continue bar on all 6 stages (shared `StageActionBar` rendered inside each stage), stage-specific CTAs, `stepsFor` validation gate shown at the bar, stage persistence (dormant `workflow_stage` field + `set_workflow_stage` endpoint using `db.set_value`/`update_modified=False` to dodge the closed-function guard, plus a localStorage marker for exact same-browser restore now, plus derive-on-open fallback), and the terminal "Save and Close Event" reusing `close_out` with no settlement bypass. All 7 acceptance checks verified live. Committed.
+- **Phases 3–5** await approval of this plan; each built, verified per stage, committed independently, schema shipped dormant per the Migrations note.

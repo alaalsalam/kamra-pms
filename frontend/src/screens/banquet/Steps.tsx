@@ -24,6 +24,16 @@ export type StepId =
   | "documents"
   | "close"
 
+/** The workflow order - single source of truth for prev/next navigation. */
+export const STEP_ORDER: StepId[] = [
+  "enquiry",
+  "quote",
+  "margin",
+  "money",
+  "documents",
+  "close",
+]
+
 export interface Step {
   id: StepId
   n: number

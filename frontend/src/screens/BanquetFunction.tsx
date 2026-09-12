@@ -8,7 +8,7 @@
     on the event order and the pack list - somebody still has to carry the
     podium - but it drops off the quote and out of the tax. */
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import {
   ArrowLeft,
@@ -67,9 +67,12 @@ import {
   StatusPill,
   UOMS,
 } from "./banquet/shared"
-import { Steps, stepsFor, type StepId } from "./banquet/Steps"
+import { Steps, stepsFor, STEP_ORDER, type StepId } from "./banquet/Steps"
+import { StageActionBar, type StageNav } from "./banquet/StageActionBar"
 import Economics from "./banquet/Economics"
 import MenuComposer from "./banquet/MenuComposer"
+
+const STAGE_KEY = (name: string) => "hotelpms_banquet_stage:" + name
 
 
 
@@ -109,10 +112,74 @@ export default function BanquetFunction() {
     [load],
   )
 
+  // Open on the stage the user last left (backend marker > localStorage >
+  // derived first-incomplete stage). Runs once per function, so a reload after
+  // a save never yanks the user back.
+  const initedRef = useRef(false)
+  useEffect(() => {
+    if (!fn || initedRef.current) return
+    initedRef.current = true
+    let saved: string | null = fn.workflow_stage ?? null
+    if (!saved) {
+      try {
+        saved = localStorage.getItem(STAGE_KEY(name))
+      } catch {
+        /* private mode */
+      }
+    }
+    if (saved && (STEP_ORDER as string[]).includes(saved)) {
+      setStep(saved as StepId)
+      return
+    }
+    const open = stepsFor(fn).find((s) => !s.done)
+    setStep(open ? open.id : "close")
+  }, [fn, name])
+
+  const goToStep = useCallback(
+    (target: StepId) => {
+      try {
+        localStorage.setItem(STAGE_KEY(name), target)
+      } catch {
+        /* private mode */
+      }
+      // Backend persistence is dormant until the workflow_stage migrate; the
+      // localStorage marker above gives exact same-browser restore meanwhile.
+      banquet.setWorkflowStage(name, target).catch(() => {})
+      setStep(target)
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    },
+    [name],
+  )
+
   if (!fn) return <Empty>{error ?? "Loading…"}</Empty>
 
   const away = daysAway(fn.event_date)
   const steps = stepsFor(fn)
+
+  const idx = STEP_ORDER.indexOf(step)
+  const reload = async () => {
+    const f = await banquet.sheet(name)
+    setFn(f)
+    return f
+  }
+  const nav: StageNav = {
+    step,
+    hasPrev: idx > 0,
+    busy,
+    back: () => {
+      const prev = STEP_ORDER[idx - 1]
+      if (prev) goToStep(prev)
+    },
+    continueNext: async () => {
+      const fresh = await reload()
+      const cur = stepsFor(fresh).find((s) => s.id === step)
+      if (cur && !cur.done) return cur.blocker ?? "Finish this stage first."
+      const next = STEP_ORDER[idx + 1]
+      if (next) goToStep(next)
+      return null
+    },
+    reload,
+  }
 
   return (
     <div className="space-y-4">
@@ -215,15 +282,23 @@ export default function BanquetFunction() {
         />
       </div>
 
-      <Steps steps={steps} current={step} onPick={setStep} />
+      <Steps steps={steps} current={step} onPick={goToStep} />
 
-      {step === "enquiry" && <DetailTab fn={fn} busy={busy} act={act} />}
-      {step === "quote" && <ItemsTab fn={fn} cat={cat} busy={busy} act={act} />}
-      {step === "margin" && <Economics fn={fn} />}
-      {step === "money" && <MoneyTab fn={fn} busy={busy} act={act} />}
-      {step === "documents" && <PaperTab fn={fn} busy={busy} act={act} />}
+      {step === "enquiry" && <DetailTab fn={fn} busy={busy} act={act} nav={nav} />}
+      {step === "quote" && (
+        <ItemsTab fn={fn} cat={cat} busy={busy} act={act} nav={nav} />
+      )}
+      {step === "margin" && <Economics fn={fn} nav={nav} />}
+      {step === "money" && <MoneyTab fn={fn} busy={busy} act={act} nav={nav} />}
+      {step === "documents" && <PaperTab fn={fn} busy={busy} act={act} nav={nav} />}
       {step === "close" && (
-        <CloseOutCard fn={fn} busy={busy} act={act} onCount={() => setStep("margin")} />
+        <CloseOutCard
+          fn={fn}
+          busy={busy}
+          act={act}
+          nav={nav}
+          onCount={() => goToStep("margin")}
+        />
       )}
 
       {(fn.status === "Confirmed" || fn.status === "Completed") && (
@@ -444,10 +519,12 @@ function DetailTab({
   fn,
   busy,
   act,
+  nav,
 }: {
   fn: FunctionSheet
   busy: boolean
   act: Act
+  nav: StageNav
 }) {
   const [draft, setDraft] = useState<Record<string, unknown>>({})
   const [rooms, setRooms] = useState<Row[]>([])
@@ -985,25 +1062,15 @@ function DetailTab({
         </Card>
       </div>
 
-      {dirty && (
-        <div className="sticky bottom-4 flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3">
-          <span className="text-sm text-brand-900">
-            {Object.keys(draft).length} unsaved change
-            {Object.keys(draft).length === 1 ? "" : "s"}
-          </span>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setDraft({})}>
-              Discard
-            </Button>
-            <Button
-              disabled={busy}
-              onClick={() => act(() => banquet.update(fn.name, draft))}
-            >
-              Save
-            </Button>
-          </div>
-        </div>
-      )}
+      <StageActionBar
+        nav={nav}
+        dirty={dirty}
+        save={async () => {
+          await banquet.update(fn.name, draft)
+          setDraft({})
+          await nav.reload()
+        }}
+      />
     </div>
   )
 }
@@ -1115,11 +1182,13 @@ function ItemsTab({
   cat,
   busy,
   act,
+  nav,
 }: {
   fn: FunctionSheet
   cat: BanquetCatalogue | null
   busy: boolean
   act: Act
+  nav: StageNav
 }) {
   const [lines, setLines] = useState<FunctionItem[]>(fn.items)
   const [picker, setPicker] = useState<"menu" | "service" | null>(null)
@@ -1432,47 +1501,32 @@ function ItemsTab({
             </div>
           </div>
 
-          {(dirty || discountDirty || serviceDirty) && (
-            <div className="mt-4 flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setLines(fn.items)
-                  setDiscount(String(fn.discount_amount || ""))
-                  setServiceCharge(String(fn.service_charge_percent || ""))
-                }}
-              >
-                Discard
-              </Button>
-              <Button
-                disabled={busy}
-                onClick={() =>
-                  act(async () => {
-                    if (dirty)
-                      await banquet.saveItems(
-                        fn.name,
-                        lines.filter((l) => l.item_name.trim()),
-                      )
-                    if (serviceDirty)
-                      await banquet.update(fn.name, {
-                        service_charge_percent: Number(serviceCharge) || 0,
-                      })
-                    if (discountDirty)
-                      await banquet.negotiate(fn.name, {
-                        discount_amount: Number(discount) || 0,
-                      })
-                  })
-                }
-              >
-                Save &amp; reprice
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
 
       <OpenItemsCard fn={fn} busy={busy} act={act} />
       <RevisionsCard fn={fn} />
+
+      <StageActionBar
+        nav={nav}
+        dirty={dirty || discountDirty || serviceDirty}
+        save={async () => {
+          if (dirty)
+            await banquet.saveItems(
+              fn.name,
+              lines.filter((l) => l.item_name.trim()),
+            )
+          if (serviceDirty)
+            await banquet.update(fn.name, {
+              service_charge_percent: Number(serviceCharge) || 0,
+            })
+          if (discountDirty)
+            await banquet.negotiate(fn.name, {
+              discount_amount: Number(discount) || 0,
+            })
+          await nav.reload()
+        }}
+      />
 
       {composing && (
         <MenuComposer
@@ -1792,10 +1846,12 @@ function MoneyTab({
   fn,
   busy,
   act,
+  nav,
 }: {
   fn: FunctionSheet
   busy: boolean
   act: Act
+  nav: StageNav
 }) {
   const [terms, setTerms] = useState<Partial<PaymentTerm>[]>(fn.payment_terms)
   const [note, setNote] = useState(fn.payment_terms_note ?? "")
@@ -1931,33 +1987,6 @@ function MoneyTab({
               onChange={(e) => setNote(e.target.value)}
             />
           </Field>
-          {dirty && (
-            <div className="mt-3 flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setTerms(fn.payment_terms)
-                  setNote(fn.payment_terms_note ?? "")
-                }}
-              >
-                Discard
-              </Button>
-              <Button
-                disabled={busy}
-                onClick={() =>
-                  act(() =>
-                    banquet.setPaymentTerms(
-                      fn.name,
-                      terms.filter((t) => (t.milestone ?? "").trim()),
-                      note,
-                    ),
-                  )
-                }
-              >
-                Save terms
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -2081,6 +2110,19 @@ function MoneyTab({
         </CardContent>
       </Card>
 
+      <StageActionBar
+        nav={nav}
+        dirty={dirty}
+        save={async () => {
+          await banquet.setPaymentTerms(
+            fn.name,
+            terms.filter((t) => (t.milestone ?? "").trim()),
+            note,
+          )
+          await nav.reload()
+        }}
+      />
+
       {receiptDoc && (
         <ReceiptPrint
           fn={fn.name}
@@ -2192,11 +2234,13 @@ function CloseOutCard({
   fn,
   busy,
   act,
+  nav,
   onCount,
 }: {
   fn: FunctionSheet
   busy: boolean
   act: Act
+  nav: StageNav
   onCount?: () => void
 }) {
   const [open, setOpen] = useState(false)
@@ -2209,9 +2253,17 @@ function CloseOutCard({
   const held = fn.deposit_held || 0
   const willRefund = refund ? Math.max(0, held - (Number(damage) || 0)) : 0
   const done = Boolean(fn.closed_out_on)
+  // "Save and Close Event" reuses the existing close_out settlement flow; it's
+  // only openable on a Confirmed, not-yet-closed function - no settlement bypass.
+  const closeBlocker = done
+    ? "This function is already closed out."
+    : fn.status !== "Confirmed"
+      ? "Confirm the function first."
+      : null
 
   return (
-    <Card>
+    <div className="space-y-4">
+      <Card>
       <CardHeader>
         <CardTitle>
           <span className="inline-flex items-center gap-1.5">
@@ -2224,9 +2276,6 @@ function CloseOutCard({
             <Button variant="outline" onClick={onCount}>
               Count what was served
             </Button>
-          )}
-          {!done && fn.status === "Confirmed" && (
-            <Button onClick={() => setOpen(true)}>Close out the function</Button>
           )}
         </div>
       </CardHeader>
@@ -2377,7 +2426,17 @@ function CloseOutCard({
           </div>
         </Sheet>
       )}
-    </Card>
+      </Card>
+
+      <StageActionBar
+        nav={nav}
+        primary={{
+          label: "Save and Close Event",
+          blocked: closeBlocker,
+          run: () => setOpen(true),
+        }}
+      />
+    </div>
   )
 }
 
@@ -2387,10 +2446,12 @@ function PaperTab({
   fn,
   busy,
   act,
+  nav,
 }: {
   fn: FunctionSheet
   busy: boolean
   act: Act
+  nav: StageNav
 }) {
   const docs: {
     kind: string
@@ -2535,6 +2596,8 @@ function PaperTab({
           </div>
         </CardContent>
       </Card>
+
+      <StageActionBar nav={nav} />
     </div>
   )
 }
