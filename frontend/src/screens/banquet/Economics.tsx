@@ -61,6 +61,9 @@ export default function Economics({ fn }: { fn: FunctionSheet }) {
   if (!data) return <Empty>{error ?? "Loading…"}</Empty>
   const m = data.margin
   const healthy = m.percent >= 35
+  // A quote with un-costed lines has a fake-high margin; don't show the number
+  // as if it were real profit (spec §6: "do not show fake 100% profit").
+  const costIncomplete = data.uncosted_lines.length > 0
 
   return (
     <div className="space-y-4">
@@ -80,9 +83,15 @@ export default function Economics({ fn }: { fn: FunctionSheet }) {
         />
         <Tile
           label="Expected profit"
-          value={`${inr(m.gross)} — ${m.percent}%`}
-          sub={`${inr(m.per_pax)} per head`}
-          tone={healthy ? "text-emerald-700" : "text-amber-700"}
+          value={costIncomplete ? "Cost incomplete" : `${inr(m.gross)} — ${m.percent}%`}
+          sub={
+            costIncomplete
+              ? "add costs to see the real profit"
+              : `${inr(m.per_pax)} per head`
+          }
+          tone={
+            costIncomplete || !healthy ? "text-amber-700" : "text-emerald-700"
+          }
         />
       </div>
 

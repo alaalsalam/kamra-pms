@@ -32,7 +32,11 @@ export const STATUSES: FunctionStatus[] = [
 export const NEXT: Record<FunctionStatus, FunctionStatus[]> = {
   Enquiry: ["Tentative", "Confirmed", "Cancelled", "Lost"],
   Tentative: ["Confirmed", "Enquiry", "Cancelled", "Lost"],
-  Confirmed: ["Completed", "Tentative", "Cancelled"],
+  // No direct "Completed" jump from the header: marking a function Completed
+  // with zero closeout data (pax, deposit, damages) then locks it permanently.
+  // Closing is done only through the Event Execution card (banquet.close_out),
+  // which captures the settlement. Server transition hardening → plan 0015 ph.5.
+  Confirmed: ["Tentative", "Cancelled"],
   Completed: [],
   Cancelled: ["Enquiry"],
   Lost: ["Enquiry"],

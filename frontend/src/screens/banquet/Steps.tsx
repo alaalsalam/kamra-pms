@@ -75,7 +75,7 @@ export function stepsFor(fn: FunctionSheet): Step[] {
     {
       id: "margin",
       n: 3,
-      label: "Margin",
+      label: "Profitability",
       state: costed
         ? `${inr(fn.gross_margin)} · ${fn.margin_percent}%`
         : "Not costed",
@@ -85,7 +85,7 @@ export function stepsFor(fn: FunctionSheet): Step[] {
     {
       id: "money",
       n: 4,
-      label: "Money",
+      label: "Payments",
       state: collected
         ? `${inr(fn.advance_received)} in · ${inr(fn.balance_due)} due`
         : fn.payment_terms.length
@@ -117,7 +117,7 @@ export function stepsFor(fn: FunctionSheet): Step[] {
     {
       id: "close",
       n: 6,
-      label: "The night",
+      label: "Event Execution",
       state: closed
         ? "Closed out"
         : sold
