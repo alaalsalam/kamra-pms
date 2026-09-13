@@ -653,7 +653,7 @@ html[dir="rtl"] .oasis-context-link:hover {
 
 .oasis-property-select,
 .oasis-property-static {
-  display: none;
+  display: flex;
   min-height: 42px;
   max-width: 250px;
   align-items: center;

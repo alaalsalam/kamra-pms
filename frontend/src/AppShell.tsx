@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Building2, ChevronDown, LayoutGrid, LogOut, Menu, Plus, SaudiRiyal, Search, X } from "lucide-react"
+import { Building2, Check, ChevronDown, LayoutGrid, LogOut, Menu, Plus, SaudiRiyal, Search, X } from "lucide-react"
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { BookingDialog } from "./components/BookingDialog"
 import { BrandLogo } from "./components/BrandLogo"
@@ -140,6 +140,122 @@ function AppSwitcher({ apps, current }: { apps: AppDef[]; current?: AppDef }) {
           >
             View all apps
           </NavLink>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * The current-property control in the top bar. A custom in-page dropdown (not a
+ * native <select>, whose OS popup can fail to open inside the sandboxed preview
+ * iframe) so tapping it always shows the picker. Switching runs the unchanged
+ * switchProperty(), which re-scopes the whole app (currency, rooms, rates,
+ * reservations, reports, cashier, settings) via the <main key={property}>
+ * remount + loadLocale + the property-changed event the data layer listens to.
+ */
+function PropertySwitcher({
+  properties,
+  current,
+  onSwitch,
+}: {
+  properties: PropertyRow[]
+  current: string
+  onSwitch: (name: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const { t } = useT()
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false)
+    }
+    window.addEventListener("mousedown", onDown)
+    window.addEventListener("keydown", onKey)
+    return () => {
+      window.removeEventListener("mousedown", onDown)
+      window.removeEventListener("keydown", onKey)
+    }
+  }, [open])
+
+  const currentProp = properties.find((p) => p.name === current)
+
+  return (
+    <div className="oasis-property-switcher relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={t("Switch property")}
+        className="oasis-property-select w-full cursor-pointer transition-colors hover:bg-zinc-50"
+      >
+        <Building2 className="size-4 shrink-0 text-brand-700" aria-hidden />
+        <span className="min-w-0 flex-1 truncate text-start">
+          {currentProp?.property_name ?? current}
+        </span>
+        <ChevronDown
+          className={cn(
+            "size-3.5 shrink-0 text-zinc-400 transition-transform",
+            open && "rotate-180",
+          )}
+          aria-hidden
+        />
+      </button>
+      {open && (
+        <div
+          role="listbox"
+          aria-label={t("Switch property")}
+          className="absolute start-0 top-[calc(100%+6px)] z-50 max-h-[70vh] w-72 max-w-[86vw] overflow-auto rounded-xl border border-zinc-200 bg-white p-1.5 shadow-lg ring-1 ring-black/5"
+        >
+          {properties.map((p) => {
+            const active = p.name === current
+            return (
+              <button
+                key={p.name}
+                type="button"
+                role="option"
+                aria-selected={active}
+                onClick={() => {
+                  setOpen(false)
+                  if (!active) onSwitch(p.name)
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-start transition-colors",
+                  active ? "bg-brand-50" : "hover:bg-zinc-50",
+                )}
+              >
+                <span
+                  className={cn(
+                    "grid size-8 shrink-0 place-items-center rounded-lg border",
+                    active
+                      ? "border-brand-200 bg-brand-100 text-brand-700"
+                      : "border-zinc-200 bg-white text-zinc-500",
+                  )}
+                >
+                  <Building2 className="size-4" aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-zinc-900">
+                    {p.property_name}
+                  </span>
+                  {p.city && (
+                    <span className="block truncate text-xs text-zinc-400">
+                      {p.city}
+                    </span>
+                  )}
+                </span>
+                {active && (
+                  <Check className="size-4 shrink-0 text-brand-600" aria-hidden />
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
     </div>
@@ -407,23 +523,16 @@ export default function AppShell() {
         {!kiosk && (
         <header className="oasis-topbar">
           <div className="sm:hidden"><AppSwitcher apps={apps} current={currentApp} /></div>
-          <div className="oasis-mobile-wordmark sm:hidden"><BrandLogo size={30} /></div>
           {properties.length > 1 ? (
-            <label className="oasis-property-select">
-              <Building2 className="size-4 text-brand-700" aria-hidden />
-              <select value={property} onChange={(e) => switchProperty(e.target.value)} aria-label="Property">
-                {properties.map((p) => (
-                  <option key={p.name} value={p.name}>
-                    {p.property_name}{p.city ? ` · ${p.city}` : ""}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="size-3.5 text-zinc-400" aria-hidden />
-            </label>
+            <PropertySwitcher
+              properties={properties}
+              current={property}
+              onSwitch={switchProperty}
+            />
           ) : (
             <div className="oasis-property-static">
-              <Building2 className="size-4 text-brand-700" aria-hidden />
-              <span>{properties[0]?.property_name ?? ""}</span>
+              <Building2 className="size-4 shrink-0 text-brand-700" aria-hidden />
+              <span className="truncate">{properties[0]?.property_name ?? ""}</span>
             </div>
           )}
           <div className="oasis-top-search">
