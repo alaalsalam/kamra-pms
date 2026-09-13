@@ -196,7 +196,17 @@ const PROPERTY_SPECS: Spec[] = [
   {
     field: "country",
     label: "Country",
-    hint: "Selects the local tax, currency and invoicing pack.",
+    hint: "Selects the local tax and invoicing pack.",
+  },
+  {
+    field: "currency",
+    label: "Default Currency",
+    type: "select",
+    options: [
+      "SAR", "YER", "AED", "USD", "EUR", "GBP",
+      "KWD", "QAR", "BHD", "OMR", "EGP", "INR",
+    ],
+    hint: "The currency symbol used across this whole property.",
   },
   { field: "phone", label: "Phone" },
   { field: "email", label: "Email" },

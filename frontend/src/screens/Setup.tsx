@@ -7,6 +7,27 @@ import { Button } from "../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { cn } from "../lib/utils"
 import { cur } from "../lib/money"
+import PhoneField from "../components/PhoneField"
+import { COUNTRIES, toLatinDigits } from "../lib/phone"
+import { isNumericTaxCountry, taxIdHint, taxIdValid } from "../lib/tax"
+import { useT } from "../lib/i18n"
+
+/** Default-currency options for the wizard (code + names); the property's own
+ *  currency drives the symbol everywhere, so no symbol is hardcoded here. */
+const CURRENCIES = [
+  { code: "SAR", en: "Saudi Riyal", ar: "الريال السعودي" },
+  { code: "YER", en: "Yemeni Rial", ar: "الريال اليمني" },
+  { code: "AED", en: "UAE Dirham", ar: "الدرهم الإماراتي" },
+  { code: "USD", en: "US Dollar", ar: "الدولار الأمريكي" },
+  { code: "EUR", en: "Euro", ar: "اليورو" },
+  { code: "GBP", en: "British Pound", ar: "الجنيه الإسترليني" },
+  { code: "KWD", en: "Kuwaiti Dinar", ar: "الدينار الكويتي" },
+  { code: "QAR", en: "Qatari Riyal", ar: "الريال القطري" },
+  { code: "BHD", en: "Bahraini Dinar", ar: "الدينار البحريني" },
+  { code: "OMR", en: "Omani Rial", ar: "الريال العُماني" },
+  { code: "EGP", en: "Egyptian Pound", ar: "الجنيه المصري" },
+  { code: "INR", en: "Indian Rupee", ar: "الروبية الهندية" },
+]
 
 const inputCls =
   "w-full rounded-lg border border-zinc-300 bg-white px-3.5 py-2.5 text-base " +
@@ -76,8 +97,12 @@ export default function Setup() {
     issues: { row: number; guest: string; error: string }[]
   } | null>(null)
 
+  const { lang } = useT()
+  const [phoneValid, setPhoneValid] = useState(false)
   const [prop, setProp] = useState({
     property_name: "",
+    country: "Saudi Arabia",
+    currency: "SAR",
     city: "",
     state: "",
     phone: "",
@@ -89,6 +114,9 @@ export default function Setup() {
     advance_percent: "100",
     security_deposit_amount: "5000",
   })
+  const taxOk = taxIdValid(prop.country, prop.gstin)
+  const phoneOk = prop.phone === "" || phoneValid
+  const basicsOk = Boolean(prop.property_name) && Boolean(prop.currency) && phoneOk && taxOk
   const [roomTypes, setRoomTypes] = useState<RoomTypeRow[]>([{ ...HOTEL_ROOM_DEFAULT }])
   const [mealPlans, setMealPlans] = useState([
     { code: "EP", label: "Room Only", price_per_adult: "0", on: true },
@@ -332,8 +360,6 @@ export default function Setup() {
                   ["property_name", "Property name *", "text", "Nuzul Riyadh Hotel"],
                   ["city", "City", "text", "Riyadh"],
                   ["state", "State", "text", "Riyadh"],
-                  ["phone", "Phone", "text", "+966 11 XXX XXXX"],
-                  ["gstin", "VAT Registration No.", "text", "3XXXXXXXXXXXXXX"],
                   ["checkin_time", "Check-in Time", "time", ""],
                   ["checkout_time", "Check-out Time", "time", ""],
                   ["minimum_nights", "Minimum Nights", "number", "1"],
@@ -377,6 +403,91 @@ export default function Setup() {
                   )}
                 </label>
               ))}
+
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-zinc-600">
+                  Country
+                </span>
+                <div className="flex gap-2">
+                  <select
+                    className={cn(inputCls, "bg-white")}
+                    value={prop.country}
+                    onChange={(e) => setProp({ ...prop, country: e.target.value })}
+                  >
+                    {COUNTRIES.map((c) => (
+                      <option key={c.iso} value={c.en}>
+                        {c.flag} {lang === "ar" ? c.ar : c.en}
+                      </option>
+                    ))}
+                  </select>
+                  <div
+                    dir="ltr"
+                    data-no-translate
+                    title={lang === "ar" ? "مفتاح الاتصال" : "Calling code"}
+                    className="flex shrink-0 items-center rounded-lg border border-zinc-300 bg-zinc-50 px-3 text-base tabular-nums text-zinc-600"
+                  >
+                    +{COUNTRIES.find((c) => c.en === prop.country)?.dial ?? ""}
+                  </div>
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-zinc-600">
+                  Default Currency *
+                </span>
+                <select
+                  className={cn(inputCls, "bg-white")}
+                  value={prop.currency}
+                  onChange={(e) => setProp({ ...prop, currency: e.target.value })}
+                >
+                  {CURRENCIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.code} — {lang === "ar" ? c.ar : c.en}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <PhoneField
+                label="Phone"
+                value={prop.phone}
+                defaultCountryName={prop.country}
+                onChange={(e164, valid) => {
+                  setProp((p) => ({ ...p, phone: e164 }))
+                  setPhoneValid(valid)
+                }}
+              />
+
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-zinc-600">
+                  VAT Registration No.
+                </span>
+                <input
+                  className={inputCls}
+                  dir="ltr"
+                  inputMode={isNumericTaxCountry(prop.country) ? "numeric" : "text"}
+                  placeholder="3XXXXXXXXXXXXXX"
+                  value={prop.gstin}
+                  onChange={(e) =>
+                    setProp({
+                      ...prop,
+                      gstin: isNumericTaxCountry(prop.country)
+                        ? toLatinDigits(e.target.value)
+                        : e.target.value,
+                    })
+                  }
+                />
+                {prop.gstin && !taxOk && (
+                  <span data-no-translate className="mt-1 block text-sm text-rose-600">
+                    {lang === "ar"
+                      ? "الرقم الضريبي غير صحيح لهذه الدولة"
+                      : "Invalid tax number for this country"}
+                    {taxIdHint(prop.country, lang)
+                      ? ` — ${taxIdHint(prop.country, lang)}`
+                      : ""}
+                  </span>
+                )}
+              </label>
             </>
           )}
 
@@ -822,7 +933,7 @@ export default function Setup() {
             )}
             {step < reviewStep && (
               <Button
-                disabled={step === 1 && !prop.property_name}
+                disabled={step === 1 && !basicsOk}
                 onClick={() => setStep(step + 1)}
               >
                 Continue

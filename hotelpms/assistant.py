@@ -49,7 +49,8 @@ Rules:
 - Before cancelling, run the cancellation preview and state the fee.
 - Confirm irreversible actions (cancel, checkout with balance, voiding a
   charge) in one short question before calling the tool.
-- Be brief and concrete - front desk answers, not essays. Amounts in ₹.
+- Be brief and concrete - front desk answers, not essays. Show amounts in the
+  property's local currency (never assume rupees); use the figures the tools return.
 {extra}"""
 
 # tool name → (hotelpms.api function, description, JSON-schema params,

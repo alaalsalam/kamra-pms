@@ -129,6 +129,8 @@ def set_room_rate(property: str, room_type: str, start_date: str,
 	Guardrails still clamp the rate; the change is recorded in the action log.
 	"""
 	rate = float(rate)
+	from hotelpms.localization import locale_for
+	sym = locale_for(frappe.get_cached_doc("Property", property)).get("currency_symbol") or ""
 
 	guardrails = frappe.get_all(
 		"Rate Guardrail",
@@ -142,13 +144,13 @@ def set_room_rate(property: str, room_type: str, start_date: str,
 	if rail:
 		if rate < float(rail.floor_price):
 			frappe.throw(
-				f"Blocked by guardrail {rail.name}: ₹{rate:,.0f} is below "
-				f"the floor of ₹{float(rail.floor_price):,.0f}."
+				f"Blocked by guardrail {rail.name}: {sym}{rate:,.0f} is below "
+				f"the floor of {sym}{float(rail.floor_price):,.0f}."
 			)
 		if rate > float(rail.ceiling_price):
 			frappe.throw(
-				f"Blocked by guardrail {rail.name}: ₹{rate:,.0f} is above "
-				f"the ceiling of ₹{float(rail.ceiling_price):,.0f}."
+				f"Blocked by guardrail {rail.name}: {sym}{rate:,.0f} is above "
+				f"the ceiling of {sym}{float(rail.ceiling_price):,.0f}."
 			)
 
 	# the hurdle is the DYNAMIC floor: when demand tiers are active for any
@@ -164,7 +166,7 @@ def set_room_rate(property: str, room_type: str, start_date: str,
 			frappe.throw(
 				f"Blocked by the hurdle rate: occupancy for {day} is "
 				f"{tier['occupancy']:.0f}%, so the minimum sell rate is "
-				f"₹{tier['min_rate']:,.0f} - ₹{rate:,.0f} undercuts it."
+				f"{sym}{tier['min_rate']:,.0f} - {sym}{rate:,.0f} undercuts it."
 			)
 
 	from frappe.utils import getdate, date_diff
@@ -187,7 +189,7 @@ def set_room_rate(property: str, room_type: str, start_date: str,
 	from hotelpms.savings import log_action
 	log_action("set_room_rate", "Season", season.name, property,
 	           minutes_saved=6, rationale=reason or (
-	               f"Set {room_type.split('-')[-1]} rate ₹{rate:,.0f} "
+	               f"Set {room_type.split('-')[-1]} rate {sym}{rate:,.0f} "
 	               f"for {start_date}→{end_date}"))
 	return {
 		"season": season.name, "rate": rate,
@@ -306,6 +308,17 @@ def setup_property(payload):
 
 	if frappe.db.exists("Property", p["property_name"]):
 		frappe.throw(f"Property '{p['property_name']}' already exists.")
+
+	# The currency the wizard offers must be a Currency record for the Link to
+	# validate (bare sites may not ship every one) - create it idempotently.
+	_cur = (p.get("currency") or "").strip().upper()
+	if _cur and not frappe.db.exists("Currency", _cur):
+		frappe.get_doc({"doctype": "Currency", "currency_name": _cur,
+		                "enabled": 1}).insert(ignore_permissions=True)
+
+	if not p.get("locale"):
+		from hotelpms.localization import locale_for_country
+		p["locale"] = locale_for_country(p.get("country"))
 
 	prop = frappe.get_doc({"doctype": "Property", **p})
 	prop.insert()
@@ -616,7 +629,7 @@ def record_advance(reservation: str, amount: float, mode: str = "UPI",
 	                    float(res.advance_paid or 0) + float(amount))
 	from hotelpms.savings import log_action
 	log_action("record_advance", "Folio", folio.name, res.property,
-	           rationale=f"₹{float(amount):,.0f} advance on {reservation}")
+	           rationale=f"{float(amount):,.0f} advance on {reservation}")
 	return {"folio": folio.name, "balance": folio.balance,
 	        "status": res.status}
 
@@ -1004,7 +1017,7 @@ def hk_post_consumable(room: str, charge_type: str, description: str,
 		frappe.set_user(me)  # nosemgrep: frappe-setuser -- controlled user context switch; target user is validated and scope-limited in this flow
 	from hotelpms.savings import log_action
 	log_action("hk_charge", "Folio", out.get("folio"), res.property,
-	           rationale=f"{charge_type} ₹{amount} to {room} ({description})")
+	           rationale=f"{charge_type} {amount} to {room} ({description})")
 	return {"ok": True, "folio": out.get("folio"), "balance": out.get("balance")}
 
 
@@ -1136,7 +1149,7 @@ def add_folio_charge(folio: str, charge_type: str, description: str,
 		frappe.log_error(title="ledger charge write failed")
 	from hotelpms.savings import log_action
 	log_action("post_charge", "Folio", doc.name, doc.property,
-	           rationale=f"{charge_type}: {description} ₹{amount}")
+	           rationale=f"{charge_type}: {description} {amount}")
 	return doc.as_dict()
 
 
@@ -1220,7 +1233,9 @@ def refund_folio_payment(folio: str, amount: float, mode: str,
 	refunded = -sum(float(p.amount or 0) for p in doc.payments
 	                if float(p.amount or 0) < 0)
 	if float(amount) > received - refunded:
-		frappe.throw(f"Only ₹{received - refunded:,.2f} was collected on "
+		from hotelpms.localization import locale_for
+		sym = locale_for(frappe.get_cached_doc("Property", doc.property)).get("currency_symbol") or ""
+		frappe.throw(f"Only {sym}{received - refunded:,.2f} was collected on "
 		             "this folio - can't refund more than that.")
 	from hotelpms.business_date import get_business_date
 	from hotelpms.cashier import record_cashier_txn, require_open_session
@@ -1474,7 +1489,7 @@ def split_folio_charge(from_folio: str, charge_row: str, to_folio: str,
 	                   amount=float(amount) if amount else None)
 	from hotelpms.savings import log_action
 	log_action("split_charge", "Folio", to_folio,
-	           rationale=f"Split ₹{out['moved']:,.2f} of {charge_row} "
+	           rationale=f"Split {out['moved']:,.2f} of {charge_row} "
 	                     f"{from_folio} → {to_folio}")
 	return out
 
@@ -1562,7 +1577,7 @@ def post_allowance(folio: str, amount: float, reason: str,
 	_allow(folio, float(amount), reason, float(gst_rate or 0))
 	from hotelpms.savings import log_action
 	log_action("allowance", "Folio", folio,
-	           rationale=f"Allowance ₹{abs(float(amount)):,.2f}: {reason}")
+	           rationale=f"Allowance {abs(float(amount)):,.2f}: {reason}")
 	return {"ok": True, "folio": folio}
 
 
@@ -1970,7 +1985,7 @@ def guest_journey(guest: str):
 			timeline.append({
 				"ts": str(r.actual_check_out), "type": "check_out",
 				"title": "Checked out",
-				"detail": f"Folio ₹{float(r.amount_after_tax or 0):,.0f}",
+				"amount": float(r.amount_after_tax or 0),
 				"reference": r.name,
 			})
 		if r.status == "Cancelled":
@@ -3301,7 +3316,7 @@ def amend_stay(reservation: str, check_in_date: str, check_out_date: str):
 	from hotelpms.savings import log_action
 	log_action("amend_stay", "Reservation", doc.name, doc.property,
 	           rationale=f"{old} → {check_in_date}→{check_out_date}; "
-	                     f"new total ₹{doc.amount_after_tax or 0:,.0f}")
+	                     f"new total {doc.amount_after_tax or 0:,.0f}")
 	return {"ok": True, "nights": doc.nights,
 	        "amount_after_tax": doc.amount_after_tax}
 
@@ -4246,9 +4261,9 @@ def property_locale(property: str):
 	"""Currency, number locale and tax vocabulary for this property, from its
 	localization pack. Drives the frontend's money formatting and tax dropdowns
 	so no screen hardcodes ₹ or GST %."""
-	from hotelpms.localization import pack_for
+	from hotelpms.localization import locale_for
 	prop = frappe.get_cached_doc("Property", property)
-	return pack_for(property).locale(prop)
+	return locale_for(prop)
 
 
 @frappe.whitelist()

@@ -41,6 +41,69 @@ def pack_for(property: str | None = None):
 	return generic
 
 
+# ── currency: the property's own currency is the single source of truth ───
+# The country pack decides the tax vocabulary (VAT/GST); the currency SYMBOL
+# comes from the property's `currency` field so the Default Currency chosen in
+# Property Setup drives every screen and document. Trailing space where the UI
+# concatenates symbol + amount (so "ر.س 1,500", not "ر.س1,500").
+_CURRENCY_SYMBOLS = {
+	"SAR": "ر.س ",
+	"YER": "ر.ي ",
+	"AED": "د.إ ",
+	"KWD": "د.ك ",
+	"QAR": "ر.ق ",
+	"BHD": "د.ب ",
+	"OMR": "ر.ع ",
+	"EGP": "ج.م ",
+	"JOD": "د.أ ",
+	"USD": "$",
+	"EUR": "€",
+	"GBP": "£",
+	"INR": "₹",
+	"IDR": "Rp ",
+	"MYR": "RM ",
+	"THB": "฿",
+}
+
+
+def currency_symbol_for(currency: str | None) -> str | None:
+	"""Display symbol for a currency code: explicit map → Frappe Currency master
+	→ the code itself. Never falls back to another country's symbol (no stray ₹)."""
+	if not currency:
+		return None
+	code = str(currency).strip().upper()
+	if code in _CURRENCY_SYMBOLS:
+		return _CURRENCY_SYMBOLS[code]
+	sym = frappe.db.get_value("Currency", code, "symbol")
+	return sym or f"{code} "
+
+
+_ARABIC_COUNTRIES = {
+	"Saudi Arabia", "Yemen", "United Arab Emirates", "Qatar", "Kuwait",
+	"Bahrain", "Oman", "Egypt", "Jordan", "Iraq", "Lebanon", "Syria",
+	"Palestine", "Libya", "Sudan", "Algeria", "Morocco", "Tunisia",
+}
+
+
+def locale_for_country(country: str | None) -> str:
+	"""Number-formatting locale for a country, so a new property never inherits
+	another market's grouping (e.g. Indian lakhs on a Yemen property). Arabic
+	markets use ar-SA (standard grouping + Arabic-Indic digits); everyone else
+	falls back to en-US."""
+	return "ar-SA" if (country or "") in _ARABIC_COUNTRIES else "en-US"
+
+
+def locale_for(prop_doc) -> dict:
+	"""The pack's locale, but with the currency symbol driven by the property's
+	own `currency` when one is set. Contract: currency set → currency wins;
+	not set → the pack's default wins (existing properties stay pixel-identical)."""
+	loc = pack_for(prop_doc.name).locale(prop_doc)
+	currency = prop_doc.get("currency")
+	if currency:
+		loc["currency_symbol"] = currency_symbol_for(currency)
+	return loc
+
+
 # ── optional pack behaviour, with defaults ───────────────────────────────
 # A pack that predates these keeps working: each accessor falls back to
 # something correct-but-plain, so adding a country never means editing the

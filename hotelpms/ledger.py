@@ -731,8 +731,10 @@ def quick_checkout(reservation: str, pin: str | None = None):
 				"Company", company, "credit_allowed"):
 			transfer_to_city_ledger(folio_name, company)
 		else:
+			from hotelpms.localization import locale_for
+			sym = locale_for(frappe.get_cached_doc("Property", folio.property)).get("currency_symbol") or ""
 			frappe.throw(
-				f"Balance ₹{float(folio.balance):,.2f} remains - collect payment "
+				f"Balance {sym}{float(folio.balance):,.2f} remains - collect payment "
 				"or transfer to city ledger first.")
 	close_folio(folio_name, pin=pin)
 	return check_out(reservation)

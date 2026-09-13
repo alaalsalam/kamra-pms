@@ -740,8 +740,8 @@ def record_receipt(function: str, amount: float, mode: str = "Bank Transfer",
 	doc.save()
 	from hotelpms.savings import log_action
 	log_action("banquet_receipt", "Venue Booking", doc.name, doc.property,
-	           rationale=f"{kind} ₹{float(amount):,.0f} ({mode}) for "
-	                     f"{doc.customer_name} - balance ₹{doc.balance_due:,.0f}")
+	           rationale=f"{kind} {float(amount):,.0f} ({mode}) for "
+	                     f"{doc.customer_name} - balance {doc.balance_due:,.0f}")
 	return {"ok": True, "received": doc.advance_received,
 	        "balance_due": doc.balance_due}
 
@@ -1399,7 +1399,7 @@ def generate_quote(function: str, valid_days: int = 15,
 	log_action("banquet_quote", "Venue Booking", doc.name, doc.property,
 	           minutes_saved=20,
 	           rationale=f"Quote v{doc.quote_version} for {doc.customer_name}: "
-	                     f"₹{doc.grand_total:,.0f} ({len(doc.items)} lines)")
+	                     f"{doc.grand_total:,.0f} ({len(doc.items)} lines)")
 	return banquet_document(function, "quote")
 
 
@@ -1449,7 +1449,7 @@ def generate_invoice(function: str):
 		log_action("banquet_invoice", "Venue Booking", doc.name, doc.property,
 		           minutes_saved=10,
 		           rationale=f"Invoice {doc.invoice_number} for "
-		                     f"{doc.customer_name}: ₹{doc.grand_total:,.0f}")
+		                     f"{doc.customer_name}: {doc.grand_total:,.0f}")
 	return banquet_document(function, "invoice")
 
 
@@ -1606,7 +1606,7 @@ def close_out(function: str, damage_amount: float = 0,
 	           minutes_saved=10,
 	           rationale=f"{doc.customer_name} closed out - "
 	                     f"{doc.billable_pax} actual pax, "
-	                     f"₹{damage:,.0f} damages, ₹{refund:,.0f} returned")
+	                     f"{damage:,.0f} damages, {refund:,.0f} returned")
 	return {"ok": True, "status": doc.status, "damage": damage,
 	        "refunded": refund, "deposit_held": doc.deposit_held,
 	        "balance_due": doc.balance_due, "grand_total": doc.grand_total}

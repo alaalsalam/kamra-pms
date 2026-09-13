@@ -65,7 +65,7 @@ def create_payment_link(folio_name: str) -> dict:
 	from hotelpms.savings import log_action
 	log_action("send_payment_link", "Folio", folio.name, folio.property,
 	           minutes_saved=4,
-	           rationale=f"Payment link ₹{folio.balance:,.0f} for {guest.full_name}",
+	           rationale=f"Payment link {folio.balance:,.0f} for {guest.full_name}",
 	           channel="API")
 	return {"url": url, "link_id": link_id, "amount": float(folio.balance),
 	        "test_mode": bool(settings.test_mode)}
@@ -110,7 +110,7 @@ def razorpay_webhook():
 		from hotelpms.savings import log_action
 		log_action("payment_received", "Folio", folio.name, folio.property,
 		           minutes_saved=3,
-		           rationale=f"₹{amount:,.0f} auto-posted from payment link",
+		           rationale=f"{amount:,.0f} auto-posted from payment link",
 		           agent_name="Payments", channel="API")
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit -- persists the completed operation before returning to an external/public caller; reviewed as intentional
 	return {"ok": True, "folio": folio.name, "posted": not already}

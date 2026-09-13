@@ -440,7 +440,7 @@ def adjust_stock(property: str, outlet: str, rows, note: str):
 		                                        "cost_per_unit") or 0)
 		            for r in out)
 		log_action("stock_count", "POS Outlet", outlet, property,
-		           rationale=f"{len(out)} variance(s), ~₹{value:,.0f} adjusted - "
+		           rationale=f"{len(out)} variance(s), ~{value:,.0f} adjusted - "
 		                     f"{note.strip()[:80]}",
 		           channel="API")
 	return {"ok": True, "batch_id": batch, "adjusted": out}
@@ -467,7 +467,7 @@ def record_wastage(property: str, outlet: str, ingredient: str, qty: float,
 	from hotelpms.savings import log_action
 	cost = float(frappe.db.get_value("Ingredient", ingredient, "cost_per_unit") or 0)
 	log_action("stock_wastage", "Ingredient", ingredient, property,
-	           rationale=f"{qty} wasted (~₹{qty * cost:,.0f}) - "
+	           rationale=f"{qty} wasted (~{qty * cost:,.0f}) - "
 	                     f"{reason_note.strip()[:80]}",
 	           channel="API")
 	return {"ok": True, "qty_on_hand": after}

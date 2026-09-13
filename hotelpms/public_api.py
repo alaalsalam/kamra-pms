@@ -239,13 +239,13 @@ def default_property():
 
 
 def _public_locale(property: str) -> dict:
-	from hotelpms.localization import pack_for
+	from hotelpms.localization import locale_for
 	prop = frappe.get_cached_doc("Property", property)
-	loc = pack_for(property).locale(prop)
-	# "" is a valid symbol (generic pack shows bare numbers) - only the
-	# missing key falls back to the rupee
-	return {"currency_symbol": loc.get("currency_symbol", "₹"),
-	        "locale": loc.get("locale") or "en-IN"}
+	loc = locale_for(prop)
+	# "" is a valid symbol (generic pack shows bare numbers); never fall back to
+	# a hardcoded rupee - the property's own currency drives the symbol.
+	return {"currency_symbol": loc.get("currency_symbol") or "",
+	        "locale": loc.get("locale") or "en-US"}
 
 
 @frappe.whitelist(allow_guest=True)
@@ -635,15 +635,17 @@ def _advance_terms(prop, total: float) -> tuple[float, str]:
 	"""What the guest pays online now, and a human label - computed from the
 	property's CURRENT booking-payment policy. Snapshotted onto the booking so
 	a later policy change never re-bills an existing guest."""
+	from hotelpms.localization import locale_for
+	sym = locale_for(prop).get("currency_symbol") or ""
 	mode = prop.get("booking_payment_mode") or "Pay at hotel"
 	total = float(total or 0)
 	if mode == "Advance percent":
 		pct = float(prop.get("advance_percent") or 0)
 		due = round(total * pct / 100, 2)
-		return due, f"{pct:g}% advance (₹{due:,.0f}) now, rest at the hotel"
+		return due, f"{pct:g}% advance ({sym}{due:,.0f}) now, rest at the hotel"
 	if mode == "Registration fee":
 		due = min(float(prop.get("registration_fee") or 0), total)
-		return due, f"₹{due:,.0f} registration fee now, rest at the hotel"
+		return due, f"{sym}{due:,.0f} registration fee now, rest at the hotel"
 	if mode == "Full online":
 		return total, "Full amount paid online"
 	return 0.0, "Pay at the hotel"
@@ -812,8 +814,10 @@ def check_voucher(property: str, code: str, nights: int = 1):
 		v = validate_voucher(property, code, int(nights or 1))
 	except Exception as e:
 		return {"ok": False, "message": str(e)}
+	from hotelpms.localization import locale_for
+	sym = locale_for(frappe.get_cached_doc("Property", property)).get("currency_symbol") or ""
 	label = (f"{v.value:g}% off" if v.discount_type == "Percent"
-	         else f"₹{v.value:,.0f} off")
+	         else f"{sym}{v.value:,.0f} off")
 	return {"ok": True, "message": f"'{v.voucher_code}' applied - {label}.",
 	        "discount_type": v.discount_type, "value": float(v.value)}
 

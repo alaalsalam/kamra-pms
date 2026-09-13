@@ -340,7 +340,7 @@ def deliver_laundry(order: str, shortage_note: str | None = None):
 	if posted:
 		from hotelpms.savings import log_action
 		log_action("laundry_bill", "Laundry Order", doc.name, doc.property,
-		           rationale=f"₹{doc.total:,.0f} laundry → {doc.room} "
+		           rationale=f"{doc.total:,.0f} laundry → {doc.room} "
 		                     f"({doc.reservation})", channel="API")
 	return {"ok": True, "status": "Delivered", "posted_to_folio": posted,
 	        "total": doc.total}

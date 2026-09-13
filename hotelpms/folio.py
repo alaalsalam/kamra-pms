@@ -472,7 +472,7 @@ def split_charge(from_folio: str, charge_row: str, to_folio: str,
 	else:
 		frappe.throw("Give a percent or an amount to split off.")
 	if part <= 0 or part >= base:
-		frappe.throw(f"Split must be between 0 and ₹{base} (exclusive).")
+		frappe.throw(f"Split must be between 0 and {base} (exclusive).")
 	if row.get("is_alcohol") and dst.folio_type in ("Company", "Group"):
 		frappe.throw("Alcohol cannot be billed to a company folio.")
 
@@ -585,7 +585,7 @@ def post_allowance(folio_name: str, amount: float, reason: str,
 	folio.save(ignore_permissions=True)
 	from hotelpms.savings import log_action
 	log_action("post_allowance", "Folio", folio.name, folio.property,
-	           rationale=f"Allowance ₹{amount:.0f} - {reason.strip()}")
+	           rationale=f"Allowance {amount:.0f} - {reason.strip()}")
 	return folio.name
 
 
@@ -611,7 +611,7 @@ def void_charge(folio_name: str, charge_row: str, reason: str = "") -> dict:
 	from hotelpms.savings import log_action
 	log_action("void_charge", "Folio", folio.name, folio.property,
 	           rationale=f"Removed {removed['charge_type']} "
-	                     f"{removed['description']} ₹{removed['amount']}"
+	                     f"{removed['description']} {removed['amount']}"
 	                     + (f" - {reason}" if reason else ""))
 	return {"folio": folio.name, "removed": removed, "balance": folio.balance}
 
@@ -748,7 +748,7 @@ def run_night_audit(property: str, business_date: str | None = None) -> dict:
 			if fee:
 				amount_posted += Decimal(str(fee))
 				log_lines.append(
-					f"posted no-show charge ₹{fee:,.0f} for {row.name}")
+					f"posted no-show charge {fee:,.0f} for {row.name}")
 
 	# purge stale waitlist entries - two days after their requested departure
 	from frappe.utils import add_days as _add_days
