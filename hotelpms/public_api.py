@@ -197,8 +197,57 @@ def catalog_index():
 
 
 @frappe.whitelist(allow_guest=True)
+def hotels_list():
+	"""Every directly-bookable property, one guest-facing card each. Only
+	booking_engine_enabled + not disabled show; each card carries its OWN
+	currency, from-rate, slug and amenities so nothing mixes across hotels."""
+	from hotelpms.localization import locale_for
+
+	props = frappe.get_all(
+		"Property",
+		filters={"booking_engine_enabled": 1, "disabled": 0},
+		fields=["name", "property_name", "page_slug", "city", "state",
+		        "hero_image", "logo_url", "showcase_description",
+		        "property_amenities", "star_category", "property_kind", "phone"],
+		order_by="property_name asc",
+	)
+	if not props:
+		return {"hotels": []}
+
+	names = [p.name for p in props]
+	from_rate = {}
+	for rt in frappe.get_all(
+		"Room Type", filters={"property": ["in", names], "disabled": 0},
+		fields=["property", "base_price"],
+	):
+		price = float(rt.base_price or 0)
+		if rt.property not in from_rate or price < from_rate[rt.property]:
+			from_rate[rt.property] = price
+
+	hotels = []
+	for p in props:
+		loc = locale_for(frappe.get_cached_doc("Property", p.name))
+		hotels.append({
+			"name": p.name,
+			"property_name": p.property_name,
+			"slug": p.page_slug or slugify(p.property_name),
+			"city": p.city, "state": p.state,
+			"hero_image": p.hero_image, "logo_url": p.logo_url,
+			"description": p.showcase_description,
+			"amenities": [a.strip() for a in re.split(r"[,\n]", p.property_amenities or "") if a.strip()],
+			"star_category": p.star_category,
+			"property_kind": p.property_kind,
+			"phone": p.phone,
+			"from_rate": from_rate.get(p.name),
+			"currency_symbol": loc.get("currency_symbol") or "",
+			"locale": loc.get("locale") or "en-US",
+		})
+	return {"hotels": hotels}
+
+
+@frappe.whitelist(allow_guest=True)
 def resolve_slug(slug: str):
-	"""Resolve /stay/:slug to a listing or multi-listing site."""
+	"""Resolve /stay/:slug or /hotels/:slug to a listing, site or whole property."""
 	return resolve_public_slug(slug)
 
 

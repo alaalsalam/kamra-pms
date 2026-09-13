@@ -299,6 +299,12 @@ export default function PublicBooking() {
     }>("hotelpms.public_api.catalog_index")
       .then((idx) => {
         setCatalogMode(idx.mode)
+        // Multiple bookable hotels -> the guest picks one on the /hotels portal
+        // (a single /book page can't represent more than one property).
+        if (idx.mode === "properties") {
+          navigate("/hotels", { replace: true })
+          return null
+        }
         if (idx.mode === "single_listing" && idx.listing_slug) {
           navigate(`/stay/${idx.listing_slug}`, { replace: true })
           return null

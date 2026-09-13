@@ -6,6 +6,16 @@ from frappe.model.document import Document
 
 
 class Property(Document):
+	def validate(self):
+		# A bookable property needs a stable, unique public slug for /hotels/:slug.
+		# Generated once from the (English half of the) name, then left editable;
+		# never regenerated, so the guest URL stays constant when staff rename.
+		if self.get("booking_engine_enabled") and not (self.get("page_slug") or "").strip():
+			from hotelpms.booking_slugs import property_slug_base, unique_public_slug
+			self.page_slug = unique_public_slug(
+				property_slug_base(self.property_name), exclude_property=self.name
+			)
+
 	def on_update(self):
 		# Single-site tenants: keep Frappe's site clock aligned with the
 		# property so night audit / now_datetime follow hotel local time.

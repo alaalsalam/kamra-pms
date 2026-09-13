@@ -8,6 +8,7 @@ import {
 } from "../lib/resource"
 import { getTheme, setTheme, type Theme } from "../lib/theme"
 import { getLang, setLang, type Lang } from "../lib/dir"
+import { Check, Copy, ExternalLink } from "lucide-react"
 import { Button } from "../components/ui/button"
 import ImageField from "../components/ImageField"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
@@ -270,8 +271,14 @@ const STAY_TAX_SPECS: Spec[] = [
 const BOOKING_SPECS: Spec[] = [
   {
     field: "booking_engine_enabled",
-    label: "Public booking page (/book)",
+    label: "Public booking enabled",
     type: "check",
+    hint: "Show this hotel on the public /hotels portal and accept direct bookings.",
+  },
+  {
+    field: "page_slug",
+    label: "Public link slug",
+    hint: "The stable public address of this hotel (/hotels/<slug>). Auto-generated from the name; edit for a cleaner URL.",
   },
   {
     field: "booking_mode",
@@ -413,6 +420,68 @@ const GATEWAY_SPECS: Spec[] = [
   { field: "webhook_secret", label: "Webhook secret", type: "password" },
 ]
 
+/** Guest-facing link for this hotel + copy/open actions. Only meaningful when
+ *  the property is publicly bookable. The slug mirrors the backend (page_slug,
+ *  else a slug of the name) so the link always matches the /hotels card. */
+function PublicPageActions({ prop }: { prop: Doc }) {
+  const [copied, setCopied] = useState(false)
+  if (!prop.booking_engine_enabled) return null
+  const slugify = (s: string) =>
+    (s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s_-]/gu, "")
+      .replace(/[\s_]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "") || "hotel"
+  const slug = String(prop.page_slug || slugify(String(prop.property_name || "")))
+  const url = `${window.location.origin}/hotelpms/hotels/${slug}`
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1800)
+    } catch {
+      /* clipboard blocked in an insecure context — the URL is shown for manual copy */
+    }
+  }
+  return (
+    <Card>
+      <CardHeader>
+        <div>
+          <CardTitle>Public hotel page</CardTitle>
+          <p className="mt-0.5 text-xs text-zinc-400">
+            The direct link guests use to view and book this hotel.
+          </p>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <code
+          dir="ltr"
+          className="block truncate rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-600"
+        >
+          {url}
+        </code>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-gold inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm"
+          >
+            <ExternalLink className="size-4" aria-hidden />
+            View hotel page
+          </a>
+          <Button variant="outline" onClick={copy} className="gap-1.5">
+            {copied ? <Check className="size-4" aria-hidden /> : <Copy className="size-4" aria-hidden />}
+            {copied ? "Copied" : "Copy booking link"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function Settings() {
   const property = getCurrentProperty()
   const [prop, setProp] = useState<Doc | null>(null)
@@ -477,6 +546,7 @@ export default function Settings() {
           load()
         }}
       />
+      <PublicPageActions prop={prop} />
       <SettingsCard
         title="Cancellation, no-show & deposit"
         description="The money rules quoted at booking and enforced by cancel and the night audit."

@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react"
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom"
 import {
   ArrowLeft,
   BedDouble,
@@ -29,7 +35,7 @@ const inr = (n: number) =>
   n.toLocaleString(moneyLocale(), { maximumFractionDigits: 0 })
 
 interface Resolved {
-  kind: "listing" | "site"
+  kind: "listing" | "site" | "property"
   property: string
   listing_slug?: string
   location_slug?: string
@@ -252,10 +258,35 @@ function HostBlock({
   )
 }
 
+/** Resolve a public slug to a scope. resolve_slug knows listing/site slugs
+ *  (and, once the backend is restarted, property page slugs); until then, and
+ *  for properties whose slug isn't persisted yet, we match the slug against the
+ *  live catalog to open the whole-property page. */
+async function resolvePublicSlug(slug: string): Promise<Resolved> {
+  try {
+    return await call<Resolved>("hotelpms.public_api.resolve_slug", { slug })
+  } catch (e) {
+    const idx = await call<{
+      mode: string
+      properties?: { name: string; property_slug: string }[]
+    }>("hotelpms.public_api.catalog_index")
+    const match =
+      idx.mode === "properties"
+        ? idx.properties?.find((p) => p.property_slug === slug)
+        : undefined
+    if (match) return { kind: "property", property: match.name }
+    throw e
+  }
+}
+
 export default function PublicListing() {
   const { slug, checkin, checkout, adults: adultsParam, children: childrenParam } =
     useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  // Keep the guest on the route they arrived by (/hotels/:slug or /stay/:slug)
+  // so a date change never silently flips their URL between the two.
+  const routeBase = location.pathname.includes("/hotels/") ? "hotels" : "stay"
   const [searchParams] = useSearchParams()
   const [resolved, setResolved] = useState<Resolved | null>(null)
   const [data, setData] = useState<Showcase | null>(null)
@@ -305,7 +336,7 @@ export default function PublicListing() {
 
   useEffect(() => {
     if (!slug) return
-    call<Resolved>("hotelpms.public_api.resolve_slug", { slug })
+    resolvePublicSlug(slug)
       .then((r) => {
         setResolved(r)
         const args: Record<string, string> = { property: r.property }
@@ -331,7 +362,7 @@ export default function PublicListing() {
   useEffect(() => {
     if (!resolved) return
     navigate(
-      `/stay/${slug}/${search.check_in_date}/${checkOut}/${search.adults}/${search.children}${searchParams.toString() ? `?${searchParams}` : ""}`,
+      `/${routeBase}/${slug}/${search.check_in_date}/${checkOut}/${search.adults}/${search.children}${searchParams.toString() ? `?${searchParams}` : ""}`,
       { replace: true },
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -457,9 +488,11 @@ export default function PublicListing() {
   const hero = uniquePhotos[0]?.url ?? p.hero_image ?? undefined
   const stayPathSuffix = `${search.check_in_date}/${checkOut}/${search.adults}/${search.children}`
   const backToSite =
-    !isSite && primary?.location_slug
-      ? `/stay/${primary.location_slug}/${stayPathSuffix}`
-      : `/book/${stayPathSuffix}`
+    routeBase === "hotels"
+      ? "/hotels"
+      : !isSite && primary?.location_slug
+        ? `/stay/${primary.location_slug}/${stayPathSuffix}`
+        : `/book/${stayPathSuffix}`
 
   return (
     <div className="min-h-[100dvh] bg-zinc-50" style={accent}>
@@ -482,11 +515,11 @@ export default function PublicListing() {
       <header className="border-b border-zinc-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-5 py-3">
           <Link
-            to={isSite ? `/book/${stayPathSuffix}` : backToSite}
+            to={routeBase === "hotels" ? "/hotels" : isSite ? `/book/${stayPathSuffix}` : backToSite}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900"
           >
             <ArrowLeft className="size-4" aria-hidden />
-            {isSite ? "All properties" : "Back to property"}
+            {routeBase === "hotels" ? "All hotels" : isSite ? "All properties" : "Back to property"}
           </Link>
           <span className="ms-auto truncate text-sm font-medium text-zinc-500">
             {p.property_name}

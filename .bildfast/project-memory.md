@@ -629,3 +629,30 @@ permission-aware needs-now queue via new shared `QueueCard`, KPI tiles, loading 
 actions; fixed a pre-existing small-screen overflow) + Dashboard rechecked (shared QueueCard, `?status=Open`→
 `Pending` fix) — commit `c0d107a`, verified clean. Day-timeline/live-feed deferred (net-new, data-heavy). Amber
 discipline: reclassify `btn-gold`/`text-gold` → teal unless money/attention/VIP, per screen as reached.
+
+### Multi-property public booking portal (`/hotels`) — 2026-09-13
+Turned the single-property `/book` into a real multi-hotel guest portal. **Root bug fixed:** with >1
+`booking_engine_enabled` property, `catalog_index` returns `mode:"properties"` but `PublicBooking` had no
+render branch, so `/book` silently showed only the first hotel. Now `/book` (mode properties) redirects to
+`/hotels`. Almost all of the machinery already existed and was **reused, not rebuilt** — no new DocType fields,
+no migrate.
+- **Backend** (`public_api.py`, `booking_slugs.py`, `property/property.py`): new `hotels_list()` (bookable
+  properties as guest cards — each with its OWN currency symbol/from-rate/amenities/slug, reusing
+  `localization.locale_for`); `resolve_public_slug` now also resolves a **Property `page_slug`** → `kind:"property"`
+  (whole-property page via `showcase(property)` with no listing scope); `unique_public_slug()` keeps Property
+  page slugs unique across the Room Type listing/location slug namespace; `Property.validate` auto-generates a
+  stable `page_slug` (English half of a bilingual "ع | EN" name) once, when bookable + blank, then leaves it
+  editable.
+- **Frontend**: new `screens/Hotels.tsx` (`/hotels` list — cards, name search + city filter, PublicChrome,
+  loading/empty/error, each card uses its **own** `currency_symbol` since properties differ). Routes `/hotels`,
+  `/hotels/:slug`, `/hotels/:slug/:checkin/...` — the property page **reuses `PublicListing`** (added `kind:"property"`).
+  Fixed PublicListing's hardcoded `/stay/` dated-search navigation → derives `routeBase` from the pathname so a
+  date change never flips `/hotels`→`/stay` (acceptance #9). Settings: editable `page_slug` + "View hotel page" /
+  "Copy booking link" actions (`PublicPageActions`).
+- **Isolation** (verified live, 0 console errors): Property A `nuzul-riyadh` → only `ر.س` + Nuzul rooms; Property B
+  `aden-coastal` (Yemen/YER, created for E2E) → only `ر.ي` + Sea View room; no cross-hotel leakage; disabled
+  properties never listed; public path never reads the employee property switcher.
+- **--preload note:** built against `--preload` workers; this session the backend had reloaded so `hotels_list`/
+  slug-resolution/`ر.ي` were already live. The frontend keeps graceful fallbacks anyway — `/hotels` falls back to
+  the always-live `catalog_index`, and property-slug resolution falls back to matching the catalog — so the page
+  works even before a bench restart.

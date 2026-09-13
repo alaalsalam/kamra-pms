@@ -60,11 +60,57 @@ def ensure_room_type_slugs(room_type: str) -> None:
 		)
 
 
+def unique_public_slug(base: str, exclude_property: str | None = None) -> str:
+	"""A slug unique across the whole public URL namespace - Property page slugs
+	AND Room Type listing/location slugs share one space, so /hotels/:slug and
+	/stay/:slug can never collide."""
+	slug = slugify(base)
+	used = set(
+		frappe.get_all(
+			"Property",
+			filters={"name": ["!=", exclude_property]} if exclude_property else {},
+			pluck="page_slug",
+		)
+	)
+	used |= set(frappe.get_all("Room Type", pluck="listing_slug"))
+	used |= set(frappe.get_all("Room Type", pluck="location_slug"))
+	used.discard(None)
+	used.discard("")
+	if slug not in used:
+		return slug
+	for i in range(2, 200):
+		candidate = f"{slug}-{i}"
+		if candidate not in used:
+			return candidate
+	return f"{slug}-{frappe.generate_hash(length=6)}"
+
+
+def property_slug_base(property_name: str) -> str:
+	"""Slug seed for a property: prefer the English half of a bilingual
+	"عربي | English" name so URLs read like /hotels/nuzul-riyadh, not Arabic."""
+	name = property_name or ""
+	if "|" in name:
+		english = name.split("|")[-1].strip()
+		if english:
+			return english
+	return name
+
+
 def resolve_public_slug(slug: str) -> dict:
-	"""Resolve a /stay/:slug path to property + listing or site scope."""
+	"""Resolve a /stay/:slug or /hotels/:slug path to property + listing/site/
+	whole-property scope."""
 	slug = (slug or "").strip().lower()
 	if not slug:
 		frappe.throw("Listing not found.", frappe.DoesNotExistError)
+
+	# Property page slug -> the whole-property public page (all room types).
+	prop_name = frappe.db.get_value(
+		"Property",
+		{"page_slug": slug, "booking_engine_enabled": 1, "disabled": 0},
+		"name",
+	)
+	if prop_name:
+		return {"kind": "property", "property": prop_name}
 
 	rt = frappe.db.get_value(
 		"Room Type",

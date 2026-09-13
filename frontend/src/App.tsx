@@ -19,6 +19,7 @@ import { ResourceScreen } from "./components/ResourceScreen"
 const Billing = lazy(() => import("./screens/Billing"))
 const PublicBooking = lazy(() => import("./screens/PublicBooking"))
 const PublicListing = lazy(() => import("./screens/PublicListing"))
+const Hotels = lazy(() => import("./screens/Hotels"))
 const PublicCheckin = lazy(() => import("./screens/PublicCheckin"))
 const FolioView = lazy(() => import("./screens/FolioView"))
 const GuestJourney = lazy(() => import("./screens/GuestJourney"))
@@ -251,6 +252,14 @@ export default function App() {
         <Route path="stay/:slug" element={<PublicListing />} />
         <Route
           path="stay/:slug/:checkin/:checkout?/:adults?/:children?"
+          element={<PublicListing />}
+        />
+        {/* multi-property guest portal: hotels list + per-hotel page (its own
+            stable slug URL; the property page reuses PublicListing) */}
+        <Route path="hotels" element={<Hotels />} />
+        <Route path="hotels/:slug" element={<PublicListing />} />
+        <Route
+          path="hotels/:slug/:checkin/:checkout?/:adults?/:children?"
           element={<PublicListing />}
         />
         {/* pre-arrival self check-in, tokenized per reservation */}
