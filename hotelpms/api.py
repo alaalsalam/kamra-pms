@@ -4255,6 +4255,20 @@ def linked_records(doctype: str, name: str):
 
 
 @frappe.whitelist()
+def ensure_currency(code: str):
+	"""Create a Currency master on demand so a property can link to any
+	currency the site didn't ship with. Link validation runs before doc hooks,
+	so the record must exist before the property is saved (Settings calls this
+	first; the setup wizard ensures it inline)."""
+	frappe.only_for(("System Manager", "Hotel Admin"))
+	code = (code or "").strip().upper()
+	if code and not frappe.db.exists("Currency", code):
+		frappe.get_doc({"doctype": "Currency", "currency_name": code,
+		                "enabled": 1}).insert(ignore_permissions=True)
+	return code
+
+
+@frappe.whitelist()
 @require_roles("Front Desk", "Finance", "Revenue Manager", "Housekeeping",
 	"Restaurant POS", "Kitchen", "HotelPMS Agent")
 def property_locale(property: str):

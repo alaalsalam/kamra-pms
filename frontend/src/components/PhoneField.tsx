@@ -102,6 +102,15 @@ export default function PhoneField({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [iso, digits])
 
+  // Follow the form's country while the number is still empty, so choosing a
+  // country re-defaults the phone's country too. Once digits are typed the
+  // entered number's own country wins (no reset mid-entry).
+  useEffect(() => {
+    const want = isoForCountryName(defaultCountryName)
+    if (want && !digits) setIso(want)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultCountryName])
+
   // close the dropdown on outside click / Escape
   useEffect(() => {
     if (!open) return

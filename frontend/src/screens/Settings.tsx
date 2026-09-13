@@ -12,6 +12,7 @@ import { Button } from "../components/ui/button"
 import ImageField from "../components/ImageField"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { cur, moneyLocale, taxLabel } from "../lib/money"
+import { COUNTRIES, currencyForCountry } from "../lib/phone"
 import { fill, useT } from "../lib/i18n"
 
 /** Settings hub - everything an owner/GM configures once and forgets:
@@ -160,7 +161,15 @@ function SettingsCard(props: {
               value={value(s.field)}
               onChange={(v) => {
                 setState("idle")
-                setDraft((d) => ({ ...d, [s.field]: v }))
+                setDraft((d) =>
+                  s.field === "country"
+                    ? {
+                        ...d,
+                        country: v as string,
+                        currency: currencyForCountry(v as string),
+                      }
+                    : { ...d, [s.field]: v },
+                )
               }}
             />
           ))}
@@ -196,15 +205,18 @@ const PROPERTY_SPECS: Spec[] = [
   {
     field: "country",
     label: "Country",
-    hint: "Selects the local tax and invoicing pack.",
+    type: "select",
+    options: COUNTRIES.map((c) => c.en),
+    hint: "Sets the calling code, tax pack and default currency.",
   },
   {
     field: "currency",
     label: "Default Currency",
     type: "select",
     options: [
-      "SAR", "YER", "AED", "USD", "EUR", "GBP",
-      "KWD", "QAR", "BHD", "OMR", "EGP", "INR",
+      "SAR", "YER", "AED", "QAR", "KWD", "BHD", "OMR", "EGP", "JOD",
+      "LBP", "IQD", "SYP", "LYD", "SDG", "DZD", "MAD", "TND", "MRU",
+      "GBP", "EUR", "CHF", "SEK", "TRY", "RUB", "USD", "INR", "PKR",
     ],
     hint: "The currency symbol used across this whole property.",
   },
@@ -437,6 +449,10 @@ export default function Settings() {
         specs={PROPERTY_SPECS}
         doc={prop}
         onSave={async (changes) => {
+          if (changes.currency)
+            await call("hotelpms.api.ensure_currency", {
+              code: changes.currency,
+            })
           await updateResource("Property", property, changes)
           load()
         }}

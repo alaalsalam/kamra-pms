@@ -138,6 +138,25 @@ export const COUNTRIES: Country[] = [
   { iso: "PK", flag: "🇵🇰", dial: "92", len: 10, en: "Pakistan", ar: "باكستان" },
 ]
 
+/** Default ISO-4217 currency for every country we offer, keyed by the English
+ *  name used as the country <select> value. Picking a country sets the
+ *  property's default currency from here (the user can still override). */
+export const COUNTRY_CURRENCY: Record<string, string> = {
+  "Saudi Arabia": "SAR", "Yemen": "YER", "United Arab Emirates": "AED",
+  "Qatar": "QAR", "Kuwait": "KWD", "Bahrain": "BHD", "Oman": "OMR",
+  "Egypt": "EGP", "Jordan": "JOD", "Lebanon": "LBP", "Iraq": "IQD",
+  "Syria": "SYP", "Palestine": "JOD", "Libya": "LYD", "Sudan": "SDG",
+  "Algeria": "DZD", "Morocco": "MAD", "Tunisia": "TND", "Mauritania": "MRU",
+  "United Kingdom": "GBP", "France": "EUR", "Germany": "EUR", "Italy": "EUR",
+  "Spain": "EUR", "Netherlands": "EUR", "Belgium": "EUR", "Switzerland": "CHF",
+  "Sweden": "SEK", "Türkiye": "TRY", "Russia": "RUB", "United States": "USD",
+  "India": "INR", "Pakistan": "PKR",
+}
+
+/** The default currency code for a country name (USD when unknown). */
+export const currencyForCountry = (countryEn?: string | null): string =>
+  COUNTRY_CURRENCY[countryEn ?? ""] ?? "USD"
+
 export const PHONE_DEFAULT_ISO = "SA"
 
 /** Convert Arabic-Indic / Persian digits to Latin and keep digits only. */

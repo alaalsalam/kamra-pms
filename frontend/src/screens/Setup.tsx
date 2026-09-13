@@ -8,25 +8,42 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { cn } from "../lib/utils"
 import { cur } from "../lib/money"
 import PhoneField from "../components/PhoneField"
-import { COUNTRIES, toLatinDigits } from "../lib/phone"
+import { COUNTRIES, currencyForCountry, toLatinDigits } from "../lib/phone"
 import { isNumericTaxCountry, taxIdHint, taxIdValid } from "../lib/tax"
 import { useT } from "../lib/i18n"
 
 /** Default-currency options for the wizard (code + names); the property's own
  *  currency drives the symbol everywhere, so no symbol is hardcoded here. */
+// Every currency a country in COUNTRIES maps to (lib/phone COUNTRY_CURRENCY),
+// so the auto-selected currency always has a matching option + label.
 const CURRENCIES = [
   { code: "SAR", en: "Saudi Riyal", ar: "الريال السعودي" },
   { code: "YER", en: "Yemeni Rial", ar: "الريال اليمني" },
   { code: "AED", en: "UAE Dirham", ar: "الدرهم الإماراتي" },
-  { code: "USD", en: "US Dollar", ar: "الدولار الأمريكي" },
-  { code: "EUR", en: "Euro", ar: "اليورو" },
-  { code: "GBP", en: "British Pound", ar: "الجنيه الإسترليني" },
-  { code: "KWD", en: "Kuwaiti Dinar", ar: "الدينار الكويتي" },
   { code: "QAR", en: "Qatari Riyal", ar: "الريال القطري" },
+  { code: "KWD", en: "Kuwaiti Dinar", ar: "الدينار الكويتي" },
   { code: "BHD", en: "Bahraini Dinar", ar: "الدينار البحريني" },
   { code: "OMR", en: "Omani Rial", ar: "الريال العُماني" },
   { code: "EGP", en: "Egyptian Pound", ar: "الجنيه المصري" },
+  { code: "JOD", en: "Jordanian Dinar", ar: "الدينار الأردني" },
+  { code: "LBP", en: "Lebanese Pound", ar: "الليرة اللبنانية" },
+  { code: "IQD", en: "Iraqi Dinar", ar: "الدينار العراقي" },
+  { code: "SYP", en: "Syrian Pound", ar: "الليرة السورية" },
+  { code: "LYD", en: "Libyan Dinar", ar: "الدينار الليبي" },
+  { code: "SDG", en: "Sudanese Pound", ar: "الجنيه السوداني" },
+  { code: "DZD", en: "Algerian Dinar", ar: "الدينار الجزائري" },
+  { code: "MAD", en: "Moroccan Dirham", ar: "الدرهم المغربي" },
+  { code: "TND", en: "Tunisian Dinar", ar: "الدينار التونسي" },
+  { code: "MRU", en: "Mauritanian Ouguiya", ar: "الأوقية الموريتانية" },
+  { code: "GBP", en: "British Pound", ar: "الجنيه الإسترليني" },
+  { code: "EUR", en: "Euro", ar: "اليورو" },
+  { code: "CHF", en: "Swiss Franc", ar: "الفرنك السويسري" },
+  { code: "SEK", en: "Swedish Krona", ar: "الكرونة السويدية" },
+  { code: "TRY", en: "Turkish Lira", ar: "الليرة التركية" },
+  { code: "RUB", en: "Russian Ruble", ar: "الروبل الروسي" },
+  { code: "USD", en: "US Dollar", ar: "الدولار الأمريكي" },
   { code: "INR", en: "Indian Rupee", ar: "الروبية الهندية" },
+  { code: "PKR", en: "Pakistani Rupee", ar: "الروبية الباكستانية" },
 ]
 
 const inputCls =
@@ -412,7 +429,13 @@ export default function Setup() {
                   <select
                     className={cn(inputCls, "bg-white")}
                     value={prop.country}
-                    onChange={(e) => setProp({ ...prop, country: e.target.value })}
+                    onChange={(e) =>
+                      setProp((p) => ({
+                        ...p,
+                        country: e.target.value,
+                        currency: currencyForCountry(e.target.value),
+                      }))
+                    }
                   >
                     {COUNTRIES.map((c) => (
                       <option key={c.iso} value={c.en}>
